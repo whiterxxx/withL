@@ -8,7 +8,7 @@
   <title>with L</title>
   <meta
     name="description"
-    content="Lと一緒に静かな暮らしを過ごすための非公式ファンメイドWebアプリです。"
+    content="Lと一緒に出かけ、食事し、静かな時間を過ごすための非公式ファンメイドWebアプリです。"
   >
 
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -85,19 +85,39 @@
 
     <section id="menuPanel" class="menu-panel" aria-label="過ごし方を選ぶ">
       <button class="mode-button" type="button" data-mode="outing">
-        <span class="mode-icon" aria-hidden="true">▷</span>
+        <span class="mode-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="6" cy="17" r="2.2"></circle>
+            <path d="M8.2 17c4.8 0 3.2-9 8.2-9"></path>
+            <circle cx="18" cy="7" r="2.2"></circle>
+          </svg>
+        </span>
         <span class="mode-label">一緒に出かける</span>
         <span class="mode-arrow" aria-hidden="true">▶</span>
       </button>
 
       <button class="mode-button" type="button" data-mode="meal">
-        <span class="mode-icon" aria-hidden="true">▷</span>
+        <span class="mode-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M5 10h11v4.2A4.8 4.8 0 0 1 11.2 19H9.8A4.8 4.8 0 0 1 5 14.2Z"></path>
+            <path d="M16 11h1.2a2.3 2.3 0 0 1 0 4.6H16"></path>
+            <path d="M8 7c-1-1.1 1-1.8 0-3"></path>
+            <path d="M12 7c-1-1.1 1-1.8 0-3"></path>
+            <path d="M4 20h14"></path>
+          </svg>
+        </span>
         <span class="mode-label">一緒に食事する</span>
         <span class="mode-arrow" aria-hidden="true">▶</span>
       </button>
 
       <button class="mode-button" type="button" data-mode="together">
-        <span class="mode-icon" aria-hidden="true">▷</span>
+        <span class="mode-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="9" cy="12" r="4.5"></circle>
+            <circle cx="15" cy="12" r="4.5"></circle>
+            <path d="M11.5 8.3a4.5 4.5 0 0 1 0 7.4"></path>
+          </svg>
+        </span>
         <span class="mode-label">一緒に過ごす</span>
         <span class="mode-arrow" aria-hidden="true">▶</span>
       </button>
@@ -133,9 +153,9 @@
         id="talkButton"
         class="talk-button"
         type="button"
-        aria-label="Lの話を聞く"
+        aria-label="Lの次の話を聞く"
       >
-        TALK / 話す
+        TALK / 次の話
       </button>
 
       <button
@@ -153,7 +173,7 @@
 
     <footer class="footer-note">
       <span>UNOFFICIAL FAN-MADE PROJECT</span>
-      <span id="batteryText">BATTERY ♡♡%</span>
+      <span id="batteryText">BATTERY 83%</span>
     </footer>
   </main>
 
