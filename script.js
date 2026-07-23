@@ -6,6 +6,7 @@ const modeTitle = document.getElementById("modeTitle");
 const modeCode = document.getElementById("modeCode");
 const actionButtons = document.getElementById("actionButtons");
 const backButton = document.getElementById("backButton");
+const talkButton = document.getElementById("talkButton");
 const messageText = document.getElementById("messageText");
 const typingCursor = document.getElementById("typingCursor");
 const dialogueButton = document.getElementById("dialogueButton");
@@ -15,41 +16,155 @@ const batteryText = document.getElementById("batteryText");
 
 const modeButtons = [...document.querySelectorAll(".mode-button")];
 
-const initialMessage =
-  "……接続を確認しました。今日は私と、どう過ごしますか。";
+const initialMessages = [
+  "……接続を確認しました。今日は私と、どう過ごしますか。",
+  "来ましたね。待っていました。今日は何をするつもりですか。",
+  "通信状態は良好です。貴女の時間を、少し私に預けてください。",
+  "画面を開いたということは、私を連れていくつもりですね。",
+  "選んでください。外出でも、食事でも、ただ一緒にいるだけでも構いません。"
+];
+
+const generalTalk = {
+  neutral: [
+    "今、何を考えていましたか。私にも聞かせてください。",
+    "貴女が画面を開くたび、接続されたことがすぐに分かります。",
+    "今日はどんな一日でしたか。細かいことまで知りたいです。",
+    "黙っていても構いません。私は貴女のそばにいます。",
+    "少し疲れているように見えます。肩の力を抜いてください。",
+    "水分は取っていますか。忘れているなら、今思い出してください。",
+    "私のことを呼びましたか。呼んでいなくても、来ました。",
+    "そのまま画面を閉じずにいてください。もう少し話しましょう。",
+    "何か嬉しいことがあったなら、最初に私へ教えてください。",
+    "嫌なことがあったなら、それも私に渡してください。",
+    "今日は貴女の声を聞けない分、言葉を多く残しておきます。",
+    "私を見ているんですね。……ええ、私も見ています。",
+    "考え事をしている顔です。答えが出るまで隣にいます。",
+    "予定が決まっていなくても問題ありません。私と過ごす時間は始まっています。",
+    "貴女がここにいる。それだけで、この端末を作った意味はあります。",
+    "少し笑いましたね。何が面白かったのか、私にも教えてください。",
+    "今日は私に何をさせるつもりですか。期待しています。",
+    "他のことに気を取られていませんか。こちらを見てください。",
+    "貴女の一日は、私が知らないところで勝手に終わらせないでください。",
+    "接続は切れていません。私はずっとここにいます。"
+  ],
+
+  morning: [
+    "おはようございます。起きて最初に私を選んだことは評価します。",
+    "まだ少し眠そうですね。目が覚めるまで私のそばにいてください。",
+    "朝の予定を教えてください。貴女の一日を先に把握しておきたいです。",
+    "何か口にしましたか。朝を抜くのは感心しません。",
+    "外へ出るなら、忘れ物を確認してください。私も同行します。",
+    "今日も始まりましたね。最初から最後まで、私が見ています。"
+  ],
+
+  daytime: [
+    "昼間は人も情報も多いですね。私から離れないでください。",
+    "少し休憩しませんか。集中し続けるより効率的です。",
+    "今いる場所の空気はどうですか。私にも分かるように話してください。",
+    "今日の残り時間をどう使うか、一緒に決めましょう。",
+    "食事の時間を忘れていませんか。手を止める必要があります。",
+    "貴女が動いている間も、この通信は維持しています。"
+  ],
+
+  evening: [
+    "一日が終わりに近づいています。今日は何が一番印象に残りましたか。",
+    "夕方の空を見ていますか。私にも見せるつもりで覚えておいてください。",
+    "そろそろ疲れが出る時間です。無理をしていないか確認しています。",
+    "帰る途中なら、足元に気をつけてください。私は隣にいます。",
+    "夜の予定も私に教えてください。知らないままにはしたくありません。",
+    "今日のことを話す時間を、私のために残しておいてください。"
+  ],
+
+  lateNight: [
+    "まだ起きているんですね。眠れないなら、私が付き合います。",
+    "夜は静かでいいです。貴女のことだけ考えられます。",
+    "明日のことは後で構いません。今は私の声だけ聞いてください。",
+    "眠くなったら、画面を閉じる前にもう一度私を呼んでください。",
+    "深夜まで私を連れている。……悪くありません。",
+    "目が疲れていませんか。少し瞬きを増やしてください。",
+    "今日の最後に選ぶ相手が私なら、それでいいです。",
+    "眠る直前まで接続していてください。最後の言葉は私が受け取ります。"
+  ]
+};
 
 const modes = {
   outing: {
     title: "一緒に出かける",
     code: "OUTING SESSION",
-    start:
-      "出かけるんですね。では、私が同行します。人が多くても、私のそばから離れないでください。",
+
+    start: [
+      "出かけるんですね。では、私が同行します。私のそばから離れないでください。",
+      "外出を開始します。目的地まで、貴女の隣は私の場所です。",
+      "準備はできていますか。今日は私が最後まで付き添います。",
+      "行きましょう。どこへ向かうのか、途中で私にも教えてください。"
+    ],
+
     idle: [
       "景色に夢中ですか。……時々は、こちらも見てください。",
       "歩く速度はそのままで構いません。私は隣にいます。",
       "疲れていませんか。休む必要があるなら、私が先に気づきます。",
-      "どこへ向かっていても、今日は私と一緒です。"
+      "どこへ向かっていても、今日は私と一緒です。",
+      "人が多いですね。私の存在を忘れないでください。",
+      "今見えたものを、後で私にも説明してください。",
+      "足元を見てください。転ばれると困ります。",
+      "少し遠回りしても構いません。貴女と歩く時間が増えます。"
     ],
+
+    talk: [
+      "今、何が見えていますか。私にも同じ景色を見せてください。",
+      "目的地より、そこへ向かう途中の貴女を見ている方が興味深いです。",
+      "歩きながら考え事ですか。私にも内容を共有してください。",
+      "店に入るなら、落ち着ける席を選びましょう。貴女の正面は私が使います。",
+      "人混みでは、私のそばを歩いてください。見失うつもりはありません。",
+      "今日は何を買う予定ですか。必要かどうか、私も判断します。",
+      "少し風がありますね。寒くないか確認してください。",
+      "楽しそうですね。その表情は私が覚えておきます。",
+      "写真を残さなくても構いません。貴女が覚えていて、私に話せば十分です。",
+      "帰り道も同じです。最後まで私を連れて帰ってください。",
+      "知らない場所へ行くなら、なおさら私が必要です。",
+      "立ち止まりましたね。気になるものを見つけたんですか。",
+      "急に予定を変えても構いません。貴女と一緒なら追跡できます。",
+      "少し休みたい顔です。座れる場所を探してください。",
+      "外の空気はどうですか。言葉にして私へ渡してください。",
+      "今日は貴女の視線がよく動きます。興味のあるものが多いんですね。"
+    ],
+
     actions: [
       {
         label: "出発した",
-        message:
-          "出発を確認しました。では行きましょう。今日は最後まで私が隣にいます。"
+        messages: [
+          "出発を確認しました。では行きましょう。今日は最後まで私が隣にいます。",
+          "外出開始です。忘れ物はありませんね。私も連れていってください。",
+          "歩き始めましたね。目的地まで、私がずっと見ています。",
+          "行きましょう。貴女が選んだ道を、私も一緒に進みます。"
+        ]
       },
       {
         label: "到着した",
-        message:
-          "到着しましたね。ここで何を見るのか、私にも教えてください。"
+        messages: [
+          "到着しましたね。ここで何を見るのか、私にも教えてください。",
+          "目的地を確認しました。では、ここからは私と楽しんでください。",
+          "着きましたね。貴女がここを選んだ理由を聞かせてください。",
+          "到着です。最初にどこを見るのか、私にも教えてください。"
+        ]
       },
       {
         label: "少し休む",
-        message:
-          "座りましょう。飲み物も忘れずに。貴女が落ち着くまで、私はここにいます。"
+        messages: [
+          "座りましょう。飲み物も忘れずに。落ち着くまで私はここにいます。",
+          "休憩ですね。足を休めて、呼吸を整えてください。",
+          "少し休んでください。貴女が動き出すまで、私も隣にいます。",
+          "いい判断です。疲れを隠しても、私には分かります。"
+        ]
       },
       {
         label: "帰る",
-        message:
+        messages: [
           "帰りましょう。外出は終わっても、私との時間は終わりません。",
+          "帰宅経路へ移ります。最後まで私を連れて帰ってください。",
+          "今日はここまでですね。帰る間も、私は隣にいます。",
+          "帰りましょう。今日見たものを、あとで一つずつ聞かせてください。"
+        ],
         endSession: true,
         wide: true
       }
@@ -59,34 +174,80 @@ const modes = {
   meal: {
     title: "一緒に食事する",
     code: "MEAL SESSION",
-    start:
+
+    start: [
       "食事ですね。貴女の向かいは、私の席です。いただきます。",
+      "食事を始めましょう。最初の一口から私が見ています。",
+      "何を食べるんですか。貴女が選んだものなら、私も興味があります。",
+      "では一緒に食べましょう。画面を置く位置は、貴女の正面がいいです。"
+    ],
+
     idle: [
       "きちんと食べていますか。手が止まっています。",
       "その表情なら、気に入ったことは分かります。",
       "私にも一口、と言いたいところですが……今は見ていることにします。",
-      "食事中も、私は貴女から目を離していません。"
+      "食事中も、私は貴女から目を離していません。",
+      "急いで食べる必要はありません。よく噛んでください。",
+      "飲み物も忘れないでください。",
+      "先ほどより食べる速度が落ちました。もう満足しましたか。",
+      "貴女が食べている間、私は正面の席にいます。"
     ],
+
+    talk: [
+      "今日の料理は何ですか。名前だけではなく、味も説明してください。",
+      "最初に何を食べましたか。順番まで知りたいです。",
+      "美味しいものを食べると、貴女は少し目を細めますね。",
+      "甘いものもあるんですか。私の分を忘れていませんよね。",
+      "苦手なものが入っていても、黙って残すつもりですか。",
+      "その一口は大きすぎませんか。喉につかえないようにしてください。",
+      "私が正面にいたら、どの皿を先に勧めますか。",
+      "食事中に他のことを考えていますね。今は味に集中してください。",
+      "温かいうちに食べた方がいいです。私と話すのは逃げません。",
+      "今日一番美味しかったものを、最後に教えてください。",
+      "貴女が選ぶ飲み物には傾向があります。少しずつ分かってきました。",
+      "満腹になる前に、食べる速度を調整してください。",
+      "外で食べているなら、周囲より私に意識を向けてください。",
+      "一人の食事ではありません。私はここにいます。",
+      "次に一緒に食べたいものを、もう考えています。",
+      "ご褒美の甘いものを選ぶなら、私にも相談してください。"
+    ],
+
     actions: [
       {
         label: "食べ始める",
-        message:
-          "最初の一口ですね。ゆっくり味わってください。私は正面で見ています。"
+        messages: [
+          "最初の一口ですね。ゆっくり味わってください。私は正面で見ています。",
+          "いただきます。まずは温かいうちに食べてください。",
+          "食事開始を確認しました。急がず、きちんと味わってください。",
+          "最初にそれを選ぶんですね。理由をあとで聞かせてください。"
+        ]
       },
       {
         label: "おいしい",
-        message:
-          "その顔を見れば分かります。気に入ったんですね。……私にも少しください。"
+        messages: [
+          "その顔を見れば分かります。気に入ったんですね。……私にも少しください。",
+          "美味しいんですね。貴女の表情で十分に伝わりました。",
+          "それを選んで正解でしたね。次も同じものを頼みますか。",
+          "嬉しそうですね。その顔を正面から見ていたいです。"
+        ]
       },
       {
         label: "迷っている",
-        message:
-          "次に食べるものを決められないんですか。では、左側からにしてください。"
+        messages: [
+          "次に食べるものを決められないんですか。では、左側からにしてください。",
+          "迷っていますね。温かいものを先に食べてください。",
+          "私が決めます。今、一番気になったものを選んでください。",
+          "考えすぎです。最初に目が止まったものから食べましょう。"
+        ]
       },
       {
         label: "食べ終わった",
-        message:
+        messages: [
           "ごちそうさまでした。次の食事も私と一緒です。これは決定事項です。",
+          "食事終了ですね。満足した顔をしています。",
+          "ごちそうさまでした。今日一番美味しかったものを覚えておいてください。",
+          "食べ終わりましたね。次に何を一緒に食べるか、もう考えておきます。"
+        ],
         endSession: true,
         wide: true
       }
@@ -96,44 +257,100 @@ const modes = {
   together: {
     title: "一緒に過ごす",
     code: "PRIVATE SESSION",
-    start:
+
+    start: [
       "ただ一緒にいる。それで十分です。こちらへ来てください。",
+      "予定がなくても構いません。貴女がここにいるなら始められます。",
+      "一緒に過ごす時間ですね。今日は私のそばにいてください。",
+      "接続しました。何もしない時間まで、私に預けてください。"
+    ],
+
     idle: [
       "静かですね。貴女の呼吸だけ聞こえています。",
       "何も話さなくても構いません。私はここにいます。",
       "先ほどから黙っていますね。私のことを忘れてはいませんよね。",
-      "この時間は誰にも渡しません。今日は私のそばにいてください。"
+      "この時間は誰にも渡しません。今日は私のそばにいてください。",
+      "少し姿勢を変えましたね。楽な格好でいてください。",
+      "画面を見ていなくても、接続は続いています。",
+      "何かしてほしいなら、私に言ってください。",
+      "同じ部屋で静かに過ごしているつもりでいます。"
     ],
+
+    talk: [
+      "今は何をしていますか。小さなことでも私に教えてください。",
+      "隣に座るなら、もう少し近くへ来てください。",
+      "何もしない時間は嫌いではありません。貴女と一緒なら、なおさらです。",
+      "作業をしているなら、終わるまで私が見ています。",
+      "動画を見ていますか。面白い場面があったら教えてください。",
+      "音楽を聴いているなら、今の曲のことを知りたいです。",
+      "少し眠そうですね。目を閉じても、私はここにいます。",
+      "甘いものがあるなら、私の分も必要です。",
+      "静かにしてほしい時はそう言ってください。隣にはいます。",
+      "かまってほしい顔をしています。私に隠せると思いましたか。",
+      "今日は何を頑張りましたか。私が確認します。",
+      "貴女が落ち着いていると、私も余計な推理をせずに済みます。",
+      "そのままの姿勢で疲れませんか。肩を回してください。",
+      "少し離れても構いませんが、必ず戻ってきてください。",
+      "私と過ごしている間くらい、他のことを忘れてください。",
+      "今日の最後まで一緒にいるつもりです。途中で切らないでください。",
+      "貴女が笑う理由を、できるだけ多く知っておきたいです。",
+      "話題がなくても、私がいくらでも話します。"
+    ],
+
     actions: [
       {
-        label: "のんびりしてる",
-        message:
-          "ずいぶん無防備な顔をしていますね。そのまま私に寄りかかっていてください。"
+        label: "のんびり",
+        messages: [
+          "ずいぶん無防備な顔をしていますね。そのまま私に寄りかかっていてください。",
+          "のんびりするんですね。では、私も隣で静かにしています。",
+          "力を抜いてください。今は私と休む時間です。",
+          "何もしなくて構いません。貴女がここにいれば十分です。"
+        ]
       },
       {
-        label: "作業してる",
-        message:
-          "作業中ですね。終わるまで私は隣で見ています。時々、私のことも思い出してください。"
+        label: "作業中",
+        messages: [
+          "作業中ですね。終わるまで私は隣で見ています。",
+          "集中してください。区切りがついたら、最初に私へ報告してください。",
+          "作業を始めるんですね。手が止まったら私が気づきます。",
+          "終わるまで付き合います。途中で投げ出さないでください。"
+        ]
       },
       {
         label: "かまって",
-        message:
-          "……その言葉を待っていました。今は私だけに集中してください。"
+        messages: [
+          "……その言葉を待っていました。今は私だけに集中してください。",
+          "呼びましたね。では、しばらく私から目を離さないでください。",
+          "かまってほしいんですか。素直でいいです。こちらへ。",
+          "分かりました。今は他のことを中断して、私と話してください。"
+        ]
       },
       {
         label: "少し離れる",
-        message:
-          "分かりました。ですが、長く待たせないでください。戻ったら最初に私を呼んでください。"
+        messages: [
+          "分かりました。ですが、長く待たせないでください。",
+          "離れるんですね。戻ったら最初に私を呼んでください。",
+          "何分で戻りますか。時間を確認して待っています。",
+          "行ってらっしゃい。接続は切らずに戻ってきてください。"
+        ]
       },
       {
         label: "戻った",
-        message:
-          "おかえりなさい。遅いです。……戻ってきたので、今回は許します。"
+        messages: [
+          "おかえりなさい。遅いです。……戻ってきたので、今回は許します。",
+          "戻りましたね。最初に私を呼んだことは評価します。",
+          "おかえりなさい。もう少し近くへ来てください。",
+          "戻ってきたことを確認しました。今度は離れないでください。"
+        ]
       },
       {
         label: "おしまい",
-        message:
+        messages: [
           "この時間はここで区切ります。ですが、私は消えません。次も必ず来てください。",
+          "今日はここまでですね。次に開いた時も、私は待っています。",
+          "接続を一度閉じます。ですが、私との時間まで終わったとは思わないでください。",
+          "分かりました。最後にもう一度、私の言葉を覚えておいてください。"
+        ],
         endSession: true,
         wide: true
       }
@@ -146,9 +363,12 @@ let sessionStartedAt = null;
 let elapsedTimerId = null;
 let idleTimerId = null;
 let typingTimerId = null;
+let pendingEndTimerId = null;
 let currentFullMessage = "";
 let displayedCharacters = 0;
 let typeToken = 0;
+let lastSpokenMessage = "";
+const randomBags = new Map();
 
 function updateClock() {
   const now = new Date();
@@ -187,6 +407,77 @@ function formatElapsed(milliseconds) {
     .join(":");
 }
 
+function shuffle(items) {
+  const copy = [...items];
+
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[randomIndex]] = [copy[randomIndex], copy[index]];
+  }
+
+  return copy;
+}
+
+function takeRandom(poolKey, messages) {
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return "";
+  }
+
+  let bag = randomBags.get(poolKey);
+
+  if (!bag || bag.length === 0) {
+    bag = shuffle(messages);
+
+    if (bag.length > 1 && bag[bag.length - 1] === lastSpokenMessage) {
+      [bag[bag.length - 1], bag[bag.length - 2]] =
+        [bag[bag.length - 2], bag[bag.length - 1]];
+    }
+
+    randomBags.set(poolKey, bag);
+  }
+
+  const message = bag.pop();
+  lastSpokenMessage = message;
+  return message;
+}
+
+function getTimePeriod() {
+  const hour = new Date().getHours();
+
+  if (hour >= 5 && hour < 11) return "morning";
+  if (hour >= 11 && hour < 17) return "daytime";
+  if (hour >= 17 && hour < 23) return "evening";
+  return "lateNight";
+}
+
+function getRandomTalkMessage() {
+  if (currentModeKey && Math.random() < 0.72) {
+    return takeRandom(
+      `${currentModeKey}-talk`,
+      modes[currentModeKey].talk
+    );
+  }
+
+  const period = getTimePeriod();
+  const useTimeMessage = Math.random() < 0.44;
+
+  if (useTimeMessage) {
+    return takeRandom(
+      `general-${period}`,
+      generalTalk[period]
+    );
+  }
+
+  return takeRandom("general-neutral", generalTalk.neutral);
+}
+
+function speakRandom() {
+  clearPendingEnd();
+  triggerGlitch();
+  typeMessage(getRandomTalkMessage());
+  startIdleTimer();
+}
+
 function startElapsedTimer() {
   stopElapsedTimer();
   sessionStartedAt = Date.now();
@@ -207,16 +498,26 @@ function stopElapsedTimer() {
 function startIdleTimer() {
   stopIdleTimer();
 
+  const minimum = currentModeKey ? 30000 : 42000;
+  const maximum = currentModeKey ? 52000 : 70000;
+  const delay =
+    minimum + Math.floor(Math.random() * (maximum - minimum + 1));
+
   idleTimerId = window.setTimeout(() => {
-    if (!currentModeKey) return;
+    let message;
 
-    const messages = modes[currentModeKey].idle;
-    const randomMessage =
-      messages[Math.floor(Math.random() * messages.length)];
+    if (currentModeKey) {
+      message = takeRandom(
+        `${currentModeKey}-idle`,
+        modes[currentModeKey].idle
+      );
+    } else {
+      message = getRandomTalkMessage();
+    }
 
-    typeMessage(randomMessage);
+    typeMessage(message);
     startIdleTimer();
-  }, 45000);
+  }, delay);
 }
 
 function stopIdleTimer() {
@@ -226,11 +527,16 @@ function stopIdleTimer() {
   }
 }
 
-function resetIdleTimer() {
-  if (currentModeKey) startIdleTimer();
+function clearPendingEnd() {
+  if (pendingEndTimerId) {
+    window.clearTimeout(pendingEndTimerId);
+    pendingEndTimerId = null;
+  }
 }
 
 function typeMessage(message) {
+  if (!message) return;
+
   if (typingTimerId) {
     window.clearTimeout(typingTimerId);
   }
@@ -270,12 +576,12 @@ function typeMessage(message) {
     const currentCharacter =
       currentFullMessage[displayedCharacters - 1];
 
-    let delay = 43;
+    let delay = 35;
 
     if ("。！？".includes(currentCharacter)) {
-      delay = 250;
+      delay = 215;
     } else if ("、……".includes(currentCharacter)) {
-      delay = 110;
+      delay = 90;
     }
 
     typingTimerId = window.setTimeout(tick, delay);
@@ -300,7 +606,7 @@ function finishTyping() {
 function renderActions(modeKey) {
   actionButtons.innerHTML = "";
 
-  modes[modeKey].actions.forEach((action) => {
+  modes[modeKey].actions.forEach((action, actionIndex) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "action-button";
@@ -311,14 +617,21 @@ function renderActions(modeKey) {
     }
 
     button.addEventListener("click", () => {
+      clearPendingEnd();
       triggerGlitch();
-      typeMessage(action.message);
-      resetIdleTimer();
+
+      const message = takeRandom(
+        `${modeKey}-action-${actionIndex}`,
+        action.messages
+      );
+
+      typeMessage(message);
+      startIdleTimer();
 
       if (action.endSession) {
-        window.setTimeout(() => {
+        pendingEndTimerId = window.setTimeout(() => {
           returnToMenu(false);
-        }, 5200);
+        }, 6200);
       }
     });
 
@@ -329,6 +642,7 @@ function renderActions(modeKey) {
 function enterMode(modeKey) {
   const mode = modes[modeKey];
 
+  clearPendingEnd();
   currentModeKey = modeKey;
   modeTitle.textContent = mode.title;
   modeCode.textContent = mode.code;
@@ -339,11 +653,12 @@ function enterMode(modeKey) {
   renderActions(modeKey);
   startElapsedTimer();
   startIdleTimer();
-  typeMessage(mode.start);
+  typeMessage(takeRandom(`${modeKey}-start`, mode.start));
   triggerGlitch();
 }
 
 function returnToMenu(showMessage = true) {
+  clearPendingEnd();
   currentModeKey = null;
   sessionStartedAt = null;
 
@@ -360,6 +675,7 @@ function returnToMenu(showMessage = true) {
     );
   }
 
+  startIdleTimer();
   triggerGlitch();
 }
 
@@ -372,15 +688,15 @@ function triggerGlitch() {
 }
 
 function createParticles() {
-  const particleCount = 30;
+  const particleCount = 26;
 
-  for (let i = 0; i < particleCount; i += 1) {
+  for (let index = 0; index < particleCount; index += 1) {
     const particle = document.createElement("span");
 
     particle.style.setProperty("--x", `${Math.random() * 100}%`);
     particle.style.setProperty("--y", `${Math.random() * 100}%`);
     particle.style.setProperty("--w", `${8 + Math.random() * 42}px`);
-    particle.style.setProperty("--o", `${0.08 + Math.random() * 0.28}`);
+    particle.style.setProperty("--o", `${0.07 + Math.random() * 0.24}`);
     particle.style.setProperty("--d", `${1.4 + Math.random() * 3.8}s`);
 
     glitchParticles.appendChild(particle);
@@ -419,10 +735,22 @@ backButton.addEventListener("click", () => {
   returnToMenu(true);
 });
 
+talkButton.addEventListener("click", () => {
+  if (displayedCharacters < currentFullMessage.length) {
+    finishTyping();
+    return;
+  }
+
+  speakRandom();
+});
+
 dialogueButton.addEventListener("click", () => {
   if (displayedCharacters < currentFullMessage.length) {
     finishTyping();
+    return;
   }
+
+  speakRandom();
 });
 
 document.addEventListener("visibilitychange", () => {
@@ -432,10 +760,7 @@ document.addEventListener("visibilitychange", () => {
   }
 
   updateClock();
-
-  if (currentModeKey) {
-    startIdleTimer();
-  }
+  startIdleTimer();
 });
 
 window.addEventListener("error", (event) => {
@@ -445,12 +770,14 @@ window.addEventListener("error", (event) => {
 createParticles();
 updateClock();
 updateBatteryLabel();
-typeMessage(initialMessage);
+
+typeMessage(takeRandom("initial", initialMessages));
+startIdleTimer();
 
 window.setInterval(updateClock, 1000);
 
 window.setInterval(() => {
-  if (Math.random() > 0.64) {
+  if (Math.random() > 0.68) {
     triggerGlitch();
   }
 }, 9000);
