@@ -11,18 +11,23 @@
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --font-ui:
+    "Avenir Next",
+    "Helvetica Neue",
     -apple-system,
     BlinkMacSystemFont,
+    "Hiragino Kaku Gothic ProN",
     "Hiragino Sans",
-    "Yu Gothic",
-    "YuGothic",
-    "Noto Sans JP",
-    "Meiryo",
     sans-serif;
+  --font-jp:
+    "Hiragino Mincho ProN",
+    "Yu Mincho",
+    "YuMincho",
+    "Noto Serif JP",
+    serif;
   --font-display:
     "Times New Roman",
-    "Yu Mincho",
-    "Hiragino Mincho ProN",
+    "Baskerville",
+    Georgia,
     serif;
 }
 
@@ -57,8 +62,11 @@ body {
       #f7f9fa 44%,
       #edf2f4 100%
     );
-  font-family: var(--font-ui);
-  font-weight: 500;
+  font-family: var(--font-jp);
+  font-weight: 400;
+  font-synthesis: none;
+  font-kerning: normal;
+  font-feature-settings: "palt" 1;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   -webkit-tap-highlight-color: transparent;
@@ -291,7 +299,7 @@ button:focus-visible {
 .hero {
   position: relative;
   flex: 0 0 auto;
-  padding: 5px 0 8px;
+  padding: 1px 0 5px;
   text-align: center;
 }
 
@@ -299,7 +307,7 @@ button:focus-visible {
   position: relative;
   display: grid;
   place-items: center;
-  width: min(56vw, 270px);
+  width: min(68vw, 340px);
   aspect-ratio: 1 / 1;
   margin: 0 auto;
 }
@@ -410,7 +418,7 @@ button:focus-visible {
 }
 
 .hero h1 {
-  margin: -2px 0 0;
+  margin: -8px 0 0;
   color: var(--ink);
   font-family: var(--font-display);
   font-size: clamp(1.02rem, 4.1vw, 1.25rem);
@@ -548,9 +556,9 @@ button:focus-visible {
   grid-template-columns: 34px 1fr 20px;
   align-items: center;
   width: 100%;
-  min-height: 55px;
-  margin: 0 0 7px;
-  padding: 9px 18px;
+  min-height: 53px;
+  margin: 0 0 6px;
+  padding: 8px 18px;
   overflow: hidden;
   color: var(--ink);
   border: 1px solid var(--line);
@@ -622,9 +630,10 @@ button:focus-visible {
 }
 
 .mode-label {
-  font-size: clamp(1rem, 3.8vw, 1.15rem);
-  font-weight: 650;
-  letter-spacing: 0.07em;
+  font-family: var(--font-jp);
+  font-size: clamp(1.02rem, 3.9vw, 1.18rem);
+  font-weight: 400;
+  letter-spacing: 0.055em;
 }
 
 .mode-arrow {
@@ -654,9 +663,10 @@ button:focus-visible {
 
 .mode-heading h2 {
   margin: 2px 0 0;
-  font-size: clamp(1.02rem, 4vw, 1.25rem);
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: var(--font-jp);
+  font-size: clamp(1.04rem, 4vw, 1.28rem);
+  font-weight: 400;
+  letter-spacing: 0.065em;
 }
 
 .mode-code {
@@ -694,9 +704,10 @@ button:focus-visible {
 .elapsed-wrap time {
   margin-top: 3px;
   color: var(--accent-dark);
+  font-family: var(--font-ui);
   font-size: 0.88rem;
   font-variant-numeric: tabular-nums;
-  font-weight: 700;
+  font-weight: 400;
   letter-spacing: 0.05em;
 }
 
@@ -714,9 +725,11 @@ button:focus-visible {
   border: 1px solid var(--line-soft);
   background: rgba(255, 255, 255, 0.76);
   box-shadow: 0 4px 12px rgba(72, 99, 114, 0.08);
-  font-size: clamp(0.84rem, 3.2vw, 0.98rem);
-  font-weight: 650;
-  line-height: 1.35;
+  font-family: var(--font-jp);
+  font-size: clamp(0.86rem, 3.25vw, 1rem);
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: 0.025em;
   cursor: pointer;
   transition:
     border-color 160ms ease,
@@ -850,10 +863,11 @@ button:focus-visible {
 }
 
 .message-text {
-  font-size: clamp(1.04rem, 4.2vw, 1.22rem);
-  font-weight: 600;
-  line-height: 1.72;
-  letter-spacing: 0.025em;
+  font-family: var(--font-jp);
+  font-size: clamp(1.06rem, 4.25vw, 1.24rem);
+  font-weight: 400;
+  line-height: 1.78;
+  letter-spacing: 0.018em;
   overflow-wrap: anywhere;
 }
 
@@ -1071,7 +1085,7 @@ button:focus-visible {
   }
 
   .logo-stage {
-    width: min(57vw, 232px);
+    width: min(66vw, 285px);
   }
 
   .side-data {
@@ -1157,7 +1171,7 @@ button:focus-visible {
   }
 
   .logo-stage {
-    width: min(43vw, 180px);
+    width: min(51vw, 215px);
   }
 
   .hero h1 {
@@ -1186,7 +1200,7 @@ button:focus-visible {
   }
 
   .mode-label {
-    font-size: 0.96rem;
+    font-size: 0.98rem;
   }
 
   .mode-heading {
@@ -1198,7 +1212,7 @@ button:focus-visible {
   .action-button {
     min-height: 42px;
     padding: 6px 7px;
-    font-size: 0.82rem;
+    font-size: 0.84rem;
   }
 
   .dialogue-window {
@@ -1214,8 +1228,8 @@ button:focus-visible {
   }
 
   .message-text {
-    font-size: 0.98rem;
-    line-height: 1.58;
+    font-size: 1rem;
+    line-height: 1.62;
   }
 
   .footer-note {
@@ -1230,8 +1244,8 @@ button:focus-visible {
   }
 
   .mode-label {
-    font-size: 0.94rem;
-    letter-spacing: 0.04em;
+    font-size: 0.97rem;
+    letter-spacing: 0.035em;
   }
 
   .message-text {
