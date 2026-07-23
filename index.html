@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f7f8">
+
+  <title>with L</title>
+  <meta name="description" content="Lと一緒に出かけ、食事し、静かな時間を過ごすための非公式ファンメイドWebアプリです。">
+
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="./apple-touch-icon.png">
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+  <div class="screen-noise" aria-hidden="true"></div>
+  <div class="scan-line" aria-hidden="true"></div>
+  <div class="glitch-particles" id="glitchParticles" aria-hidden="true"></div>
+
+  <main class="app-shell">
+    <header class="hud top-hud" aria-label="端末情報">
+      <div class="hud-block hud-left">
+        <p class="hud-main">ID: WITH-L/01</p>
+        <p class="hud-sub">ver.1.0.0</p>
+        <div class="mini-meter"><span></span></div>
+      </div>
+
+      <div class="clock-block">
+        <time id="clock" class="clock">--:--:--</time>
+        <p id="date" class="date">----</p>
+      </div>
+
+      <div class="hud-block hud-right">
+        <p class="hud-main status-online">ONLINE</p>
+        <p class="hud-sub">encrypted</p>
+        <div class="signal-bars" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+    </header>
+
+    <section class="hero" aria-labelledby="appTitle">
+      <div class="side-data left-data" aria-hidden="true">
+        <p>case file</p>
+        <strong>WITH-L</strong>
+        <div class="data-grid"></div>
+      </div>
+
+      <div class="logo-stage">
+        <div class="logo-diamond" aria-hidden="true"></div>
+        <div class="logo-glow" aria-hidden="true"></div>
+        <img
+          id="lLogo"
+          class="l-logo"
+          src="./l-logo.png"
+          alt="Lのロゴ"
+          draggable="false"
+        >
+        <div class="logo-slice slice-one" aria-hidden="true"></div>
+        <div class="logo-slice slice-two" aria-hidden="true"></div>
+      </div>
+
+      <div class="side-data right-data" aria-hidden="true">
+        <p>connection</p>
+        <strong>stable</strong>
+        <div class="waveform">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+      </div>
+
+      <h1 id="appTitle">with L</h1>
+      <p class="tagline">PRIVATE COMPANION TERMINAL</p>
+      <div class="ornament" aria-hidden="true"><span></span><b>✦</b><span></span></div>
+    </section>
+
+    <section id="menuPanel" class="menu-panel" aria-label="過ごし方を選ぶ">
+      <button class="mode-button" type="button" data-mode="outing">
+        <span class="mode-icon" aria-hidden="true">◌</span>
+        <span class="mode-label">一緒に出かける</span>
+        <span class="mode-arrow" aria-hidden="true">▶</span>
+      </button>
+
+      <button class="mode-button" type="button" data-mode="meal">
+        <span class="mode-icon" aria-hidden="true">♨</span>
+        <span class="mode-label">一緒に食事する</span>
+        <span class="mode-arrow" aria-hidden="true">▶</span>
+      </button>
+
+      <button class="mode-button" type="button" data-mode="together">
+        <span class="mode-icon" aria-hidden="true">▱</span>
+        <span class="mode-label">一緒に過ごす</span>
+        <span class="mode-arrow" aria-hidden="true">▶</span>
+      </button>
+    </section>
+
+    <section id="modePanel" class="mode-panel" aria-live="polite" hidden>
+      <div class="mode-heading">
+        <button id="backButton" class="back-button" type="button" aria-label="最初の画面へ戻る">←</button>
+        <div>
+          <p id="modeCode" class="mode-code">SESSION</p>
+          <h2 id="modeTitle">一緒に過ごす</h2>
+        </div>
+        <div class="elapsed-wrap">
+          <span>ELAPSED</span>
+          <time id="elapsedTime">00:00</time>
+        </div>
+      </div>
+
+      <div id="actionButtons" class="action-grid"></div>
+    </section>
+
+    <section id="dialogueWindow" class="dialogue-window" aria-live="polite">
+      <div class="speaker-tab">L</div>
+      <button id="dialogueButton" class="dialogue-content" type="button" aria-label="メッセージを最後まで表示">
+        <span id="messageText" class="message-text"></span>
+        <span id="typingCursor" class="typing-cursor" aria-hidden="true"></span>
+        <span class="next-indicator" aria-hidden="true">▼</span>
+      </button>
+    </section>
+
+    <footer class="footer-note">
+      <span>UNOFFICIAL FAN-MADE PROJECT</span>
+      <span id="batteryText">BATTERY 83%</span>
+    </footer>
+  </main>
+
+  <script src="./script.js"></script>
+</body>
+</html>
