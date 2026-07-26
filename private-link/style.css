@@ -2113,11 +2113,11 @@ body.photo-mode-active {
 ======================================== */
 
 .private-edition {
-  --private-pink: #ff4f9a;
-  --private-pink-dark: #b92f6d;
-  --private-pink-light: #ff9bc7;
-  --private-pink-soft: rgba(255, 79, 154, 0.22);
-  --private-heartbeat-duration: 1.72s;
+  --private-pink: #c985a2;
+  --private-pink-dark: #87596d;
+  --private-pink-light: #e5b6ca;
+  --private-pink-soft: rgba(201, 133, 162, 0.16);
+  --private-heartbeat-duration: 2.58s;
 }
 
 .private-edition .menu-panel {
@@ -2161,12 +2161,12 @@ body.photo-mode-active {
 
 .private-edition .private-mode-button {
   grid-column: 1 / -1;
-  border-color: rgba(185, 47, 109, 0.50);
+  border-color: rgba(135, 89, 109, 0.42);
   background:
     linear-gradient(
       120deg,
       rgba(255, 255, 255, 0.94),
-      rgba(245, 228, 235, 0.82)
+      rgba(242, 232, 237, 0.84)
     );
   box-shadow:
     0 5px 18px rgba(112, 65, 84, 0.13),
@@ -2189,8 +2189,8 @@ body.photo-mode-active {
   z-index: 2;
   top: 50%;
   left: 50%;
-  width: 122%;
-  height: 78px;
+  width: 116%;
+  height: 68px;
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, -50%);
@@ -2211,21 +2211,21 @@ body.photo-mode-active {
 }
 
 .heartbeat-base {
-  stroke: rgba(255, 79, 154, 0.18);
-  stroke-width: 1.2;
+  stroke: rgba(135, 89, 109, 0.13);
+  stroke-width: 1;
 }
 
 .heartbeat-pulse {
   stroke: var(--private-pink);
-  stroke-width: 2.2;
-  stroke-dasharray: 72 520;
+  stroke-width: 1.55;
+  stroke-dasharray: 58 540;
   filter:
-    drop-shadow(0 0 5px rgba(255, 79, 154, 0.88))
-    drop-shadow(0 0 12px rgba(255, 79, 154, 0.44));
+    drop-shadow(0 0 4px rgba(201, 133, 162, 0.52))
+    drop-shadow(0 0 10px rgba(201, 133, 162, 0.20));
 }
 
 .private-edition.private-session-active .private-heartbeat {
-  opacity: 1;
+  opacity: 0.72;
 }
 
 .private-edition.private-session-active .heartbeat-pulse {
@@ -2240,14 +2240,14 @@ body.photo-mode-active {
   background:
     radial-gradient(
       circle,
-      rgba(255, 232, 243, 0.98),
-      rgba(255, 79, 154, 0.56) 31%,
-      rgba(255, 79, 154, 0.22) 51%,
-      transparent 74%
+      rgba(255, 248, 251, 0.96),
+      rgba(201, 133, 162, 0.30) 34%,
+      rgba(201, 133, 162, 0.11) 55%,
+      transparent 76%
     );
   filter:
-    blur(8px)
-    drop-shadow(0 0 18px rgba(255, 79, 154, 0.55));
+    blur(12px)
+    drop-shadow(0 0 15px rgba(201, 133, 162, 0.22));
   animation:
     privateHeartbeatGlow
     var(--private-heartbeat-duration)
@@ -2265,7 +2265,7 @@ body.photo-mode-active {
 
 .private-edition.private-session-active .waveform i {
   background: var(--private-pink);
-  box-shadow: 0 0 5px rgba(255, 79, 154, 0.52);
+  box-shadow: 0 0 4px rgba(201, 133, 162, 0.30);
   animation:
     privateWaveBeat
     var(--private-heartbeat-duration)
@@ -2274,49 +2274,49 @@ body.photo-mode-active {
 }
 
 .private-edition.private-heartbeat-intense {
-  --private-heartbeat-duration: 0.88s;
+  --private-heartbeat-duration: 1.46s;
 }
 
 @keyframes privateHeartbeatTrace {
   0% {
     opacity: 0;
-    stroke-dashoffset: 120;
+    stroke-dashoffset: 90;
   }
-  6% {
-    opacity: 1;
+  7% {
+    opacity: 0.72;
   }
-  28% {
-    opacity: 1;
+  24% {
+    opacity: 0.62;
   }
-  48% {
-    opacity: 0.38;
+  38% {
+    opacity: 0.22;
   }
   100% {
     opacity: 0;
-    stroke-dashoffset: -520;
+    stroke-dashoffset: -540;
   }
 }
 
 @keyframes privateHeartbeatGlow {
   0%, 100% {
-    opacity: 0.52;
-    transform: scale(0.93);
+    opacity: 0.42;
+    transform: scale(0.95);
   }
   8% {
-    opacity: 1;
-    transform: scale(1.09);
+    opacity: 0.78;
+    transform: scale(1.035);
   }
   16% {
-    opacity: 0.72;
-    transform: scale(0.98);
+    opacity: 0.55;
+    transform: scale(0.985);
   }
   24% {
-    opacity: 0.94;
-    transform: scale(1.045);
+    opacity: 0.68;
+    transform: scale(1.018);
   }
-  36% {
-    opacity: 0.58;
-    transform: scale(0.94);
+  40% {
+    opacity: 0.44;
+    transform: scale(0.96);
   }
 }
 
@@ -2325,39 +2325,39 @@ body.photo-mode-active {
     transform: translateY(0) scale(1);
   }
   8% {
-    transform: translateY(-2px) scale(1.018);
+    transform: translateY(-1px) scale(1.010);
   }
   16% {
-    transform: translateY(0) scale(1.004);
+    transform: translateY(0) scale(1.002);
   }
   24% {
-    transform: translateY(-1px) scale(1.012);
+    transform: translateY(-0.5px) scale(1.006);
   }
-  36% {
+  40% {
     transform: translateY(0) scale(1);
   }
 }
 
 @keyframes privateWaveBeat {
   0%, 100% {
-    opacity: 0.34;
-    transform: scaleY(0.42);
+    opacity: 0.24;
+    transform: scaleY(0.40);
   }
   8% {
-    opacity: 1;
-    transform: scaleY(1.18);
+    opacity: 0.72;
+    transform: scaleY(0.90);
   }
   16% {
-    opacity: 0.55;
-    transform: scaleY(0.64);
+    opacity: 0.38;
+    transform: scaleY(0.58);
   }
   24% {
-    opacity: 0.92;
-    transform: scaleY(0.98);
+    opacity: 0.58;
+    transform: scaleY(0.76);
   }
-  36% {
-    opacity: 0.38;
-    transform: scaleY(0.46);
+  40% {
+    opacity: 0.26;
+    transform: scaleY(0.44);
   }
 }
 
@@ -2575,19 +2575,48 @@ body.photo-mode-active {
   right: 20px;
   left: 20px;
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
   color: #91a0c2;
   font-family: var(--font-display);
-  font-size: clamp(0.58rem, 2.3vw, 0.72rem);
+  font-size: clamp(0.55rem, 2.1vw, 0.68rem);
+  letter-spacing: 0.13em;
+}
+
+.sleep-status-label {
+  padding-top: 4px;
+  white-space: nowrap;
+}
+
+.sleep-time-data {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: clamp(16px, 5vw, 34px);
+}
+
+.sleep-time-data > div {
+  text-align: right;
+}
+
+.sleep-time-data span,
+.sleep-time-data time {
+  display: block;
+}
+
+.sleep-time-data span {
+  margin-bottom: 4px;
+  color: #6f7e9f;
+  font-size: 0.48rem;
   letter-spacing: 0.14em;
 }
 
-.sleep-status time {
+.sleep-time-data time {
   color: #dce5f4;
-  font-size: clamp(0.90rem, 4vw, 1.18rem);
+  font-size: clamp(0.86rem, 3.8vw, 1.14rem);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
 }
 
 .sleep-visual {
@@ -2645,6 +2674,17 @@ body.photo-mode-active {
   letter-spacing: 0.025em;
   text-align: center;
   text-wrap: balance;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 900ms ease,
+    transform 900ms ease;
+}
+
+.sleep-screen.message-hidden .sleep-line {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
 }
 
 .sleep-controls {
@@ -2766,6 +2806,26 @@ body.photo-mode-active {
   .sleep-line {
     margin-top: -1vh;
     font-size: 0.98rem;
+  }
+}
+
+
+
+@media (max-width: 430px) {
+  .sleep-status {
+    right: 14px;
+    left: 14px;
+    gap: 10px;
+  }
+
+  .sleep-time-data {
+    gap: 12px;
+  }
+
+  .sleep-status-label {
+    max-width: 88px;
+    line-height: 1.45;
+    white-space: normal;
   }
 }
 
