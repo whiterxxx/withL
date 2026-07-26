@@ -24,8 +24,8 @@
   <main class="app-shell">
     <header class="top-hud" aria-label="端末情報">
       <div class="hud-block hud-left">
-        <p class="hud-main">ID: MAIKO/ONLY</p>
-        <p class="hud-sub">private.1.0.0</p>
+        <p class="hud-main">ID: PARTNER/01</p>
+        <p class="hud-sub">private.1.1.0</p>
         <div class="mini-meter" aria-hidden="true"><span></span></div>
       </div>
 
@@ -35,8 +35,8 @@
       </div>
 
       <div class="hud-block hud-right">
-        <p class="hud-main status-online">PRIVATE LINK</p>
-        <p class="hud-sub">identified</p>
+        <p class="hud-main status-online">PARTNER LINK</p>
+        <p class="hud-sub">exclusive</p>
         <div class="hud-tools">
           <div class="signal-bars" aria-hidden="true">
             <span></span><span></span><span></span><span></span>
@@ -61,13 +61,26 @@
     <section class="hero" aria-labelledby="appTitle">
       <div class="side-data left-data" aria-hidden="true">
         <p>case file</p>
-        <strong>MAIKO</strong>
+        <strong>L×M</strong>
         <div class="data-grid"></div>
       </div>
 
       <div class="logo-stage">
         <div class="logo-diamond" aria-hidden="true"></div>
         <div class="logo-glow" aria-hidden="true"></div>
+
+        <div class="private-heartbeat" aria-hidden="true">
+          <svg viewBox="0 0 420 90" preserveAspectRatio="none">
+            <path
+              class="heartbeat-base"
+              d="M0 45 H115 L132 45 L143 20 L155 70 L168 45 H225 L238 45 L248 30 L258 58 L270 45 H420"
+            ></path>
+            <path
+              class="heartbeat-pulse"
+              d="M0 45 H115 L132 45 L143 20 L155 70 L168 45 H225 L238 45 L248 30 L258 58 L270 45 H420"
+            ></path>
+          </svg>
+        </div>
 
         <img
           id="lLogo"
@@ -91,7 +104,7 @@
       </div>
 
       <h1 id="appTitle">with L</h1>
-      <p class="tagline">IDENTIFIED CONNECTION / MAIKO ONLY</p>
+      <p class="tagline">AUTHORIZED PARTNER / EXCLUSIVE LINK</p>
 
       <div class="ornament" aria-hidden="true">
         <span></span><b>✦</b><span></span>
@@ -134,6 +147,18 @@
           </svg>
         </span>
         <span class="mode-label">一緒に過ごす</span>
+        <span class="mode-arrow" aria-hidden="true">▶</span>
+      </button>
+
+
+      <button class="mode-button sleep-mode-button" type="button" data-mode="sleep">
+        <span class="mode-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M17.4 15.8A7 7 0 0 1 8.2 6.6a7.2 7.2 0 1 0 9.2 9.2Z"></path>
+            <path d="M16.8 5.5h3.2l-3.2 3.2H20"></path>
+          </svg>
+        </span>
+        <span class="mode-label">一緒に眠る</span>
         <span class="mode-arrow" aria-hidden="true">▶</span>
       </button>
 
@@ -199,8 +224,8 @@
     </section>
 
     <footer class="footer-note">
-      <span>PRIVATE EDITION / MAIKO ONLY</span>
-      <span id="syncText">SYNCED WITH MAIKO</span>
+      <span>PARTNER EXCLUSIVE EDITION</span>
+      <span id="syncText">PAIR SYNC COMPLETE</span>
     </footer>
   </main>
 
@@ -247,7 +272,7 @@
       <span class="photo-corner photo-corner-bl" aria-hidden="true"></span>
       <span class="photo-corner photo-corner-br" aria-hidden="true"></span>
 
-      <p class="photo-record-code">L × MAIKO / PRIVATE RECORD</p>
+      <p class="photo-record-code">L × PARTNER / PRIVATE RECORD</p>
 
       <div id="photoDateStamp" class="photo-date-stamp" hidden>
         <time id="photoStampDate" class="photo-stamp-date">----</time>
@@ -266,13 +291,13 @@
         >
       </div>
 
-      <h2 class="photo-title">L × MAIKO</h2>
-      <p class="photo-subtitle">ONLY ONE SUBJECT / PRIVATE LINK</p>
+      <h2 class="photo-title">L × PARTNER</h2>
+      <p class="photo-subtitle">PARTNER EXCLUSIVE / PRIVATE LINK</p>
 
       <p id="photoMessage" class="photo-message" hidden></p>
 
       <div class="photo-record-footer" aria-hidden="true">
-        <span>SUBJECT: MAIKO</span>
+        <span>SUBJECT: L×M</span>
         <span>SYNC: COMPLETE</span>
       </div>
     </div>
@@ -308,6 +333,45 @@
         </button>
       </div>
 
+      <p>画面をタップすると操作表示を切り替えます</p>
+    </div>
+  </section>
+
+
+  <section
+    id="sleepScreen"
+    class="sleep-screen"
+    role="dialog"
+    aria-modal="true"
+    aria-label="一緒に眠る画面"
+    hidden
+  >
+    <div class="sleep-stars" aria-hidden="true"></div>
+
+    <div class="sleep-status">
+      <span>SLEEP LINK ACTIVE</span>
+      <time id="sleepClock">--:--</time>
+    </div>
+
+    <div class="sleep-visual" aria-hidden="true">
+      <div class="sleep-breath-ring ring-one"></div>
+      <div class="sleep-breath-ring ring-two"></div>
+      <img
+        class="sleep-logo"
+        src="../l-logo.png"
+        alt=""
+        draggable="false"
+      >
+    </div>
+
+    <p id="sleepLine" class="sleep-line">
+      おやすみなさい、舞子。眠るまで、私がそばにいます。
+    </p>
+
+    <div id="sleepControls" class="sleep-controls">
+      <button id="wakeButton" class="wake-button" type="button">
+        WAKE / 起きる
+      </button>
       <p>画面をタップすると操作表示を切り替えます</p>
     </div>
   </section>
