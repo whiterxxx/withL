@@ -18,13 +18,14 @@ const photoScreen = document.getElementById("photoScreen");
 const photoCloseButton = document.getElementById("photoCloseButton");
 const photoThemeButton = document.getElementById("photoThemeButton");
 const photoThemeLabel = document.getElementById("photoThemeLabel");
-const photoClock = document.getElementById("photoClock");
-const photoDate = document.getElementById("photoDate");
+const photoDateStamp = document.getElementById("photoDateStamp");
+const photoStampDate = document.getElementById("photoStampDate");
+const photoStampTime = document.getElementById("photoStampTime");
+const photoDateToggleButton =
+  document.getElementById("photoDateToggleButton");
 const photoStage = document.getElementById("photoStage");
 const photoMessage = document.getElementById("photoMessage");
 const photoControls = document.getElementById("photoControls");
-const photoNextMessageButton =
-  document.getElementById("photoNextMessageButton");
 
 const modeButtons = [...document.querySelectorAll(".mode-button")];
 const photoViewButtons = [
@@ -493,6 +494,7 @@ let photoControlsTimerId = null;
 let photoCloseTimerId = null;
 let photoModeActive = false;
 let currentPhotoView = "logo";
+let photoDateVisible = false;
 const PHOTO_CONTROLS_HIDE_DELAY = 3400;
 
 let currentFullMessage = "";
@@ -520,12 +522,20 @@ function updateClock() {
   clockElement.textContent = time;
   dateElement.textContent = date;
 
-  if (photoClock) {
-    photoClock.textContent = time;
+  if (photoStampTime) {
+    photoStampTime.textContent = time;
   }
 
-  if (photoDate) {
-    photoDate.textContent = date;
+  if (photoStampDate) {
+    const stampYear = now.getFullYear();
+    const stampMonth = String(now.getMonth() + 1).padStart(2, "0");
+    const stampDay = String(now.getDate()).padStart(2, "0");
+    const stampWeekday = new Intl.DateTimeFormat("en-US", {
+      weekday: "long"
+    }).format(now).toUpperCase();
+
+    photoStampDate.textContent =
+      `${stampYear}.${stampMonth}.${stampDay} / ${stampWeekday}`;
   }
 }
 
@@ -652,7 +662,6 @@ function setPhotoView(view, options = {}) {
 
   photoScreen.classList.toggle("is-message", view === "message");
   photoMessage.hidden = view !== "message";
-  photoNextMessageButton.hidden = view !== "message";
 
   photoViewButtons.forEach((button) => {
     const isActive = button.dataset.photoView === view;
@@ -665,6 +674,29 @@ function setPhotoView(view, options = {}) {
   }
 
   showPhotoControls();
+}
+
+
+function setPhotoDateVisible(isVisible) {
+  photoDateVisible = isVisible;
+
+  photoDateStamp.hidden = !isVisible;
+  photoScreen.classList.toggle("is-date-visible", isVisible);
+  photoDateToggleButton.classList.toggle("is-active", isVisible);
+  photoDateToggleButton.setAttribute(
+    "aria-pressed",
+    String(isVisible)
+  );
+
+  if (isVisible) {
+    updateClock();
+  }
+
+  showPhotoControls();
+}
+
+function togglePhotoDate() {
+  setPhotoDateVisible(!photoDateVisible);
 }
 
 function togglePhotoTheme() {
@@ -690,12 +722,14 @@ function openPhotoMode() {
     "is-open",
     "controls-hidden",
     "is-dark",
-    "is-message"
+    "is-message",
+    "is-date-visible"
   );
 
   photoThemeButton.setAttribute("aria-pressed", "false");
   photoThemeLabel.textContent = "DARK";
   setPhotoView("logo", { refreshMessage: false });
+  setPhotoDateVisible(false);
   updateClock();
 
   window.requestAnimationFrame(() => {
@@ -1032,10 +1066,9 @@ photoViewButtons.forEach((button) => {
   });
 });
 
-photoNextMessageButton.addEventListener("click", (event) => {
+photoDateToggleButton.addEventListener("click", (event) => {
   event.stopPropagation();
-  updatePhotoMessage();
-  showPhotoControls();
+  togglePhotoDate();
 });
 
 photoControls.addEventListener("click", (event) => {
