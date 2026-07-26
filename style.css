@@ -1530,7 +1530,7 @@ body.photo-mode-active {
 }
 
 .photo-session-meta p {
-  margin: 0 0 3px;
+  margin: 0;
   font-family: var(--font-display);
   font-size: clamp(0.64rem, 2.5vw, 0.78rem);
   letter-spacing: 0.20em;
@@ -1640,6 +1640,76 @@ body.photo-mode-active {
   transform: translateX(-50%);
   white-space: nowrap;
 }
+
+
+
+.photo-date-stamp {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  margin: 4px 0 -8px;
+  color: var(--photo-ink);
+  font-family: var(--font-display);
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 0 16px rgba(99, 139, 159, 0.16);
+  animation: photoDateEnter 260ms ease both;
+}
+
+.photo-date-stamp::before,
+.photo-date-stamp::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: clamp(38px, 11vw, 90px);
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--photo-line)
+  );
+}
+
+.photo-date-stamp::before {
+  right: calc(100% + 15px);
+}
+
+.photo-date-stamp::after {
+  left: calc(100% + 15px);
+  transform: scaleX(-1);
+}
+
+.photo-stamp-date,
+.photo-stamp-time {
+  display: block;
+  font-variant-numeric: tabular-nums;
+}
+
+.photo-stamp-date {
+  color: var(--photo-muted);
+  font-size: clamp(0.58rem, 2.3vw, 0.76rem);
+  letter-spacing: 0.15em;
+}
+
+.photo-stamp-time {
+  margin-top: 6px;
+  font-size: clamp(1.40rem, 6.2vw, 2.15rem);
+  letter-spacing: 0.10em;
+}
+
+.photo-screen.is-date-visible .photo-logo-stage {
+  width: min(76vw, 520px);
+}
+
+.photo-screen.is-message.is-date-visible .photo-logo-stage {
+  width: min(58vw, 390px);
+}
+
 
 .photo-logo-stage {
   position: relative;
@@ -1818,6 +1888,20 @@ body.photo-mode-active {
   letter-spacing: 0.05em;
 }
 
+
+
+@keyframes photoDateEnter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
 @keyframes photoLogoEnter {
   from {
     opacity: 0;
@@ -1847,6 +1931,18 @@ body.photo-mode-active {
 
   .photo-logo-stage {
     width: min(88vw, 390px);
+  }
+
+  .photo-screen.is-date-visible .photo-logo-stage {
+    width: min(78vw, 345px);
+  }
+
+  .photo-screen.is-message.is-date-visible .photo-logo-stage {
+    width: min(60vw, 265px);
+  }
+
+  .photo-date-stamp {
+    margin-bottom: -5px;
   }
 
   .photo-screen.is-message .photo-logo-stage {
@@ -1885,6 +1981,28 @@ body.photo-mode-active {
     width: min(52vw, 220px);
   }
 
+  .photo-screen.is-date-visible .photo-logo-stage {
+    width: min(57vw, 240px);
+  }
+
+  .photo-screen.is-message.is-date-visible .photo-logo-stage {
+    width: min(46vw, 195px);
+  }
+
+  .photo-date-stamp {
+    min-height: 42px;
+    margin: 0 0 -5px;
+  }
+
+  .photo-stamp-date {
+    font-size: 0.52rem;
+  }
+
+  .photo-stamp-time {
+    margin-top: 4px;
+    font-size: 1.22rem;
+  }
+
   .photo-title {
     margin-top: -2vh;
   }
@@ -1919,11 +2037,37 @@ body.photo-mode-active {
     grid-column: 1 / -1;
   }
 
+  .photo-date-stamp {
+    grid-column: 1;
+    grid-row: 1;
+    min-height: 34px;
+    margin: 0 0 -6px;
+  }
+
+  .photo-date-stamp::before,
+  .photo-date-stamp::after {
+    display: none;
+  }
+
+  .photo-stamp-date {
+    font-size: 0.48rem;
+  }
+
+  .photo-stamp-time {
+    margin-top: 3px;
+    font-size: 1.08rem;
+  }
+
   .photo-logo-stage {
     grid-column: 1;
     grid-row: 1 / 4;
     width: min(42vh, 300px);
     max-height: 42vh;
+  }
+
+  .photo-screen.is-date-visible .photo-logo-stage {
+    grid-row: 2 / 5;
+    width: min(36vh, 255px);
   }
 
   .photo-title,
@@ -1950,6 +2094,10 @@ body.photo-mode-active {
   .photo-screen.is-message .photo-logo-stage {
     width: min(38vh, 250px);
     transform: none;
+  }
+
+  .photo-screen.is-message.is-date-visible .photo-logo-stage {
+    width: min(32vh, 220px);
   }
 
   .photo-screen.is-message .photo-title {
