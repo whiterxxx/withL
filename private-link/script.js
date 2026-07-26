@@ -23,6 +23,7 @@ const wakeButton = document.getElementById("wakeButton");
 const photoModeButton = document.getElementById("photoModeButton");
 const photoScreen = document.getElementById("photoScreen");
 const photoCloseButton = document.getElementById("photoCloseButton");
+const photoHeartButton = document.getElementById("photoHeartButton");
 const photoThemeButton = document.getElementById("photoThemeButton");
 const photoThemeLabel = document.getElementById("photoThemeLabel");
 const photoDateStamp = document.getElementById("photoDateStamp");
@@ -1276,6 +1277,20 @@ function togglePhotoDate() {
   setPhotoDateVisible(!photoDateVisible);
 }
 
+
+function setPhotoHeartFrame(isHeart) {
+  photoScreen.classList.toggle("is-heart-frame", isHeart);
+  photoHeartButton.classList.toggle("is-active", isHeart);
+  photoHeartButton.setAttribute("aria-pressed", String(isHeart));
+  showPhotoControls();
+}
+
+function togglePhotoHeartFrame() {
+  setPhotoHeartFrame(
+    !photoScreen.classList.contains("is-heart-frame")
+  );
+}
+
 function togglePhotoTheme() {
   const isDark = photoScreen.classList.toggle("is-dark");
 
@@ -1300,9 +1315,12 @@ function openPhotoMode() {
     "controls-hidden",
     "is-dark",
     "is-message",
-    "is-date-visible"
+    "is-date-visible",
+    "is-heart-frame"
   );
 
+  photoHeartButton.classList.remove("is-active");
+  photoHeartButton.setAttribute("aria-pressed", "false");
   photoThemeButton.setAttribute("aria-pressed", "false");
   photoThemeLabel.textContent = "DARK";
   setPhotoView("logo", { refreshMessage: false });
@@ -1709,6 +1727,11 @@ photoViewButtons.forEach((button) => {
 
     setPhotoView(view);
   });
+});
+
+photoHeartButton.addEventListener("click", (event) => {
+  event.stopPropagation();
+  togglePhotoHeartFrame();
 });
 
 photoDateToggleButton.addEventListener("click", (event) => {
