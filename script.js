@@ -12,7 +12,6 @@ const typingCursor = document.getElementById("typingCursor");
 const dialogueButton = document.getElementById("dialogueButton");
 const elapsedTime = document.getElementById("elapsedTime");
 const glitchParticles = document.getElementById("glitchParticles");
-const batteryText = document.getElementById("batteryText");
 
 const photoModeButton = document.getElementById("photoModeButton");
 const photoScreen = document.getElementById("photoScreen");
@@ -969,23 +968,6 @@ function createParticles() {
   }
 }
 
-async function updateBatteryLabel() {
-  if (!("getBattery" in navigator)) return;
-
-  try {
-    const battery = await navigator.getBattery();
-
-    const render = () => {
-      const percent = Math.round(battery.level * 100);
-      batteryText.textContent = `BATTERY ${percent}%`;
-    };
-
-    render();
-    battery.addEventListener("levelchange", render);
-  } catch (error) {
-    console.info("Battery status is unavailable.", error);
-  }
-}
 
 modeButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -1108,7 +1090,6 @@ window.addEventListener("error", (event) => {
 
 createParticles();
 updateClock();
-updateBatteryLabel();
 
 typeMessage(takeRandom("initial", initialMessages));
 startIdleTimer();
