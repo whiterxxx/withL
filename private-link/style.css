@@ -1831,11 +1831,11 @@ body.photo-mode-active {
 
 .photo-logo-heart {
   position: absolute;
-  width: 75%;
-  height: 75%;
+  width: 90%;
+  height: 90%;
   overflow: visible;
   opacity: 0;
-  transform: scale(0.92);
+  transform: scale(0.94);
   transition:
     opacity 260ms ease,
     transform 320ms cubic-bezier(.22, .76, .34, 1);
@@ -1843,29 +1843,30 @@ body.photo-mode-active {
 
 .photo-heart-line {
   fill: none;
-  stroke: var(--photo-line-soft);
+  stroke: var(--photo-line);
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 2px rgba(120, 146, 158, 0.10));
 }
 
 .photo-heart-line-outer {
-  stroke-width: 1.15;
+  stroke-width: 1.45;
 }
 
 .photo-heart-line-inner {
-  stroke-width: 0.85;
-  opacity: 0.68;
+  stroke-width: 1.05;
+  opacity: 0.76;
 }
 
 .photo-screen.is-heart-frame .photo-logo-diamond {
   opacity: 0;
-  transform: rotate(45deg) scale(0.90);
+  transform: rotate(45deg) scale(0.86);
 }
 
 .photo-screen.is-heart-frame .photo-logo-heart {
   opacity: 1;
-  transform: scale(1);
+  transform: scale(1.02);
 }
 
 .photo-logo {
@@ -3015,6 +3016,14 @@ body.photo-mode-active {
 
   .photo-theme-button {
     width: 56px;
+  }
+}
+
+
+@media (max-width: 430px) {
+  .photo-logo-heart {
+    width: 94%;
+    height: 94%;
   }
 }
 
