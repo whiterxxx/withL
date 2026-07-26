@@ -1466,7 +1466,7 @@ body.photo-mode-active {
   position: relative;
   z-index: 4;
   display: grid;
-  grid-template-columns: 42px 1fr 64px;
+  grid-template-columns: 42px 1fr auto;
   align-items: center;
   gap: 10px;
   flex: 0 0 auto;
@@ -1476,6 +1476,7 @@ body.photo-mode-active {
 }
 
 .photo-icon-button,
+.photo-heart-button,
 .photo-theme-button,
 .photo-view-button {
   color: var(--photo-ink);
@@ -1490,6 +1491,8 @@ body.photo-mode-active {
 
 .photo-icon-button:hover,
 .photo-icon-button:active,
+.photo-heart-button:hover,
+.photo-heart-button:active,
 .photo-theme-button:hover,
 .photo-theme-button:active,
 .photo-view-button:hover,
@@ -1501,6 +1504,8 @@ body.photo-mode-active {
 
 .photo-screen.is-dark .photo-icon-button:hover,
 .photo-screen.is-dark .photo-icon-button:active,
+.photo-screen.is-dark .photo-heart-button:hover,
+.photo-screen.is-dark .photo-heart-button:active,
 .photo-screen.is-dark .photo-theme-button:hover,
 .photo-screen.is-dark .photo-theme-button:active,
 .photo-screen.is-dark .photo-view-button:hover,
@@ -1544,6 +1549,59 @@ body.photo-mode-active {
   font-family: var(--font-display);
   font-size: clamp(0.54rem, 2vw, 0.66rem);
   letter-spacing: 0.10em;
+}
+
+
+.photo-top-actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 6px;
+}
+
+.photo-heart-button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--photo-muted);
+  border: 1px solid var(--photo-line);
+  background: var(--photo-bg-soft);
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.photo-heart-button svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.45;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.photo-heart-button.is-active,
+.photo-heart-button[aria-pressed="true"] {
+  color: var(--photo-ink);
+  border-color: var(--photo-ink);
+  background: rgba(215, 229, 235, 0.62);
+}
+
+.photo-heart-button.is-active svg,
+.photo-heart-button[aria-pressed="true"] svg {
+  fill: currentColor;
+  fill-opacity: 0.11;
+}
+
+.photo-screen.is-dark .photo-heart-button.is-active,
+.photo-screen.is-dark .photo-heart-button[aria-pressed="true"] {
+  background: rgba(112, 145, 160, 0.20);
 }
 
 .photo-theme-button {
@@ -1751,7 +1809,11 @@ body.photo-mode-active {
   width: 67%;
   height: 67%;
   border: 1px solid var(--photo-line-soft);
-  transform: rotate(45deg);
+  opacity: 1;
+  transform: rotate(45deg) scale(1);
+  transition:
+    opacity 240ms ease,
+    transform 300ms cubic-bezier(.22, .76, .34, 1);
 }
 
 .photo-logo-diamond::before,
@@ -1764,6 +1826,46 @@ body.photo-mode-active {
 
 .photo-logo-diamond::after {
   inset: 26%;
+}
+
+
+.photo-logo-heart {
+  position: absolute;
+  width: 75%;
+  height: 75%;
+  overflow: visible;
+  opacity: 0;
+  transform: scale(0.92);
+  transition:
+    opacity 260ms ease,
+    transform 320ms cubic-bezier(.22, .76, .34, 1);
+}
+
+.photo-heart-line {
+  fill: none;
+  stroke: var(--photo-line-soft);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.photo-heart-line-outer {
+  stroke-width: 1.15;
+}
+
+.photo-heart-line-inner {
+  stroke-width: 0.85;
+  opacity: 0.68;
+}
+
+.photo-screen.is-heart-frame .photo-logo-diamond {
+  opacity: 0;
+  transform: rotate(45deg) scale(0.90);
+}
+
+.photo-screen.is-heart-frame .photo-logo-heart {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .photo-logo {
@@ -2442,27 +2544,6 @@ body.photo-mode-active {
   letter-spacing: 0.13em;
 }
 
-.private-edition .photo-screen:not(.is-dark) {
-  background:
-    linear-gradient(
-      rgba(255, 255, 255, 0.72),
-      rgba(246, 236, 241, 0.84)
-    ),
-    repeating-linear-gradient(
-      0deg,
-      rgba(125, 75, 96, 0.035) 0,
-      rgba(125, 75, 96, 0.035) 1px,
-      transparent 1px,
-      transparent 5px
-    ),
-    radial-gradient(
-      circle at 50% 44%,
-      #ffffff 0,
-      #fbf6f8 38%,
-      #f1e8ec 100%
-    );
-}
-
 @media (max-width: 380px) {
   .private-edition .menu-panel {
     grid-template-columns: 1fr;
@@ -2508,28 +2589,62 @@ body.photo-mode-active {
   animation: none;
 }
 
-.private-edition.sleep-session-active.sleep-breathing-active .logo-glow {
-  background:
-    radial-gradient(
-      circle,
-      rgba(255, 255, 255, 0.98) 0%,
-      rgba(167, 184, 222, 0.58) 36%,
-      rgba(112, 137, 190, 0.28) 56%,
-      transparent 76%
-    );
+.sleep-guide-rings {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sleep-guide-ring {
+  position: absolute;
+  border: 1px solid rgba(112, 137, 190, 0.42);
+  border-radius: 50%;
+  box-shadow:
+    0 0 20px rgba(112, 137, 190, 0.12),
+    inset 0 0 18px rgba(112, 137, 190, 0.06);
+}
+
+.sleep-guide-ring-inner {
+  width: 72%;
+  height: 72%;
+}
+
+.sleep-guide-ring-outer {
+  width: 90%;
+  height: 90%;
+  border-color: rgba(112, 137, 190, 0.26);
+}
+
+.private-edition.sleep-session-active.sleep-breathing-active .sleep-guide-rings {
+  opacity: 1;
+}
+
+.private-edition.sleep-session-active.sleep-breathing-active
+.sleep-guide-ring-inner {
   animation:
-    sleepGuideGlow
+    sleepGuideRingInner
     10s
     ease-in-out
     3;
 }
 
-.private-edition.sleep-session-active.sleep-breathing-active .l-logo {
+.private-edition.sleep-session-active.sleep-breathing-active
+.sleep-guide-ring-outer {
   animation:
-    sleepGuideLogo
+    sleepGuideRingOuter
     10s
     ease-in-out
     3;
+}
+
+/* 呼吸誘導では背景光やロゴ本体を点滅させません。 */
+.private-edition.sleep-session-active.sleep-breathing-active .logo-glow,
+.private-edition.sleep-session-active.sleep-breathing-active .l-logo {
+  animation: none;
 }
 
 /* 呼吸誘導では右側の波形を同期させません。 */
@@ -2759,65 +2874,33 @@ body.photo-mode-active {
 }
 
 
-@keyframes sleepGuideGlow {
-  0% {
-    opacity: 0.18;
-    transform: scale(0.78);
-    filter:
-      blur(11px)
-      drop-shadow(0 0 2px rgba(112, 137, 190, 0.04));
+@keyframes sleepGuideRingInner {
+  0%, 100% {
+    opacity: 0.24;
+    transform: scale(0.82);
   }
-  38% {
-    opacity: 1;
-    transform: scale(1.26);
-    filter:
-      blur(18px)
-      drop-shadow(0 0 27px rgba(112, 137, 190, 0.42));
+  40% {
+    opacity: 0.88;
+    transform: scale(1.08);
   }
-  48% {
-    opacity: 0.96;
-    transform: scale(1.22);
-    filter:
-      blur(18px)
-      drop-shadow(0 0 23px rgba(112, 137, 190, 0.36));
-  }
-  100% {
-    opacity: 0.18;
-    transform: scale(0.78);
-    filter:
-      blur(11px)
-      drop-shadow(0 0 2px rgba(112, 137, 190, 0.04));
+  50% {
+    opacity: 0.78;
+    transform: scale(1.05);
   }
 }
 
-@keyframes sleepGuideLogo {
-  0% {
-    transform: translateY(0) scale(0.992);
-    filter:
-      brightness(0.94)
-      drop-shadow(0 10px 11px rgba(43, 58, 66, 0.13))
-      drop-shadow(0 0 7px rgba(112, 137, 190, 0.10));
+@keyframes sleepGuideRingOuter {
+  0%, 100% {
+    opacity: 0.12;
+    transform: scale(0.78);
   }
-  38% {
-    transform: translateY(-1px) scale(1.018);
-    filter:
-      brightness(1.08)
-      drop-shadow(0 10px 12px rgba(43, 58, 66, 0.15))
-      drop-shadow(0 0 17px rgba(112, 137, 190, 0.34));
+  40% {
+    opacity: 0.62;
+    transform: scale(1.12);
   }
-  48% {
-    transform: translateY(-1px) scale(1.015);
-    filter:
-      brightness(1.06)
-      drop-shadow(0 10px 12px rgba(43, 58, 66, 0.15))
-      drop-shadow(0 0 15px rgba(112, 137, 190, 0.30));
-  }
-  100% {
-    transform: translateY(0) scale(0.992);
-    filter:
-      brightness(0.94)
-      drop-shadow(0 10px 11px rgba(43, 58, 66, 0.13))
-      drop-shadow(0 0 7px rgba(112, 137, 190, 0.10));
+  50% {
+    opacity: 0.54;
+    transform: scale(1.09);
   }
 }
 
@@ -2918,6 +3001,22 @@ body.photo-mode-active {
   }
 }
 
+
+
+@media (max-width: 380px) {
+  .photo-top-actions {
+    gap: 4px;
+  }
+
+  .photo-heart-button {
+    width: 30px;
+    height: 30px;
+  }
+
+  .photo-theme-button {
+    width: 56px;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,
