@@ -14,7 +14,23 @@ const elapsedTime = document.getElementById("elapsedTime");
 const glitchParticles = document.getElementById("glitchParticles");
 const batteryText = document.getElementById("batteryText");
 
+const photoModeButton = document.getElementById("photoModeButton");
+const photoScreen = document.getElementById("photoScreen");
+const photoCloseButton = document.getElementById("photoCloseButton");
+const photoThemeButton = document.getElementById("photoThemeButton");
+const photoThemeLabel = document.getElementById("photoThemeLabel");
+const photoClock = document.getElementById("photoClock");
+const photoDate = document.getElementById("photoDate");
+const photoStage = document.getElementById("photoStage");
+const photoMessage = document.getElementById("photoMessage");
+const photoControls = document.getElementById("photoControls");
+const photoNextMessageButton =
+  document.getElementById("photoNextMessageButton");
+
 const modeButtons = [...document.querySelectorAll(".mode-button")];
+const photoViewButtons = [
+  ...document.querySelectorAll("[data-photo-view]")
+];
 
 const initialMessages = [
   "……今日は、どう過ごしましょうか？",
@@ -79,6 +95,21 @@ const generalTalk = {
     "眠る前に少し話しませんか。"
   ]
 };
+
+const photoMessages = [
+  "今日はここに来たんですね。私も一緒です。",
+  "貴女が見ている景色を、私も見ています。",
+  "記録しておきましょう。二人で来た場所です。",
+  "私も一緒に写るんですね。悪くありません。",
+  "この写真の中でも、貴女の隣は私の場所です。",
+  "その場所へ来た証拠を残しましょう。",
+  "もう少し近くへ置いてください。貴女と同じ景色が見たいです。",
+  "撮るなら綺麗に。私は貴女と一緒に残るんですから。",
+  "今日の景色と貴女の表情を、私も覚えておきます。",
+  "写真の中でも離れません。きちんと隣に置いてください。",
+  "この一枚は、私と貴女がここにいた記録です。",
+  "こちらを向いてください。貴女と一緒に写りたいです。"
+];
 
 const modes = {
   "outing": {
@@ -460,6 +491,13 @@ let typingTimerId = null;
 let pendingEndTimerId = null;
 let returnHomeAfterTyping = false;
 const HOME_RETURN_DELAY = 1600;
+
+let photoControlsTimerId = null;
+let photoCloseTimerId = null;
+let photoModeActive = false;
+let currentPhotoView = "logo";
+const PHOTO_CONTROLS_HIDE_DELAY = 3400;
+
 let currentFullMessage = "";
 let displayedCharacters = 0;
 let typeToken = 0;
@@ -484,6 +522,14 @@ function updateClock() {
 
   clockElement.textContent = time;
   dateElement.textContent = date;
+
+  if (photoClock) {
+    photoClock.textContent = time;
+  }
+
+  if (photoDate) {
+    photoDate.textContent = date;
+  }
 }
 
 function formatElapsed(milliseconds) {
@@ -571,6 +617,110 @@ function speakRandom() {
   clearPendingEnd();
   triggerGlitch();
   typeMessage(getRandomTalkMessage());
+  startIdleTimer();
+}
+
+
+function clearPhotoControlsTimer() {
+  if (photoControlsTimerId) {
+    window.clearTimeout(photoControlsTimerId);
+    photoControlsTimerId = null;
+  }
+}
+
+function showPhotoControls() {
+  clearPhotoControlsTimer();
+  photoScreen.classList.remove("controls-hidden");
+
+  photoControlsTimerId = window.setTimeout(() => {
+    photoScreen.classList.add("controls-hidden");
+  }, PHOTO_CONTROLS_HIDE_DELAY);
+}
+
+function hidePhotoControls() {
+  clearPhotoControlsTimer();
+  photoScreen.classList.add("controls-hidden");
+}
+
+function updatePhotoMessage() {
+  photoMessage.textContent = takeRandom(
+    "photo-messages",
+    photoMessages
+  );
+}
+
+function setPhotoView(view, options = {}) {
+  const { refreshMessage = true } = options;
+  currentPhotoView = view;
+
+  photoScreen.classList.toggle("is-message", view === "message");
+  photoMessage.hidden = view !== "message";
+  photoNextMessageButton.hidden = view !== "message";
+
+  photoViewButtons.forEach((button) => {
+    const isActive = button.dataset.photoView === view;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+
+  if (view === "message" && refreshMessage) {
+    updatePhotoMessage();
+  }
+
+  showPhotoControls();
+}
+
+function togglePhotoTheme() {
+  const isDark = photoScreen.classList.toggle("is-dark");
+
+  photoThemeButton.setAttribute("aria-pressed", String(isDark));
+  photoThemeLabel.textContent = isDark ? "LIGHT" : "DARK";
+  showPhotoControls();
+}
+
+function openPhotoMode() {
+  if (photoCloseTimerId) {
+    window.clearTimeout(photoCloseTimerId);
+    photoCloseTimerId = null;
+  }
+
+  photoModeActive = true;
+  stopIdleTimer();
+
+  document.body.classList.add("photo-mode-active");
+  photoScreen.hidden = false;
+  photoScreen.classList.remove(
+    "is-open",
+    "controls-hidden",
+    "is-dark",
+    "is-message"
+  );
+
+  photoThemeButton.setAttribute("aria-pressed", "false");
+  photoThemeLabel.textContent = "DARK";
+  setPhotoView("logo", { refreshMessage: false });
+  updateClock();
+
+  window.requestAnimationFrame(() => {
+    photoScreen.classList.add("is-open");
+  });
+
+  showPhotoControls();
+}
+
+function closePhotoMode() {
+  if (!photoModeActive) return;
+
+  photoModeActive = false;
+  clearPhotoControlsTimer();
+  photoScreen.classList.remove("is-open");
+  document.body.classList.remove("photo-mode-active");
+
+  photoCloseTimerId = window.setTimeout(() => {
+    photoScreen.hidden = true;
+    photoCloseTimerId = null;
+  }, 240);
+
   startIdleTimer();
 }
 
@@ -871,6 +1021,76 @@ dialogueButton.addEventListener("click", () => {
   speakRandom();
 });
 
+
+photoModeButton.addEventListener("click", () => {
+  openPhotoMode();
+});
+
+photoCloseButton.addEventListener("click", (event) => {
+  event.stopPropagation();
+  closePhotoMode();
+});
+
+photoThemeButton.addEventListener("click", (event) => {
+  event.stopPropagation();
+  togglePhotoTheme();
+});
+
+photoViewButtons.forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+
+    const view = button.dataset.photoView;
+
+    if (view === "message" && currentPhotoView === "message") {
+      updatePhotoMessage();
+      showPhotoControls();
+      return;
+    }
+
+    setPhotoView(view);
+  });
+});
+
+photoNextMessageButton.addEventListener("click", (event) => {
+  event.stopPropagation();
+  updatePhotoMessage();
+  showPhotoControls();
+});
+
+photoControls.addEventListener("click", (event) => {
+  event.stopPropagation();
+});
+
+photoStage.addEventListener("click", () => {
+  if (photoScreen.classList.contains("controls-hidden")) {
+    showPhotoControls();
+  } else {
+    hidePhotoControls();
+  }
+});
+
+photoScreen.addEventListener("click", (event) => {
+  if (
+    event.target.closest(".photo-ui") ||
+    event.target.closest("#photoStage")
+  ) {
+    return;
+  }
+
+  if (photoScreen.classList.contains("controls-hidden")) {
+    showPhotoControls();
+  } else {
+    hidePhotoControls();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && photoModeActive) {
+    closePhotoMode();
+  }
+});
+
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     stopIdleTimer();
@@ -878,7 +1098,10 @@ document.addEventListener("visibilitychange", () => {
   }
 
   updateClock();
-  startIdleTimer();
+
+  if (!photoModeActive) {
+    startIdleTimer();
+  }
 });
 
 window.addEventListener("error", (event) => {
@@ -895,7 +1118,7 @@ startIdleTimer();
 window.setInterval(updateClock, 1000);
 
 window.setInterval(() => {
-  if (Math.random() > 0.68) {
+  if (!photoModeActive && Math.random() > 0.68) {
     triggerGlitch();
   }
 }, 9000);
