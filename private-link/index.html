@@ -25,7 +25,7 @@
     <header class="top-hud" aria-label="端末情報">
       <div class="hud-block hud-left">
         <p class="hud-main">ID: PARTNER/01</p>
-        <p class="hud-sub">private.1.1.0</p>
+        <p class="hud-sub">private.1.3.0</p>
         <div class="mini-meter" aria-hidden="true"><span></span></div>
       </div>
 
@@ -272,7 +272,7 @@
       <span class="photo-corner photo-corner-bl" aria-hidden="true"></span>
       <span class="photo-corner photo-corner-br" aria-hidden="true"></span>
 
-      <p class="photo-record-code">L × PARTNER / PRIVATE RECORD</p>
+      <p class="photo-record-code">LIMITED ACCESS / PRIVATE RECORD</p>
 
       <div id="photoDateStamp" class="photo-date-stamp" hidden>
         <time id="photoStampDate" class="photo-stamp-date">----</time>
@@ -291,8 +291,8 @@
         >
       </div>
 
-      <h2 class="photo-title">L × PARTNER</h2>
-      <p class="photo-subtitle">PARTNER EXCLUSIVE / PRIVATE LINK</p>
+      <h2 class="photo-title">LIMITED ACCESS</h2>
+      <p class="photo-subtitle">PARTNER EXCLUSIVE / PRIVATE ARCHIVE</p>
 
       <p id="photoMessage" class="photo-message" hidden></p>
 
@@ -349,8 +349,19 @@
     <div class="sleep-stars" aria-hidden="true"></div>
 
     <div class="sleep-status">
-      <span>SLEEP LINK ACTIVE</span>
-      <time id="sleepClock">--:--</time>
+      <span class="sleep-status-label">SLEEP LINK ACTIVE</span>
+
+      <div class="sleep-time-data">
+        <div>
+          <span>TIME</span>
+          <time id="sleepClock">--:--</time>
+        </div>
+
+        <div>
+          <span>SLEEP</span>
+          <time id="sleepElapsed">00:00:00</time>
+        </div>
+      </div>
     </div>
 
     <div class="sleep-visual" aria-hidden="true">
