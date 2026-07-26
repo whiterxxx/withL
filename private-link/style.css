@@ -2497,19 +2497,29 @@ body.photo-mode-active {
 }
 
 .private-edition.sleep-session-active .logo-glow {
+  opacity: 0.58;
   background:
     radial-gradient(
       circle,
       rgba(255, 255, 255, 0.96),
-      rgba(112, 137, 190, 0.34) 45%,
+      rgba(112, 137, 190, 0.24) 45%,
       transparent 72%
     );
-  animation: sleepBreath 4.8s ease-in-out infinite;
+  animation: none;
 }
 
-.private-edition.sleep-session-active .waveform i {
-  background: #647cac;
-  animation: sleepWave 4.8s ease-in-out infinite;
+.private-edition.sleep-session-active.sleep-breathing-active .logo-glow {
+  animation:
+    sleepGuideGlow
+    10s
+    ease-in-out
+    3;
+}
+
+/* 呼吸誘導では右側の波形を同期させません。 */
+.private-edition.sleep-session-active.sleep-breathing-active .waveform i {
+  animation-play-state: paused;
+  opacity: 0.32;
 }
 
 .sleep-screen {
@@ -2730,6 +2740,38 @@ body.photo-mode-active {
   color: #7585a7;
   font-size: 0.58rem;
   letter-spacing: 0.05em;
+}
+
+
+@keyframes sleepGuideGlow {
+  0% {
+    opacity: 0.34;
+    transform: scale(0.88);
+    filter:
+      blur(14px)
+      drop-shadow(0 0 4px rgba(112, 137, 190, 0.08));
+  }
+  40% {
+    opacity: 0.94;
+    transform: scale(1.14);
+    filter:
+      blur(17px)
+      drop-shadow(0 0 22px rgba(112, 137, 190, 0.34));
+  }
+  50% {
+    opacity: 0.90;
+    transform: scale(1.12);
+    filter:
+      blur(17px)
+      drop-shadow(0 0 19px rgba(112, 137, 190, 0.30));
+  }
+  100% {
+    opacity: 0.34;
+    transform: scale(0.88);
+    filter:
+      blur(14px)
+      drop-shadow(0 0 4px rgba(112, 137, 190, 0.08));
+  }
 }
 
 @keyframes sleepBreath {
