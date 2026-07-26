@@ -25,7 +25,7 @@
     <header class="top-hud" aria-label="端末情報">
       <div class="hud-block hud-left">
         <p class="hud-main">ID: WITH-L/01</p>
-        <p class="hud-sub">ver.1.5.3</p>
+        <p class="hud-sub">ver.1.6.0</p>
         <div class="mini-meter" aria-hidden="true"><span></span></div>
       </div>
 
@@ -217,10 +217,6 @@
 
       <div class="photo-session-meta">
         <p>PHOTO SESSION</p>
-        <div>
-          <time id="photoClock">--:--:--</time>
-          <span id="photoDate">----</span>
-        </div>
       </div>
 
       <button
@@ -240,6 +236,11 @@
       <span class="photo-corner photo-corner-br" aria-hidden="true"></span>
 
       <p class="photo-record-code">WITH-L / VISUAL RECORD</p>
+
+      <div id="photoDateStamp" class="photo-date-stamp" hidden>
+        <time id="photoStampDate" class="photo-stamp-date">----</time>
+        <time id="photoStampTime" class="photo-stamp-time">--:--:--</time>
+      </div>
 
       <div class="photo-logo-stage">
         <div class="photo-logo-halo" aria-hidden="true"></div>
@@ -285,12 +286,13 @@
         </button>
 
         <button
-          id="photoNextMessageButton"
+          id="photoDateToggleButton"
           class="photo-view-button"
           type="button"
-          hidden
+          aria-pressed="false"
+          aria-label="撮影画面の日時表示を切り替える"
         >
-          NEXT
+          DATE
         </button>
       </div>
 
