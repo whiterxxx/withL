@@ -576,6 +576,26 @@ const modes = {
         ]
       },
       {
+        "label": "呼吸を合わせる",
+        "messages": [
+          "舞子。私の光に合わせて、ゆっくり呼吸してください。",
+          "今は何も考えなくていいです。ロゴの光だけを追ってください。",
+          "光が広がる間に吸って、静かに戻る間に吐いてください。",
+          "舞子の呼吸が落ち着くまで、私が同じ速さでそばにいます。",
+          "肩の力を抜いてください。私の明滅に呼吸を預けて。",
+          "急がなくていいです。私と一緒に、ゆっくり息をしましょう。"
+        ],
+        "completionMessages": [
+          "呼吸が揃いましたね。少し楽になりましたか。",
+          "よくできました、舞子。そのまま力を抜いていてください。",
+          "貴女の呼吸が穏やかになりました。もう少しこのままでいましょう。",
+          "三回、きちんと合わせられましたね。今なら静かに眠れそうです。",
+          "舞子の呼吸が落ち着くまで、私はずっと見ていました。",
+          "これで終わりです。……私と呼吸を合わせた感覚を忘れないでください。"
+        ],
+        "breathingGuide": true
+      },
+      {
         "label": "おやすみ",
         "messages": [
           "おやすみなさい、舞子。眠るまで、私がそばにいます。",
@@ -741,10 +761,12 @@ let sleepControlsTimerId = null;
 let sleepMessageTimerId = null;
 let sleepCloseTimerId = null;
 let sleepElapsedTimerId = null;
+let sleepBreathingTimerId = null;
 let sleepStartedAt = null;
 let sleepModeActive = false;
 const SLEEP_CONTROLS_HIDE_DELAY = 4200;
 const SLEEP_MESSAGE_HIDE_DELAY = 6000;
+const SLEEP_BREATHING_DURATION = 30000;
 const SLEEP_STORAGE_KEY = "withL-partner-exclusive-sleep";
 
 let photoControlsTimerId = null;
@@ -999,6 +1021,58 @@ function readSavedSleepSession() {
 }
 
 
+
+function stopSleepBreathingGuide(options = {}) {
+  const { showCompletion = false, completionMessages = [] } = options;
+
+  if (sleepBreathingTimerId) {
+    window.clearTimeout(sleepBreathingTimerId);
+    sleepBreathingTimerId = null;
+  }
+
+  document.body.classList.remove("sleep-breathing-active");
+
+  if (
+    showCompletion &&
+    currentModeKey === "sleep" &&
+    completionMessages.length > 0
+  ) {
+    typeMessage(
+      takeRandom(
+        "sleep-breathing-complete",
+        completionMessages
+      )
+    );
+    startIdleTimer();
+  }
+}
+
+function startSleepBreathingGuide(message, completionMessages) {
+  stopSleepBreathingGuide();
+  stopIdleTimer();
+
+  typeMessage(message);
+
+  window.requestAnimationFrame(() => {
+    document.body.classList.add("sleep-breathing-active");
+  });
+
+  sleepBreathingTimerId = window.setTimeout(() => {
+    sleepBreathingTimerId = null;
+    document.body.classList.remove("sleep-breathing-active");
+
+    if (currentModeKey !== "sleep") return;
+
+    typeMessage(
+      takeRandom(
+        "sleep-breathing-complete",
+        completionMessages
+      )
+    );
+    startIdleTimer();
+  }, SLEEP_BREATHING_DURATION);
+}
+
 function clearSleepMessageTimer() {
   if (sleepMessageTimerId) {
     window.clearTimeout(sleepMessageTimerId);
@@ -1039,6 +1113,8 @@ function hideSleepControls() {
 
 function enterSleepDisplay(message, options = {}) {
   const { startedAt = Date.now(), resume = false } = options;
+
+  stopSleepBreathingGuide();
 
   if (sleepCloseTimerId) {
     window.clearTimeout(sleepCloseTimerId);
@@ -1442,8 +1518,20 @@ function renderActions(modeKey) {
         action.messages
       );
 
+      if (!action.breathingGuide) {
+        stopSleepBreathingGuide();
+      }
+
       if (action.intenseHeartbeat) {
         triggerPrivateHeartbeat();
+      }
+
+      if (action.breathingGuide) {
+        startSleepBreathingGuide(
+          message,
+          action.completionMessages || []
+        );
+        return;
       }
 
       if (action.sleepDisplay) {
@@ -1465,6 +1553,7 @@ function enterMode(modeKey) {
   const mode = modes[modeKey];
 
   clearPendingEnd();
+  stopSleepBreathingGuide();
   currentModeKey = modeKey;
   document.body.classList.toggle(
     "private-session-active",
@@ -1489,6 +1578,7 @@ function enterMode(modeKey) {
 
 function returnToMenu(showMessage = true) {
   clearPendingEnd();
+  stopSleepBreathingGuide();
   returnHomeAfterTyping = false;
   currentModeKey = null;
   document.body.classList.remove(
