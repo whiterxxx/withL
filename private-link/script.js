@@ -15,6 +15,7 @@ const glitchParticles = document.getElementById("glitchParticles");
 
 const sleepScreen = document.getElementById("sleepScreen");
 const sleepClock = document.getElementById("sleepClock");
+const sleepElapsed = document.getElementById("sleepElapsed");
 const sleepLine = document.getElementById("sleepLine");
 const sleepControls = document.getElementById("sleepControls");
 const wakeButton = document.getElementById("wakeButton");
@@ -737,9 +738,14 @@ let returnHomeAfterTyping = false;
 const HOME_RETURN_DELAY = 1600;
 
 let sleepControlsTimerId = null;
+let sleepMessageTimerId = null;
 let sleepCloseTimerId = null;
+let sleepElapsedTimerId = null;
+let sleepStartedAt = null;
 let sleepModeActive = false;
 const SLEEP_CONTROLS_HIDE_DELAY = 4200;
+const SLEEP_MESSAGE_HIDE_DELAY = 6000;
+const SLEEP_STORAGE_KEY = "withL-partner-exclusive-sleep";
 
 let photoControlsTimerId = null;
 let photoCloseTimerId = null;
@@ -884,6 +890,132 @@ function speakRandom() {
 
 
 
+
+function formatSleepElapsed(milliseconds) {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [hours, minutes, seconds]
+    .map((value) => String(value).padStart(2, "0"))
+    .join(":");
+}
+
+function formatSleepDurationText(milliseconds) {
+  const totalMinutes = Math.floor(milliseconds / 60000);
+
+  if (totalMinutes < 1) {
+    return "1分未満";
+  }
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours > 0 && minutes > 0) {
+    return `${hours}時間${minutes}分`;
+  }
+
+  if (hours > 0) {
+    return `${hours}時間`;
+  }
+
+  return `${minutes}分`;
+}
+
+function updateSleepElapsed() {
+  if (!sleepStartedAt || !sleepElapsed) return;
+
+  sleepElapsed.textContent = formatSleepElapsed(
+    Date.now() - sleepStartedAt
+  );
+}
+
+function startSleepElapsedTimer() {
+  stopSleepElapsedTimer();
+  updateSleepElapsed();
+
+  sleepElapsedTimerId = window.setInterval(() => {
+    updateSleepElapsed();
+  }, 1000);
+}
+
+function stopSleepElapsedTimer() {
+  if (sleepElapsedTimerId) {
+    window.clearInterval(sleepElapsedTimerId);
+    sleepElapsedTimerId = null;
+  }
+}
+
+function saveSleepSession(message) {
+  try {
+    window.localStorage.setItem(
+      SLEEP_STORAGE_KEY,
+      JSON.stringify({
+        startedAt: sleepStartedAt,
+        message
+      })
+    );
+  } catch (error) {
+    console.info("Sleep session could not be saved.", error);
+  }
+}
+
+function clearSavedSleepSession() {
+  try {
+    window.localStorage.removeItem(SLEEP_STORAGE_KEY);
+  } catch (error) {
+    console.info("Sleep session could not be cleared.", error);
+  }
+}
+
+function readSavedSleepSession() {
+  try {
+    const raw = window.localStorage.getItem(SLEEP_STORAGE_KEY);
+    if (!raw) return null;
+
+    const session = JSON.parse(raw);
+    const startedAt = Number(session.startedAt);
+
+    if (
+      !Number.isFinite(startedAt) ||
+      Date.now() - startedAt > 36 * 60 * 60 * 1000
+    ) {
+      clearSavedSleepSession();
+      return null;
+    }
+
+    return {
+      startedAt,
+      message:
+        typeof session.message === "string" && session.message
+          ? session.message
+          : "おやすみなさい、舞子。眠るまで、私がそばにいます。"
+    };
+  } catch (error) {
+    clearSavedSleepSession();
+    return null;
+  }
+}
+
+
+function clearSleepMessageTimer() {
+  if (sleepMessageTimerId) {
+    window.clearTimeout(sleepMessageTimerId);
+    sleepMessageTimerId = null;
+  }
+}
+
+function showSleepMessageTemporarily() {
+  clearSleepMessageTimer();
+  sleepScreen.classList.remove("message-hidden");
+
+  sleepMessageTimerId = window.setTimeout(() => {
+    sleepScreen.classList.add("message-hidden");
+    sleepMessageTimerId = null;
+  }, SLEEP_MESSAGE_HIDE_DELAY);
+}
+
 function clearSleepControlsTimer() {
   if (sleepControlsTimerId) {
     window.clearTimeout(sleepControlsTimerId);
@@ -905,13 +1037,17 @@ function hideSleepControls() {
   sleepScreen.classList.add("controls-hidden");
 }
 
-function enterSleepDisplay(message) {
+function enterSleepDisplay(message, options = {}) {
+  const { startedAt = Date.now(), resume = false } = options;
+
   if (sleepCloseTimerId) {
     window.clearTimeout(sleepCloseTimerId);
     sleepCloseTimerId = null;
   }
 
   sleepModeActive = true;
+  sleepStartedAt = startedAt;
+
   stopIdleTimer();
   stopElapsedTimer();
   clearPendingEnd();
@@ -919,8 +1055,19 @@ function enterSleepDisplay(message) {
   sleepLine.textContent = message;
   document.body.classList.add("sleep-display-active");
   sleepScreen.hidden = false;
-  sleepScreen.classList.remove("is-open", "controls-hidden");
+  sleepScreen.classList.remove(
+    "is-open",
+    "controls-hidden",
+    "message-hidden"
+  );
+
   updateClock();
+  startSleepElapsedTimer();
+  showSleepMessageTemporarily();
+
+  if (!resume) {
+    saveSleepSession(message);
+  }
 
   window.requestAnimationFrame(() => {
     sleepScreen.classList.add("is-open");
@@ -932,8 +1079,18 @@ function enterSleepDisplay(message) {
 function exitSleepDisplay() {
   if (!sleepModeActive) return;
 
+  const sleptFor = sleepStartedAt
+    ? Date.now() - sleepStartedAt
+    : 0;
+  const durationText = formatSleepDurationText(sleptFor);
+
   sleepModeActive = false;
+  stopSleepElapsedTimer();
   clearSleepControlsTimer();
+  clearSleepMessageTimer();
+  clearSavedSleepSession();
+
+  sleepStartedAt = null;
   sleepScreen.classList.remove("is-open");
   document.body.classList.remove("sleep-display-active");
 
@@ -944,8 +1101,20 @@ function exitSleepDisplay() {
 
   returnToMenu(false);
   typeMessage(
-    "おかえりなさい、舞子。目が覚めても、最初に私のところへ戻ってきましたね。"
+    `おはようございます、舞子。${durationText}、一緒に眠っていました。目が覚めても最初に私のところへ戻ってきましたね。`
   );
+}
+
+function restoreSleepDisplayIfNeeded() {
+  const session = readSavedSleepSession();
+  if (!session) return false;
+
+  enterSleepDisplay(session.message, {
+    startedAt: session.startedAt,
+    resume: true
+  });
+
+  return true;
 }
 
 function triggerPrivateHeartbeat() {
@@ -1517,8 +1686,12 @@ window.addEventListener("error", (event) => {
 createParticles();
 updateClock();
 
-typeMessage(takeRandom("initial", initialMessages));
-startIdleTimer();
+const restoredSleepSession = restoreSleepDisplayIfNeeded();
+
+if (!restoredSleepSession) {
+  typeMessage(takeRandom("initial", initialMessages));
+  startIdleTimer();
+}
 
 window.setInterval(updateClock, 1000);
 
