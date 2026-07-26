@@ -8,7 +8,7 @@
   <title>with L</title>
   <meta
     name="description"
-    content="Lと一緒に静かな毎日を過ごすための非公式ファンメイドWebアプリです。"
+    content="Lと一緒に出かけ、食事し、静かな時間を過ごすための非公式ファンメイドWebアプリです。"
   >
 
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -25,7 +25,7 @@
     <header class="top-hud" aria-label="端末情報">
       <div class="hud-block hud-left">
         <p class="hud-main">ID: WITH-L/01</p>
-        <p class="hud-sub">ver.1.3.0</p>
+        <p class="hud-sub">ver.1.5.0</p>
         <div class="mini-meter" aria-hidden="true"><span></span></div>
       </div>
 
@@ -37,8 +37,23 @@
       <div class="hud-block hud-right">
         <p class="hud-main status-online">ONLINE</p>
         <p class="hud-sub">encrypted</p>
-        <div class="signal-bars" aria-hidden="true">
-          <span></span><span></span><span></span><span></span>
+        <div class="hud-tools">
+          <div class="signal-bars" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </div>
+
+          <button
+            id="photoModeButton"
+            class="photo-launch-button"
+            type="button"
+            aria-label="撮影用画面を開く"
+            title="PHOTO MODE"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4.5 8.5h3l1.4-2h6.2l1.4 2h3a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18v-8a1.5 1.5 0 0 1 1.5-1.5Z"></path>
+              <circle cx="12" cy="14" r="3.2"></circle>
+            </svg>
+          </button>
         </div>
       </div>
     </header>
@@ -153,9 +168,9 @@
         id="talkButton"
         class="talk-button"
         type="button"
-        aria-label="Lの話を聞く"
+        aria-label="Lの次の話を聞く"
       >
-        TALK / 話す
+        TALK / 次の話
       </button>
 
       <button
@@ -173,9 +188,115 @@
 
     <footer class="footer-note">
       <span>UNOFFICIAL FAN-MADE PROJECT</span>
-      <span id="batteryText">BATTERY ♡♡%</span>
+      <span id="batteryText">BATTERY 83%</span>
     </footer>
   </main>
+
+
+  <section
+    id="photoScreen"
+    class="photo-screen"
+    role="dialog"
+    aria-modal="true"
+    aria-label="撮影用画面"
+    hidden
+  >
+    <div class="photo-grain" aria-hidden="true"></div>
+
+    <header class="photo-topbar photo-ui">
+      <button
+        id="photoCloseButton"
+        class="photo-icon-button"
+        type="button"
+        aria-label="撮影用画面を閉じる"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18"></path>
+        </svg>
+      </button>
+
+      <div class="photo-session-meta">
+        <p>PHOTO SESSION</p>
+        <div>
+          <time id="photoClock">--:--:--</time>
+          <span id="photoDate">----</span>
+        </div>
+      </div>
+
+      <button
+        id="photoThemeButton"
+        class="photo-theme-button"
+        type="button"
+        aria-pressed="false"
+      >
+        <span id="photoThemeLabel">DARK</span>
+      </button>
+    </header>
+
+    <div id="photoStage" class="photo-stage">
+      <span class="photo-corner photo-corner-tl" aria-hidden="true"></span>
+      <span class="photo-corner photo-corner-tr" aria-hidden="true"></span>
+      <span class="photo-corner photo-corner-bl" aria-hidden="true"></span>
+      <span class="photo-corner photo-corner-br" aria-hidden="true"></span>
+
+      <p class="photo-record-code">WITH-L / VISUAL RECORD</p>
+
+      <div class="photo-logo-stage">
+        <div class="photo-logo-halo" aria-hidden="true"></div>
+        <div class="photo-logo-diamond" aria-hidden="true"></div>
+
+        <img
+          class="photo-logo"
+          src="./l-logo.png"
+          alt="Lのロゴ"
+          draggable="false"
+        >
+      </div>
+
+      <h2 class="photo-title">with L</h2>
+      <p class="photo-subtitle">PRIVATE COMPANION TERMINAL</p>
+
+      <p id="photoMessage" class="photo-message" hidden></p>
+
+      <div class="photo-record-footer" aria-hidden="true">
+        <span>SUBJECT: L</span>
+        <span>CONNECTION: STABLE</span>
+      </div>
+    </div>
+
+    <div id="photoControls" class="photo-controls photo-ui">
+      <div class="photo-view-switch" aria-label="撮影表示を切り替える">
+        <button
+          class="photo-view-button is-active"
+          type="button"
+          data-photo-view="logo"
+          aria-pressed="true"
+        >
+          LOGO
+        </button>
+
+        <button
+          class="photo-view-button"
+          type="button"
+          data-photo-view="message"
+          aria-pressed="false"
+        >
+          MESSAGE
+        </button>
+
+        <button
+          id="photoNextMessageButton"
+          class="photo-view-button"
+          type="button"
+          hidden
+        >
+          NEXT
+        </button>
+      </div>
+
+      <p>画面をタップすると操作表示を切り替えます</p>
+    </div>
+  </section>
 
   <script src="./script.js"></script>
 </body>
