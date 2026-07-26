@@ -25,7 +25,7 @@
     <header class="top-hud" aria-label="端末情報">
       <div class="hud-block hud-left">
         <p class="hud-main">ID: PARTNER/01</p>
-        <p class="hud-sub">private.1.4.1</p>
+        <p class="hud-sub">private.1.5.0</p>
         <div class="mini-meter" aria-hidden="true"><span></span></div>
       </div>
 
@@ -68,6 +68,10 @@
       <div class="logo-stage">
         <div class="logo-diamond" aria-hidden="true"></div>
         <div class="logo-glow" aria-hidden="true"></div>
+        <div class="sleep-guide-rings" aria-hidden="true">
+          <span class="sleep-guide-ring sleep-guide-ring-inner"></span>
+          <span class="sleep-guide-ring sleep-guide-ring-outer"></span>
+        </div>
 
         <div class="private-heartbeat" aria-hidden="true">
           <svg viewBox="0 0 420 90" preserveAspectRatio="none">
@@ -256,14 +260,30 @@
         <p>PHOTO SESSION</p>
       </div>
 
-      <button
-        id="photoThemeButton"
-        class="photo-theme-button"
-        type="button"
-        aria-pressed="false"
-      >
-        <span id="photoThemeLabel">DARK</span>
-      </button>
+      <div class="photo-top-actions">
+        <button
+          id="photoHeartButton"
+          class="photo-heart-button"
+          type="button"
+          aria-pressed="false"
+          aria-label="ロゴ背景をハートに切り替える"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 20.2 4.7 13A4.8 4.8 0 0 1 11.5 6.2L12 6.8l.5-.6A4.8 4.8 0 0 1 19.3 13Z"
+            ></path>
+          </svg>
+        </button>
+
+        <button
+          id="photoThemeButton"
+          class="photo-theme-button"
+          type="button"
+          aria-pressed="false"
+        >
+          <span id="photoThemeLabel">DARK</span>
+        </button>
+      </div>
     </header>
 
     <div id="photoStage" class="photo-stage">
@@ -282,6 +302,21 @@
       <div class="photo-logo-stage">
         <div class="photo-logo-halo" aria-hidden="true"></div>
         <div class="photo-logo-diamond" aria-hidden="true"></div>
+
+        <svg
+          class="photo-logo-heart"
+          viewBox="0 0 240 220"
+          aria-hidden="true"
+        >
+          <path
+            class="photo-heart-line photo-heart-line-outer"
+            d="M120 201C102 181 39 137 24 91 10 49 39 18 75 18c22 0 37 11 45 28 8-17 23-28 45-28 36 0 65 31 51 73-15 46-78 90-96 110Z"
+          ></path>
+          <path
+            class="photo-heart-line photo-heart-line-inner"
+            d="M120 177C103 158 56 124 44 88 35 60 53 39 78 39c20 0 34 12 42 32 8-20 22-32 42-32 25 0 43 21 34 49-12 36-59 70-76 89Z"
+          ></path>
+        </svg>
 
         <img
           class="photo-logo"
