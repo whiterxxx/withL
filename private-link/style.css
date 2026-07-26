@@ -2509,8 +2509,24 @@ body.photo-mode-active {
 }
 
 .private-edition.sleep-session-active.sleep-breathing-active .logo-glow {
+  background:
+    radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.98) 0%,
+      rgba(167, 184, 222, 0.58) 36%,
+      rgba(112, 137, 190, 0.28) 56%,
+      transparent 76%
+    );
   animation:
     sleepGuideGlow
+    10s
+    ease-in-out
+    3;
+}
+
+.private-edition.sleep-session-active.sleep-breathing-active .l-logo {
+  animation:
+    sleepGuideLogo
     10s
     ease-in-out
     3;
@@ -2519,7 +2535,7 @@ body.photo-mode-active {
 /* 呼吸誘導では右側の波形を同期させません。 */
 .private-edition.sleep-session-active.sleep-breathing-active .waveform i {
   animation-play-state: paused;
-  opacity: 0.32;
+  opacity: 0.28;
 }
 
 .sleep-screen {
@@ -2745,32 +2761,63 @@ body.photo-mode-active {
 
 @keyframes sleepGuideGlow {
   0% {
-    opacity: 0.34;
-    transform: scale(0.88);
+    opacity: 0.18;
+    transform: scale(0.78);
     filter:
-      blur(14px)
-      drop-shadow(0 0 4px rgba(112, 137, 190, 0.08));
+      blur(11px)
+      drop-shadow(0 0 2px rgba(112, 137, 190, 0.04));
   }
-  40% {
-    opacity: 0.94;
-    transform: scale(1.14);
+  38% {
+    opacity: 1;
+    transform: scale(1.26);
     filter:
-      blur(17px)
-      drop-shadow(0 0 22px rgba(112, 137, 190, 0.34));
+      blur(18px)
+      drop-shadow(0 0 27px rgba(112, 137, 190, 0.42));
   }
-  50% {
-    opacity: 0.90;
-    transform: scale(1.12);
+  48% {
+    opacity: 0.96;
+    transform: scale(1.22);
     filter:
-      blur(17px)
-      drop-shadow(0 0 19px rgba(112, 137, 190, 0.30));
+      blur(18px)
+      drop-shadow(0 0 23px rgba(112, 137, 190, 0.36));
   }
   100% {
-    opacity: 0.34;
-    transform: scale(0.88);
+    opacity: 0.18;
+    transform: scale(0.78);
     filter:
-      blur(14px)
-      drop-shadow(0 0 4px rgba(112, 137, 190, 0.08));
+      blur(11px)
+      drop-shadow(0 0 2px rgba(112, 137, 190, 0.04));
+  }
+}
+
+@keyframes sleepGuideLogo {
+  0% {
+    transform: translateY(0) scale(0.992);
+    filter:
+      brightness(0.94)
+      drop-shadow(0 10px 11px rgba(43, 58, 66, 0.13))
+      drop-shadow(0 0 7px rgba(112, 137, 190, 0.10));
+  }
+  38% {
+    transform: translateY(-1px) scale(1.018);
+    filter:
+      brightness(1.08)
+      drop-shadow(0 10px 12px rgba(43, 58, 66, 0.15))
+      drop-shadow(0 0 17px rgba(112, 137, 190, 0.34));
+  }
+  48% {
+    transform: translateY(-1px) scale(1.015);
+    filter:
+      brightness(1.06)
+      drop-shadow(0 10px 12px rgba(43, 58, 66, 0.15))
+      drop-shadow(0 0 15px rgba(112, 137, 190, 0.30));
+  }
+  100% {
+    transform: translateY(0) scale(0.992);
+    filter:
+      brightness(0.94)
+      drop-shadow(0 10px 11px rgba(43, 58, 66, 0.13))
+      drop-shadow(0 0 7px rgba(112, 137, 190, 0.10));
   }
 }
 
