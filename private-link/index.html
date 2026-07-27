@@ -25,7 +25,7 @@
     <header class="top-hud" aria-label="端末情報">
       <div class="hud-block hud-left">
         <p class="hud-main">ID: PARTNER/01</p>
-        <p class="hud-sub">private.1.7.6</p>
+        <p class="hud-sub">private.1.7.7</p>
         <div class="mini-meter" aria-hidden="true"><span></span></div>
       </div>
 
@@ -68,6 +68,20 @@
       <div class="logo-stage">
         <div class="logo-diamond" aria-hidden="true"></div>
         <div class="logo-glow" aria-hidden="true"></div>
+        <div id="trainingLogoTimer" class="training-logo-timer" aria-hidden="true">
+          <div class="training-logo-ring training-logo-ring-outer">
+            <svg viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet">
+              <circle class="training-logo-ring-track" cx="60" cy="60" r="53"></circle>
+              <circle id="trainingLogoOuterProgress" class="training-logo-ring-progress" cx="60" cy="60" r="53"></circle>
+            </svg>
+          </div>
+          <div class="training-logo-ring training-logo-ring-inner">
+            <svg viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet">
+              <circle class="training-logo-ring-track" cx="60" cy="60" r="44"></circle>
+              <circle id="trainingLogoInnerProgress" class="training-logo-ring-progress" cx="60" cy="60" r="44"></circle>
+            </svg>
+          </div>
+        </div>
         <div class="sleep-guide-rings" aria-hidden="true">
           <span class="sleep-guide-ring sleep-guide-ring-inner"></span>
           <span class="sleep-guide-ring sleep-guide-ring-outer"></span>
@@ -371,10 +385,6 @@
             <small id="trainingTargetText">TARGET 15</small>
           </button>
 
-          <div class="training-progress-track" aria-hidden="true">
-            <span id="trainingProgressFill"></span>
-          </div>
-
           <div class="training-control-row">
             <button id="trainingPauseButton" class="training-control-button" type="button">
               PAUSE
@@ -389,9 +399,6 @@
           <p class="training-rest-code">RECOVERY SEQUENCE</p>
           <h3>REST</h3>
           <strong id="trainingRestTime">00:30</strong>
-          <div class="training-rest-meter" aria-hidden="true">
-            <span id="trainingRestFill"></span>
-          </div>
           <p id="trainingNextLabel">NEXT / スクワット SET 2</p>
 
           <button id="trainingSkipRestButton" class="training-sub-button" type="button">
