@@ -3217,8 +3217,15 @@ body.photo-mode-active {
 .training-choice-button {
   display: grid;
   align-content: center;
+  justify-items: center;
   gap: 2px;
-  text-align: left;
+  text-align: center;
+}
+
+.training-choice-name,
+.training-choice-meta {
+  width: 100%;
+  text-align: center;
 }
 
 .training-choice-button.is-subtle {
