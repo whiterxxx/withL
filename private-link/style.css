@@ -4225,6 +4225,9 @@ body.training-dark .training-value-stage.is-counted .training-value-line strong 
 .training-tap-button > small {
   grid-area: target;
   align-self: start;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
   margin: 1px 0 0;
   color: var(--muted);
   font-family: var(--font-display);
@@ -4232,21 +4235,77 @@ body.training-dark .training-value-stage.is-counted .training-value-line strong 
   letter-spacing: 0.11em;
 }
 
+.training-target-label,
+.training-target-value {
+  display: block;
+}
+
+.training-target-value {
+  font-variant-numeric: tabular-nums;
+}
+
 .training-tap-button.is-timer {
-  grid-template-columns: 60px 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas:
-    "label value"
-    "label target";
-  min-height: 78px;
+    "label label"
+    "value target";
+  gap: 0;
+  min-height: 88px;
+  padding-top: 9px;
+  padding-bottom: 10px;
+}
+
+.training-tap-button.is-timer .training-tap-label {
+  align-self: auto;
+  justify-self: stretch;
+  min-width: 0;
+  padding: 0 0 6px;
+  border-right: 0;
+  border-bottom: 1px solid var(--line-soft);
+  text-align: center;
+}
+
+.training-tap-button.is-timer .training-tap-value {
+  align-self: center;
+  justify-content: center;
+  padding: 8px 12px 1px 0;
+  border-right: 1px solid var(--line-soft);
+  text-align: center;
 }
 
 .training-tap-button.is-timer .training-tap-value strong {
-  font-size: clamp(2.2rem, 9vw, 3.25rem);
+  font-size: clamp(2.05rem, 8.4vw, 3rem);
   letter-spacing: 0.025em;
 }
 
 .training-tap-button.is-timer .training-tap-value > span {
   display: none;
+}
+
+.training-tap-button.is-timer .training-target {
+  align-self: center;
+  justify-self: stretch;
+  display: grid;
+  place-items: center;
+  gap: 3px;
+  margin: 7px 0 0;
+  padding-left: 12px;
+  text-align: center;
+}
+
+.training-tap-button.is-timer .training-target-label {
+  font-size: 0.43rem;
+  letter-spacing: 0.15em;
+  text-indent: 0.15em;
+}
+
+.training-tap-button.is-timer .training-target-value {
+  color: var(--accent-dark);
+  font-family: var(--font-ui);
+  font-size: clamp(1rem, 4.3vw, 1.35rem);
+  font-weight: 300;
+  letter-spacing: 0.035em;
+  line-height: 1;
 }
 
 .training-tap-button.is-counted .training-tap-value strong {
@@ -4288,11 +4347,31 @@ body.training-dark .training-tap-button.is-counted .training-tap-value strong {
   }
 
   .training-tap-button.is-timer {
-    grid-template-columns: 51px 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    min-height: 84px;
+    padding: 8px 10px 9px;
+  }
+
+  .training-tap-button.is-timer .training-tap-label {
+    padding-bottom: 5px;
+    font-size: 0.66rem;
+  }
+
+  .training-tap-button.is-timer .training-tap-value {
+    padding: 7px 9px 0 0;
   }
 
   .training-tap-button.is-timer .training-tap-value strong {
-    font-size: clamp(2rem, 10vw, 2.9rem);
+    font-size: clamp(1.9rem, 9.5vw, 2.7rem);
+  }
+
+  .training-tap-button.is-timer .training-target {
+    margin-top: 6px;
+    padding-left: 9px;
+  }
+
+  .training-tap-button.is-timer .training-target-value {
+    font-size: clamp(0.95rem, 4.8vw, 1.2rem);
   }
 }
 
