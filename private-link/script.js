@@ -2216,18 +2216,22 @@ function getTrainingGuideMessage() {
   );
 }
 
+const TRAINING_RING_OUTER_CIRCUMFERENCE = 2 * Math.PI * 53;
+const TRAINING_RING_INNER_CIRCUMFERENCE = 2 * Math.PI * 44;
+
 function setTrainingRingProgress(progress) {
   const clamped = Math.max(0, Math.min(1, progress));
-  const dashOffset = 100 * (1 - clamped);
+  const outerOffset =
+    TRAINING_RING_OUTER_CIRCUMFERENCE * (1 - clamped);
+  const innerOffset =
+    TRAINING_RING_INNER_CIRCUMFERENCE * (1 - clamped);
 
   if (trainingLogoOuterProgress) {
-    trainingLogoOuterProgress.style.strokeDashoffset =
-      String(dashOffset);
+    trainingLogoOuterProgress.style.strokeDashoffset = String(outerOffset);
   }
 
   if (trainingLogoInnerProgress) {
-    trainingLogoInnerProgress.style.strokeDashoffset =
-      String(dashOffset);
+    trainingLogoInnerProgress.style.strokeDashoffset = String(innerOffset);
   }
 }
 
