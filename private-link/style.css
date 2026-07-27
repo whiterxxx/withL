@@ -426,11 +426,11 @@ button:focus-visible {
 
 .app-title {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
-  gap: 5px;
+  gap: clamp(8px, 2.6vw, 14px);
   line-height: 1;
+  white-space: nowrap;
 }
 
 .app-title-main {
@@ -440,31 +440,22 @@ button:focus-visible {
 }
 
 .app-title-access {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
+  position: relative;
   color: var(--muted);
   font-size: clamp(0.48rem, 1.75vw, 0.58rem);
-  letter-spacing: 0.20em;
-  text-indent: 0.20em;
-  white-space: nowrap;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
 }
 
-.app-title-access::before,
-.app-title-access::after {
+.app-title-access::before {
   content: "";
-  width: clamp(16px, 5vw, 28px);
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    var(--line)
-  );
-}
-
-.app-title-access::after {
-  transform: scaleX(-1);
+  position: absolute;
+  top: 50%;
+  left: calc(clamp(8px, 2.6vw, 14px) / -2);
+  width: 1px;
+  height: 0.92em;
+  background: var(--line);
+  transform: translateY(-50%);
 }
 
 .tagline {
@@ -1238,7 +1229,7 @@ button:focus-visible {
   }
 
   .app-title {
-    gap: 4px;
+    gap: 8px;
   }
 
   .app-title-main {
@@ -1246,7 +1237,7 @@ button:focus-visible {
   }
 
   .app-title-access {
-    font-size: 0.46rem;
+    font-size: 0.44rem;
   }
 
   .tagline {
