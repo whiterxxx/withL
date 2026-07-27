@@ -4331,70 +4331,46 @@ body.training-dark .training-tap-button.is-counted .training-tap-value strong {
 .training-logo-ring-track,
 .training-logo-ring-progress {
   fill: none;
-  shape-rendering: geometricPrecision;
-  vector-effect: non-scaling-stroke;
-}
-
-.training-logo-ring-track {
-  stroke-linecap: butt;
-}
-
-.training-logo-ring-progress {
   stroke-linecap: round;
-  transition: stroke-dashoffset 100ms linear;
-}
-
-.training-logo-ring-track {
-  stroke: rgba(106, 137, 151, 0.10);
-}
-
-.training-logo-ring-progress {
-  stroke: rgba(94, 135, 153, 0.76);
-}
-
-.training-logo-ring-outer .training-logo-ring-track {
-  stroke-width: 0.55px;
-}
-
-.training-logo-ring-inner .training-logo-ring-track {
-  stroke-width: 0.42px;
+  shape-rendering: geometricPrecision;
 }
 
 .training-logo-ring-outer .training-logo-ring-progress {
-  stroke-width: 0.90px;
   opacity: 0.78;
-  filter:
-    drop-shadow(0 0 1px rgba(94, 135, 153, 0.14))
-    drop-shadow(0 0 3px rgba(94, 135, 153, 0.05));
 }
 
 .training-logo-ring-inner .training-logo-ring-progress {
-  stroke-width: 0.65px;
-  opacity: 0.52;
+  opacity: 0.58;
+}
+
+.training-logo-ring-track {
+  stroke: rgba(106, 137, 151, 0.11);
+  stroke-width: 0.72;
+}
+
+.training-logo-ring-progress {
+  stroke: rgba(94, 135, 153, 0.72);
+  stroke-width: 0.92;
   filter:
-    drop-shadow(0 0 1px rgba(94, 135, 153, 0.10));
+    blur(0.32px)
+    drop-shadow(0 0 3px rgba(94, 135, 153, 0.16))
+    drop-shadow(0 0 7px rgba(94, 135, 153, 0.07));
 }
 
 #trainingLogoOuterProgress {
-  stroke-dasharray: 100 100;
-  stroke-dashoffset: 100;
+  stroke-dasharray: 333.01;
+  stroke-dashoffset: 333.01;
 }
 
 #trainingLogoInnerProgress {
-  stroke-dasharray: 100 100;
-  stroke-dashoffset: 100;
-}
-
-.training-logo-timer.is-rest .training-logo-ring-progress {
-  stroke: rgba(124, 151, 162, 0.68);
-}
-
-.training-logo-timer.is-rest .training-logo-ring-outer .training-logo-ring-progress {
+  stroke-dasharray: 276.46;
+  stroke-dashoffset: 276.46;
   opacity: 0.68;
 }
 
-.training-logo-timer.is-rest .training-logo-ring-inner .training-logo-ring-progress {
-  opacity: 0.46;
+.training-logo-timer.is-rest .training-logo-ring-progress {
+  stroke: rgba(124, 151, 162, 0.66);
+  opacity: 0.68;
 }
 
 body.training-dark .training-logo-ring-track {
@@ -4402,37 +4378,19 @@ body.training-dark .training-logo-ring-track {
 }
 
 body.training-dark .training-logo-timer.is-timer .training-logo-ring-progress {
-  stroke: rgba(229, 160, 189, 0.80);
-}
-
-body.training-dark .training-logo-timer.is-timer
-  .training-logo-ring-outer .training-logo-ring-progress {
+  stroke: rgba(229, 160, 189, 0.78);
   filter:
-    drop-shadow(0 0 1px rgba(228, 107, 157, 0.22))
-    drop-shadow(0 0 4px rgba(228, 107, 157, 0.08));
-}
-
-body.training-dark .training-logo-timer.is-timer
-  .training-logo-ring-inner .training-logo-ring-progress {
-  filter:
-    drop-shadow(0 0 1px rgba(228, 107, 157, 0.14));
+    blur(0.34px)
+    drop-shadow(0 0 4px rgba(228, 107, 157, 0.26))
+    drop-shadow(0 0 10px rgba(228, 107, 157, 0.11));
 }
 
 body.training-dark .training-logo-timer.is-rest .training-logo-ring-progress {
-  stroke: rgba(216, 153, 182, 0.66);
-}
-
-body.training-dark .training-logo-timer.is-rest
-  .training-logo-ring-outer .training-logo-ring-progress {
+  stroke: rgba(216, 153, 182, 0.64);
   filter:
-    drop-shadow(0 0 1px rgba(228, 107, 157, 0.20))
-    drop-shadow(0 0 4px rgba(228, 107, 157, 0.07));
-}
-
-body.training-dark .training-logo-timer.is-rest
-  .training-logo-ring-inner .training-logo-ring-progress {
-  filter:
-    drop-shadow(0 0 1px rgba(228, 107, 157, 0.12));
+    blur(0.30px)
+    drop-shadow(0 0 3px rgba(228, 107, 157, 0.18))
+    drop-shadow(0 0 8px rgba(228, 107, 157, 0.08));
 }
 
 body.training-dark .training-logo-timer.is-warning .training-logo-ring-progress {
@@ -4444,14 +4402,16 @@ body.training-dark .training-logo-timer.is-warning .training-logo-ring-progress 
   100% {
     opacity: 0.76;
     filter:
-      drop-shadow(0 0 1px rgba(228, 107, 157, 0.30))
-      drop-shadow(0 0 5px rgba(228, 107, 157, 0.10));
+      blur(0.34px)
+      drop-shadow(0 0 4px rgba(228, 107, 157, 0.30))
+      drop-shadow(0 0 10px rgba(228, 107, 157, 0.12));
   }
   50% {
     opacity: 1;
     filter:
-      drop-shadow(0 0 2px rgba(228, 107, 157, 0.55))
-      drop-shadow(0 0 9px rgba(228, 107, 157, 0.24));
+      blur(0.46px)
+      drop-shadow(0 0 7px rgba(228, 107, 157, 0.52))
+      drop-shadow(0 0 16px rgba(228, 107, 157, 0.24));
   }
 }
 
