@@ -69,6 +69,7 @@ const trainingTapLabel = document.getElementById("trainingTapLabel");
 const trainingValue = document.getElementById("trainingValue");
 const trainingUnit = document.getElementById("trainingUnit");
 const trainingTargetText = document.getElementById("trainingTargetText");
+const trainingTargetValue = document.getElementById("trainingTargetValue");
 const trainingTapButton = document.getElementById("trainingTapButton");
 const trainingPauseButton = document.getElementById("trainingPauseButton");
 const trainingEndButton = document.getElementById("trainingEndButton");
@@ -2815,15 +2816,15 @@ function updateTrainingWorkoutDisplay() {
     trainingTapLabel.textContent = "TAP";
     trainingValue.textContent = String(trainingRepCount);
     trainingUnit.textContent = "REP";
-    trainingTargetText.textContent = `TARGET ${item.target}`;
+    trainingTargetValue.textContent = String(item.target);
   } else {
     setTrainingLogoTimerState("timer");
     trainingTapLabel.textContent = "TIMER";
     trainingValue.textContent =
       formatTrainingSeconds(trainingTimerRemaining);
     trainingUnit.textContent = "";
-    trainingTargetText.textContent =
-      `TARGET ${formatTrainingSeconds(item.target)}`;
+    trainingTargetValue.textContent =
+      formatTrainingSeconds(item.target);
 
     const remainingRatio = trainingTimerTotal > 0
       ? trainingTimerRemaining / trainingTimerTotal
