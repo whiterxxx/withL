@@ -25,7 +25,7 @@
     <header class="top-hud" aria-label="端末情報">
       <div class="hud-block hud-left">
         <p class="hud-main">ID: PARTNER/01</p>
-        <p class="hud-sub">private.1.7.5</p>
+        <p class="hud-sub">private.1.7.6</p>
         <div class="mini-meter" aria-hidden="true"><span></span></div>
       </div>
 
@@ -348,7 +348,12 @@
 
           <h3 id="trainingExerciseName" class="training-exercise-name">スクワット</h3>
 
-          <div id="trainingValueStage" class="training-value-stage">
+          <button
+            id="trainingTapButton"
+            class="training-tap-button"
+            type="button"
+            aria-label="回数を1回追加"
+          >
             <div id="trainingVital" class="training-vital" aria-hidden="true">
               <svg viewBox="0 0 480 92" preserveAspectRatio="none">
                 <path class="training-vital-base" d="M0 46H112l17-1 13-28 17 59 16-31 19 1h61l14-1 11-18 14 36 16-18h170"></path>
@@ -356,22 +361,19 @@
               </svg>
             </div>
 
-            <span class="training-value-label">CURRENT</span>
-            <div class="training-value-line">
+            <span id="trainingTapLabel" class="training-tap-label">TAP</span>
+
+            <span class="training-tap-value">
               <strong id="trainingValue">0</strong>
               <span id="trainingUnit">REP</span>
-            </div>
-            <p id="trainingTargetText">TARGET 15</p>
-          </div>
+            </span>
+
+            <small id="trainingTargetText">TARGET 15</small>
+          </button>
 
           <div class="training-progress-track" aria-hidden="true">
             <span id="trainingProgressFill"></span>
           </div>
-
-          <button id="trainingTapButton" class="training-tap-button" type="button">
-            <span>TAP</span>
-            <small>COUNT INPUT</small>
-          </button>
 
           <div class="training-control-row">
             <button id="trainingPauseButton" class="training-control-button" type="button">
@@ -406,18 +408,6 @@
           </div>
         </section>
 
-        <section id="trainingCompleteView" class="training-view training-complete-view" hidden>
-          <div class="training-complete-mark" aria-hidden="true">
-            <span>✓</span>
-          </div>
-          <p>TRAINING RECORD SAVED</p>
-          <h3 id="trainingResultTitle">COMPLETE</h3>
-          <strong id="trainingResultDetail">3 SET / 1 MENU</strong>
-
-          <button id="trainingHomeButton" class="training-primary-button" type="button">
-            MENU / 種目選択へ戻る
-          </button>
-        </section>
       </section>
     </section>
 
