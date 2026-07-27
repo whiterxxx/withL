@@ -2159,7 +2159,8 @@ const TRAINING_SET_MESSAGE_DELAY = 2400;
 const TRAINING_DEFAULT_MENU = [
   { name: "スクワット", type: "reps", target: 15, sets: 3, rest: 30 },
   { name: "プランク", type: "timer", target: 30, sets: 3, rest: 30 },
-  { name: "ヒップリフト", type: "reps", target: 15, sets: 3, rest: 30 }
+  { name: "ヒップリフト", type: "reps", target: 15, sets: 3, rest: 30 },
+  { name: "カーフレイズ", type: "reps", target: 20, sets: 3, rest: 30 }
 ];
 
 const TRAINING_GUIDE_MESSAGES = {
@@ -2247,7 +2248,7 @@ function loadTrainingProgram() {
       return TRAINING_DEFAULT_MENU.map((item) => ({ ...item }));
     }
 
-    return parsed.slice(0, 10).map((item, index) => ({
+    const normalized = parsed.slice(0, 10).map((item, index) => ({
       name: typeof item.name === "string" && item.name.trim()
         ? item.name.trim().slice(0, 28)
         : `種目 ${index + 1}`,
@@ -2261,6 +2262,18 @@ function loadTrainingProgram() {
       sets: trainingClamp(item.sets, 1, 10, 3),
       rest: trainingClamp(item.rest, 0, 300, 30)
     }));
+
+    if (!normalized.some((item) => item.name === "カーフレイズ")) {
+      normalized.push({
+        name: "カーフレイズ",
+        type: "reps",
+        target: 20,
+        sets: 3,
+        rest: 30
+      });
+    }
+
+    return normalized.slice(0, 10);
   } catch (error) {
     console.info("Training menu could not be loaded.", error);
     return TRAINING_DEFAULT_MENU.map((item) => ({ ...item }));
@@ -2448,34 +2461,13 @@ function renderTrainingChoices(options = {}) {
     });
   });
 
-  if (trainingProgram.length > 1) {
-    const totalSets = trainingProgram.reduce(
-      (sum, item) => sum + item.sets,
-      0
-    );
-
-    createTrainingChoiceButton({
-      title: "全部まとめて行う",
-      meta: `${trainingProgram.length} MENU / ${totalSets} SET`,
-      wide: true,
-      onClick: () => {
-        openTrainingSetup("all");
-      }
-    });
-  }
-
   createTrainingChoiceButton({
-    title: "メニューを編集",
-    meta: "ADD / REMOVE / CONFIGURE",
+    title: "フリーモード",
+    meta: "CUSTOM EXERCISE / 自由設定",
     wide: true,
     subtle: true,
     onClick: () => {
-      renderTrainingMenuEditor();
-      showTrainingView("editor");
-      typeMessage(
-        "種目名、回数、セット数、休憩時間を編集できます。終わったら保存してください。"
-      );
-      startIdleTimer();
+      openTrainingSetup("free");
     }
   });
 
@@ -2493,20 +2485,20 @@ function openTrainingSetup(selection) {
   clearPendingEnd();
   triggerGlitch();
 
-  if (selection === "all") {
-    trainingSelectionMode = "all";
-    trainingSetupTitle.textContent = "全メニュー";
-    trainingSetupFields.hidden = true;
-
-    const totalSets = trainingProgram.reduce(
-      (sum, item) => sum + item.sets,
-      0
-    );
+  if (selection === "free") {
+    trainingSelectionMode = "free";
+    trainingSetupTitle.textContent = "フリーモード";
+    trainingSetupFields.hidden = false;
     trainingSetupSummary.textContent =
-      `${trainingProgram.length}種目を登録順に実行します。合計 ${totalSets} セットです。`;
-    trainingStartButton.textContent = "START / 全メニュー開始";
+      "種目名、計測方式、目標、セット数、休憩時間を自由に設定できます。";
+    trainingSetupName.value = "フリートレーニング";
+    trainingSetupType.value = "reps";
+    trainingSetupTarget.value = "10";
+    trainingSetupSets.value = "3";
+    trainingSetupRest.value = "30";
+    trainingStartButton.textContent = "START / フリーモード開始";
     typeMessage(
-      "登録されたメニューを順番に進めます。準備ができたら開始してください。"
+      "自由設定ですね。今日行う内容を入力してください。私がその通りに数えます。"
     );
   } else {
     trainingSelectionMode = "single";
@@ -2535,6 +2527,36 @@ function openTrainingSetup(selection) {
 
   showTrainingView("setup");
   startIdleTimer();
+}
+
+function getFreeTrainingItem() {
+  const type = trainingSetupType.value === "timer"
+    ? "timer"
+    : "reps";
+
+  return {
+    name: trainingSetupName.value.trim().slice(0, 28) ||
+      "フリートレーニング",
+    type,
+    target: trainingClamp(
+      trainingSetupTarget.value,
+      1,
+      999,
+      type === "timer" ? 30 : 10
+    ),
+    sets: trainingClamp(
+      trainingSetupSets.value,
+      1,
+      10,
+      3
+    ),
+    rest: trainingClamp(
+      trainingSetupRest.value,
+      0,
+      300,
+      30
+    )
+  };
 }
 
 function applyTrainingSetup() {
@@ -3103,15 +3125,14 @@ function finishTrainingSession(isComplete) {
 function startTrainingSession() {
   normalizeTrainingProgram();
 
-  if (trainingSelectionMode === "single") {
+  if (trainingSelectionMode === "free") {
+    trainingSessionProgram = [getFreeTrainingItem()];
+  } else {
     applyTrainingSetup();
     const selected = trainingProgram[trainingSelectedIndex];
     trainingSessionProgram = selected
       ? [{ ...selected }]
       : [{ ...trainingProgram[0] }];
-  } else {
-    trainingSessionProgram =
-      trainingProgram.map((item) => ({ ...item }));
   }
 
   trainingSessionRunning = true;
