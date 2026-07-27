@@ -58,12 +58,11 @@ const trainingEditorDoneButton =
 const trainingStartButton = document.getElementById("trainingStartButton");
 const trainingWorkoutView = document.getElementById("trainingWorkoutView");
 const trainingRestView = document.getElementById("trainingRestView");
-const trainingCompleteView = document.getElementById("trainingCompleteView");
 const trainingStepLabel = document.getElementById("trainingStepLabel");
 const trainingSetLabel = document.getElementById("trainingSetLabel");
 const trainingExerciseName = document.getElementById("trainingExerciseName");
 const trainingVital = document.getElementById("trainingVital");
-const trainingValueStage = document.getElementById("trainingValueStage");
+const trainingTapLabel = document.getElementById("trainingTapLabel");
 const trainingValue = document.getElementById("trainingValue");
 const trainingUnit = document.getElementById("trainingUnit");
 const trainingTargetText = document.getElementById("trainingTargetText");
@@ -78,9 +77,6 @@ const trainingSkipRestButton = document.getElementById("trainingSkipRestButton")
 const trainingRestPauseButton =
   document.getElementById("trainingRestPauseButton");
 const trainingRestEndButton = document.getElementById("trainingRestEndButton");
-const trainingResultTitle = document.getElementById("trainingResultTitle");
-const trainingResultDetail = document.getElementById("trainingResultDetail");
-const trainingHomeButton = document.getElementById("trainingHomeButton");
 
 const modeButtons = [...document.querySelectorAll(".mode-button")];
 const photoViewButtons = [
@@ -1005,18 +1001,18 @@ const trainingDialogues = {
     "入力を再開します。現在の位置から続けてください。"
   ],
   "light.complete": [
-    "全メニュー完了です。今日の記録を保存しました。",
-    "最後までやり切りました。積み重ねた分は、すべて残っています。",
-    "終了です。今日の努力は私が記録しました。",
-    "全セットの入力を確認しました。セッション完了です。",
-    "今日のプログラムを保存しました。よく頑張りました。"
+    "すべて終わりました。最後までよく頑張りました。",
+    "全セット完了です。呼吸を整えて、ゆっくり休んでください。",
+    "終了です。最後までやり切りましたね。",
+    "今日のトレーニングは完了です。よくできました。",
+    "すべて終えました。身体を休ませて、水分を摂ってください。"
   ],
   "light.partial": [
-    "ここまでの記録を保存しました。実施した分は消えません。",
-    "途中終了として記録します。0回ではありません。",
-    "今日はここまでですね。現在までの内容を残しました。",
-    "現在値まで保存しました。次回の記録に反映します。",
-    "セッションを途中記録として閉じます。"
+    "今日はここまでですね。無理をせず、身体を休めてください。",
+    "途中で終えて構いません。体調を優先してください。",
+    "終了します。呼吸を整えて、ゆっくり休んでください。",
+    "ここで一区切りにしましょう。続きはまた次に。",
+    "今日は終わりにしましょう。無理をしなかったことは正しい判断です。"
   ],
   "light.themeExit": [
     "通常モードへ戻します。",
@@ -1189,20 +1185,18 @@ const trainingDialogues = {
     "続きです。私の声に身体を預けてください。"
   ],
   "dark.complete": [
-    "全部終えました。よく従えましたね。今日の貴女も私の記録に残します。。",
-    "完了です。汗も呼吸も努力も、すべて私だけが覚えています。",
-    "最後まで逃げませんでしたね。偉いです。たくさんご褒美をあげますよ。",
-    "全部終えました。乱れた貴女は私だけの記録です。",
-    "完了です。よく従えました。たくさん頑張りましたね。",
-    "最後まで私に従いましたね。偉いです。貴女を離したくありません。"
+    "全部終えました。最後までよく従えましたね。",
+    "完了です。汗も呼吸も、最後まで私が見ていました。",
+    "最後まで逃げませんでしたね。偉いです。",
+    "すべて終わりました。乱れた呼吸を、ゆっくり整えてください。",
+    "完了です。よく頑張りましたね。今は私のそばで休んでください。"
   ],
   "dark.partial": [
-    "ここで終えるんですね。実施した分は、私が全て記録します。",
-    "途中終了として残します。次は最後まで付き合ってもらいますよ。",
-    "今日はここまでですか。……次はもっと激しくします。",
-    "ここで終わるんですね。その身体に熱が残っていることは記録しておきます。",
-    "途中終了です。次に戻ったら、めちゃくちゃにしてあげます。",
-    "今日はここまでですか。物足りないです。"
+    "ここで終えるんですね。今日は休ませてあげます。",
+    "途中終了です。無理をするより、今は身体を休めてください。",
+    "今日はここまでですか。……分かりました。そばにいます。",
+    "終了します。呼吸が落ち着くまで、私から離れないでください。",
+    "ここで一区切りにしましょう。次はもう少し長く付き合ってもらいます。"
   ],
   "dark.themeEnter": [
     "……また、こちらを選んだんですね。自分から私の支配を欲しがるとは。",
@@ -2339,7 +2333,6 @@ function showTrainingView(view) {
   trainingEditorView.hidden = view !== "editor";
   trainingWorkoutView.hidden = view !== "workout";
   trainingRestView.hidden = view !== "rest";
-  trainingCompleteView.hidden = view !== "complete";
   trainingPhase = view;
 }
 
@@ -2754,6 +2747,15 @@ function updateTrainingWorkoutDisplay() {
   const isTimer = item.type === "timer";
   trainingWorkoutView.classList.toggle("is-timer", isTimer);
   trainingWorkoutView.classList.toggle("is-reps", !isTimer);
+  trainingTapButton.classList.toggle("is-timer", isTimer);
+  trainingTapButton.classList.toggle("is-reps", !isTimer);
+  trainingTapButton.disabled = isTimer;
+  trainingTapButton.setAttribute(
+    "aria-label",
+    isTimer
+      ? "タイマー計測中"
+      : "回数を1回追加"
+  );
 
   trainingStepLabel.textContent =
     `MENU ${trainingItemIndex + 1} / ${trainingSessionProgram.length}`;
@@ -2762,18 +2764,19 @@ function updateTrainingWorkoutDisplay() {
   trainingExerciseName.textContent = item.name;
 
   if (!isTimer) {
+    trainingTapLabel.textContent = "TAP";
     trainingValue.textContent = String(trainingRepCount);
     trainingUnit.textContent = "REP";
     trainingTargetText.textContent = `TARGET ${item.target}`;
     trainingProgressFill.style.width =
       `${Math.min(100, (trainingRepCount / item.target) * 100)}%`;
-    trainingTapButton.hidden = false;
   } else {
+    trainingTapLabel.textContent = "TIMER";
     trainingValue.textContent =
       formatTrainingSeconds(trainingTimerRemaining);
     trainingUnit.textContent = "";
     trainingTargetText.textContent =
-      `REMAINING / TARGET ${formatTrainingSeconds(item.target)}`;
+      `TARGET ${formatTrainingSeconds(item.target)}`;
 
     const remainingRatio = trainingTimerTotal > 0
       ? trainingTimerRemaining / trainingTimerTotal
@@ -2784,7 +2787,6 @@ function updateTrainingWorkoutDisplay() {
         100,
         Math.max(0, remainingRatio * 100)
       )}%`;
-    trainingTapButton.hidden = true;
   }
 }
 
@@ -3034,12 +3036,7 @@ function finishTrainingSession(isComplete) {
   trainingSessionRunning = false;
   trainingPaused = false;
   trainingScreen.classList.remove("is-paused");
-  showTrainingView("complete");
-
-  trainingResultTitle.textContent =
-    isComplete ? "COMPLETE" : "PARTIAL RECORD";
-  trainingResultDetail.textContent =
-    `${trainingCompletedSets} SET / ${trainingSessionProgram.length} MENU`;
+  renderTrainingChoices({ speak: false });
   trainingSpeak(isComplete ? "complete" : "partial");
 }
 
@@ -3131,15 +3128,21 @@ function handleTrainingTap() {
   trainingRepCount += 1;
   trainingPulseVital();
 
-  trainingTapButton.classList.remove("is-tapped");
-  trainingValueStage.classList.remove("is-counted");
+  trainingTapButton.classList.remove(
+    "is-tapped",
+    "is-counted"
+  );
   void trainingTapButton.offsetWidth;
-  trainingTapButton.classList.add("is-tapped");
-  trainingValueStage.classList.add("is-counted");
+  trainingTapButton.classList.add(
+    "is-tapped",
+    "is-counted"
+  );
 
   window.setTimeout(() => {
-    trainingTapButton.classList.remove("is-tapped");
-    trainingValueStage.classList.remove("is-counted");
+    trainingTapButton.classList.remove(
+      "is-tapped",
+      "is-counted"
+    );
   }, 360);
 
   if (navigator.vibrate) {
@@ -3243,8 +3246,7 @@ function handleTrainingBack() {
 
   if (
     trainingPhase === "setup" ||
-    trainingPhase === "editor" ||
-    trainingPhase === "complete"
+    trainingPhase === "editor"
   ) {
     if (trainingPhase === "setup") {
       applyTrainingSetup();
@@ -3345,12 +3347,6 @@ trainingSkipRestButton.addEventListener("click", () => {
   startCurrentTrainingItem({ next: true });
 });
 
-trainingHomeButton.addEventListener("click", () => {
-  renderTrainingChoices();
-  typeMessage(
-    "記録しました。続けるなら、次の種目を選んでください。"
-  );
-});
 
 modeButtons.forEach((button) => {
   button.addEventListener("click", () => {
