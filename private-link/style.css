@@ -1,4 +1,4 @@
- :root {
+:root {
   --bg: #f3f6f7;
   --surface: rgba(255, 255, 255, 0.82);
   --ink: #15232b;
@@ -4333,30 +4333,29 @@ body.training-dark .training-tap-button.is-counted .training-tap-value strong {
   fill: none;
   stroke-linecap: round;
   shape-rendering: geometricPrecision;
-  vector-effect: non-scaling-stroke;
 }
 
 .training-logo-ring-outer .training-logo-ring-progress {
-  stroke-width: 0.72px;
-  opacity: 0.82;
+  stroke-width: 0.30;
+  opacity: 0.84;
   filter:
     drop-shadow(0 0 1px rgba(94, 135, 153, 0.22))
     drop-shadow(0 0 4px rgba(94, 135, 153, 0.08));
 }
 
 .training-logo-ring-inner .training-logo-ring-progress {
-  stroke-width: 0.50px;
-  opacity: 0.56;
+  stroke-width: 0.20;
+  opacity: 0.58;
   filter:
     drop-shadow(0 0 1px rgba(94, 135, 153, 0.14));
 }
 
 .training-logo-ring-outer .training-logo-ring-track {
-  stroke-width: 0.42px;
+  stroke-width: 0.18;
 }
 
 .training-logo-ring-inner .training-logo-ring-track {
-  stroke-width: 0.30px;
+  stroke-width: 0.12;
 }
 
 .training-logo-ring-track {
