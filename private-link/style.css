@@ -4341,6 +4341,7 @@ body.training-dark .training-tap-button.is-counted .training-tap-value strong {
 
 .training-logo-ring-progress {
   stroke-linecap: round;
+  transition: stroke-dashoffset 100ms linear;
 }
 
 .training-logo-ring-track {
@@ -4375,13 +4376,13 @@ body.training-dark .training-tap-button.is-counted .training-tap-value strong {
 }
 
 #trainingLogoOuterProgress {
-  stroke-dasharray: 334.2;
-  stroke-dashoffset: 333.01;
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: 100;
 }
 
 #trainingLogoInnerProgress {
-  stroke-dasharray: 277.5;
-  stroke-dashoffset: 276.46;
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: 100;
 }
 
 .training-logo-timer.is-rest .training-logo-ring-progress {
