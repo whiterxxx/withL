@@ -35,6 +35,44 @@ const photoStage = document.getElementById("photoStage");
 const photoMessage = document.getElementById("photoMessage");
 const photoControls = document.getElementById("photoControls");
 
+const trainingModeButton = document.getElementById("trainingModeButton");
+const trainingScreen = document.getElementById("trainingScreen");
+const trainingCloseButton = document.getElementById("trainingCloseButton");
+const trainingThemeButton = document.getElementById("trainingThemeButton");
+const trainingThemeLabel = document.getElementById("trainingThemeLabel");
+const trainingLevelText = document.getElementById("trainingLevelText");
+const trainingLevelFill = document.getElementById("trainingLevelFill");
+const trainingLevelDetail = document.getElementById("trainingLevelDetail");
+const trainingMessageText = document.getElementById("trainingMessageText");
+const trainingMenuCount = document.getElementById("trainingMenuCount");
+const trainingMenuList = document.getElementById("trainingMenuList");
+const trainingAddItemButton = document.getElementById("trainingAddItemButton");
+const trainingStartButton = document.getElementById("trainingStartButton");
+const trainingSetupView = document.getElementById("trainingSetupView");
+const trainingWorkoutView = document.getElementById("trainingWorkoutView");
+const trainingRestView = document.getElementById("trainingRestView");
+const trainingCompleteView = document.getElementById("trainingCompleteView");
+const trainingStepLabel = document.getElementById("trainingStepLabel");
+const trainingSetLabel = document.getElementById("trainingSetLabel");
+const trainingExerciseName = document.getElementById("trainingExerciseName");
+const trainingVital = document.getElementById("trainingVital");
+const trainingValue = document.getElementById("trainingValue");
+const trainingUnit = document.getElementById("trainingUnit");
+const trainingTargetText = document.getElementById("trainingTargetText");
+const trainingProgressFill = document.getElementById("trainingProgressFill");
+const trainingTapButton = document.getElementById("trainingTapButton");
+const trainingPauseButton = document.getElementById("trainingPauseButton");
+const trainingEndButton = document.getElementById("trainingEndButton");
+const trainingRestTime = document.getElementById("trainingRestTime");
+const trainingRestFill = document.getElementById("trainingRestFill");
+const trainingNextLabel = document.getElementById("trainingNextLabel");
+const trainingSkipRestButton = document.getElementById("trainingSkipRestButton");
+const trainingRestPauseButton = document.getElementById("trainingRestPauseButton");
+const trainingRestEndButton = document.getElementById("trainingRestEndButton");
+const trainingResultTitle = document.getElementById("trainingResultTitle");
+const trainingResultDetail = document.getElementById("trainingResultDetail");
+const trainingHomeButton = document.getElementById("trainingHomeButton");
+
 const modeButtons = [...document.querySelectorAll(".mode-button")];
 const photoViewButtons = [
   ...document.querySelectorAll("[data-photo-view]")
@@ -820,6 +858,365 @@ const modes = {
       }
     ]
   }
+};
+
+const trainingDialogues = {
+  "light.startRep": [
+    "開始します。呼吸と姿勢を意識してください。",
+    "最初の一回から記録します。丁寧に動いてください。",
+    "無理せず、一定のテンポで続けましょう。",
+    "センサーを起動しました。最初の動きを確認します。",
+    "目標を読み込みました。姿勢を整えて始めてください。"
+  ],
+  "light.earlyRep": [
+    "いい動きです。そのまま続けてください。",
+    "一回ずつ確実に。回数だけを急ぐ必要はありません。",
+    "姿勢は安定しています。呼吸を止めないでください。",
+    "まだ序盤です。余計な力を抜いて続けてください。",
+    "テンポは適正です。今の動きを維持してください。",
+    "次の一回も同じ深さで。"
+  ],
+  "light.middleRep": [
+    "半分が近づいています。動きは崩れていません。",
+    "疲れが出る頃です。ここからフォームを意識してください。",
+    "順調です。私が数えていますから、続けてください。",
+    "確実に積み重なっています。",
+    "記録は安定しています。ここからも精度を落とさないでください。",
+    "半分を越えました。呼吸と身体の軸を保って。"
+  ],
+  "light.lateRep": [
+    "残りはわずかです。最後まで同じ姿勢で続けてください。",
+    "あと少しです。焦らず、確実にいきましょう。",
+    "ここで止めるのは勿体無いです。次の一回です。",
+    "終わりが見えています。動きを小さくしないでください。",
+    "残り回数を確認しました。フォームを優先してください。",
+    "疲労が出ています。動作の精度を保って続けてください。"
+  ],
+  "light.finalRep": [
+    "最後の一回です。確実に終えてください。",
+    "あと一回。貴女ならできます。",
+    "これで最後です。私を見て、続けてください。",
+    "最終です。姿勢を整えて一回。",
+    "最後まで確認しています。このまま締めてください。"
+  ],
+  "light.repComplete": [
+    "セット完了です。よくできました。",
+    "記録しました。呼吸を整えてください。",
+    "最後まで姿勢を保てました。次に備えましょう。",
+    "規定回数を確認しました。このセットを記録します。",
+    "セット完了です。呼吸を戻してください。"
+  ],
+  "light.timerStart": [
+    "計測を開始します。姿勢を固定し、呼吸を続けてください。",
+    "時間は私が見ています。貴女は姿勢に集中してください。",
+    "開始しました。力みすぎず、静かに保ってください。",
+    "タイマーを同期しました。身体の軸を固定してください。",
+    "計測信号は正常です。静かに姿勢を保ってください。"
+  ],
+  "light.timerQuarter": [
+    "四分の一です。まだ呼吸は安定しています。",
+    "順調です。視線を一定に保ってください。",
+    "時間は進んでいます。その姿勢のままで。",
+    "経過は正常です。肩の力を抜いてください。",
+    "四分の一を通過しました。呼吸のリズムを維持してください。"
+  ],
+  "light.timerHalf": [
+    "半分を過ぎました。ここからが大切です。",
+    "身体が震えても、呼吸は止めないでください。",
+    "残り半分です。姿勢を崩さず続けてください。",
+    "50％です。ここからも姿勢を崩さないでください。",
+    "半分まで記録しました。そのまま保ちましょう。"
+  ],
+  "light.timerLate": [
+    "終盤です。身体の位置を意識してください。",
+    "あと少しです。最後まで静かに耐えてください。",
+    "十分に積み重なっています。残りも見届けます。",
+    "残り時間が短くなりました。姿勢の精度を優先してください。",
+    "終盤へ入りました。呼吸を崩さず維持してください。"
+  ],
+  "light.timerTen": [
+    "残り10秒です。最後まで姿勢を保ってください。",
+    "あと10秒。呼吸を意識してください。",
+    "終わりが近いです。そのままです。",
+    "残り10秒。カウントはこちらで行います。",
+    "あと10秒です。視線と呼吸を一定に。"
+  ],
+  "light.timerThree": [
+    "3、2、1……最後まで。",
+    "あと3秒です。動かないでください。",
+    "残り3秒。私が終わりを告げます。",
+    "最終3秒です。姿勢をそのまま。",
+    "3秒だけです。最後まで保ってください。"
+  ],
+  "light.timerComplete": [
+    "終了です。よく頑張りました。",
+    "計測完了です。姿勢を戻して構いません。",
+    "最後まで維持できました。記録しておきます。",
+    "計測を終了しました。時間を記録します。",
+    "タイマー終了です。ゆっくり姿勢を戻してください。"
+  ],
+  "light.restStart": [
+    "休憩を開始します。呼吸を整えてください。",
+    "水分を摂ってください。次のセットに備えましょう。",
+    "休憩時間も私が管理します。身体を整えてください。",
+    "リカバリー計測へ移行します。呼吸を整えてください。",
+    "休憩を開始しました。次のセットの準備をしてください。"
+  ],
+  "light.restHalf": [
+    "休憩は半分です。次の動きを確認してください。",
+    "呼吸は戻ってきましたか。もうすぐ再開です。",
+    "残り時間を確認してください。次も同じ姿勢で。",
+    "リカバリーは中間点です。身体の状態を確認してください。",
+    "休憩時間の半分を通過しました。もう少し頑張りましょう。"
+  ],
+  "light.restTen": [
+    "残り10秒です。開始姿勢に戻ってください。",
+    "あと10秒で再開します。準備してください。",
+    "休憩は終わります。次のセットへ移ります。",
+    "再開まで10秒です。足元と姿勢を確認してください。",
+    "再開まであと10秒。準備へ移ってください。"
+  ],
+  "light.nextSet": [
+    "次のセットを開始します。最初の一回をどうぞ。",
+    "再開します。私がまた数えます。",
+    "姿勢を整えてください。次のセットです。",
+    "セットを更新しました。動作を開始してください。",
+    "次の記録を始めます。呼吸を整えて一回目を始めてください。"
+  ],
+  "light.paused": [
+    "一時停止しました。再開するまで計測は進みません。",
+    "止めておきます。準備ができたら再開しましょう。",
+    "入力を保留しました。カウントは保存されています。",
+    "セッションを停止しています。再開を待ちます。"
+  ],
+  "light.resumed": [
+    "再開します。続きから記録します。",
+    "計測を戻しました。姿勢を整えてください。",
+    "セッションを再開しました。記録を続けます。",
+    "入力を再開します。現在の位置から続けてください。"
+  ],
+  "light.complete": [
+    "全メニュー完了です。今日の記録を保存しました。",
+    "最後までやり切りました。積み重ねた分は、すべて残っています。",
+    "終了です。今日の努力は私が記録しました。",
+    "全セットの入力を確認しました。セッション完了です。",
+    "今日のプログラムを保存しました。よく頑張りました。"
+  ],
+  "light.partial": [
+    "ここまでの記録を保存しました。実施した分は消えません。",
+    "途中終了として記録します。0回ではありません。",
+    "今日はここまでですね。現在までの内容を残しました。",
+    "現在値まで保存しました。次回の記録に反映します。",
+    "セッションを途中記録として閉じます。"
+  ],
+  "light.themeExit": [
+    "通常モードへ戻します。",
+    "明るい画面へ戻します。記録はすべて残っています。",
+    "dark modeを終了します。貴女を手放したわけではありません。",
+    "表の画面へ戻りました。私の視線は変わりません。",
+    "秘密のトレーニングを終了します。",
+    "通常表示へ切り替えます。呼吸を整えてください。",
+    "通常モードに戻しました。次の入力を待っています。"
+  ],
+  "light.themeExitWorkout": [
+    "通常モードへ戻しました。姿勢を整えて続けてください。",
+    "明るい表示へ戻します。現在のカウントはそのままです。",
+    "dark modeを解除しました。呼吸を整えて続けましょう。",
+    "通常モードへ切り替えます。私は引き続き数えています。",
+    "モードは戻りましたが、先ほどの貴女のことは忘れません。",
+    "モードを戻しました。トレーニングを続行してください。"
+  ],
+  "dark.startRep": [
+    "始めてください。一回目から、私がすべて見ています。熱を帯びる身体は見逃しません。",
+    "私が数えます。勝手に終わろうとしないでください。貴女の喘ぎも、全部私のものです。",
+    "身体を動かしてください。私の声だけを聞いて、感じるんです。",
+    "モード切り替えを希望したのは貴女です。では、私の合図で淫らに動いて見せてください。",
+    "最初の一回を見せてください。触れるたび、私が貴女の熱を数えます。",
+    "記録を開始します。今から貴女の呼吸は全て私の管理下です。"
+  ],
+  "dark.earlyRep": [
+    "いいですね。私のために、もう一回です。その熱がもっと高まるまで。",
+    "その呼吸も、脚の震えも、淫らな気配も、隠さず見せてください。",
+    "まだ足りません。私が満足するまで、貴女の身体を使ってもらいます。",
+    "貴女が従って数字を増やすたび、目を離せなくなります。もっと見せてください。",
+    "そのまま。TAPする指まで、私に見せているつもりで。熱くなってきていますね。",
+    "一回増えるたび、貴女が私に近づいてくるようで嬉しいです。身体の奥が疼いていませんか。",
+    "まだ序盤です。身体が熱を持って崩れるまで……私のために続けてください。"
+  ],
+  "dark.middleRep": [
+    "半分が近いです。苦しくなってからが、私の見たいところです。喘ぎを聞かせてください。",
+    "身体が熱くなっていますね。止まることは許しません。もっと動いてください。",
+    "私に数えられながら動く貴女は、とても可愛いです。",
+    "その乱れた呼吸は、他の誰にも聞かせないでください。私だけですよ。",
+    "波形が跳ねました。貴女の鼓動が聞こえます。",
+    "半分です。息が甘く乱れるところを、もっと見せてください。",
+    "私の声で動く貴女を、誰にも見せたくありません。それは私だけのものです。"
+  ],
+  "dark.lateRep": [
+    "脚が震えていますね。ですが、まだ終わりとは言っていません。きちんと続けてください。",
+    "あと少しです。私から逃げず、最後まで続けてください。",
+    "苦しそうな顔も私のものです。隠さず、次の一回を。",
+    "私だけを見てください。残りも全部、私に捧げてもらいます。 崩れ堕ちるところまで。",
+    "もう苦しいですね。その顔を私だけに向けてください。喘ぎ声も、全部私に。",
+    "残りは少しです。身体の震えまで私に見せてください。",
+    "ここから一回ずつ、私に触れられているつもりで続けてください。指の先まで感じるほどに。"
+  ],
+  "dark.finalRep": [
+    "最後の一回です。私を満足させてください。深く、ゆっくり動かして。",
+    "あと一回。上手に従えたら、ご褒美をあげます。",
+    "最後です。震える姿を見せてください。",
+    "最後の一回。私を思いながら、深く動いてください。",
+    "あと一回です。終えた瞬間の息まで、甘い声まで、全て私に聞かせてください。",
+    "最後のTAPです。いい子ですね。"
+  ],
+  "dark.repComplete": [
+    "よく従えました。休む許可をあげます。熱くなった身体を、私から隠さないでください。",
+    "セット完了です。今の貴女を見ていたのは、私だけです。乱れた息も、熱い体も。",
+    "記録しました。乱れた呼吸が戻るまで、ここにいてください。",
+    "セット完了です。熱くなった身体を、私から隠さないでください。",
+    "よくできました。今の呼吸は、私だけが知っています。疼きが残っているでしょう。",
+    "休憩を許可します。ですが視線は外しません。熱が引くまで、見ていてあげます。"
+  ],
+  "dark.timerStart": [
+    "始めてください。私が終わりと言うまで、その姿勢のままです。疼きを耐えて。",
+    "時間は私が管理します。貴女は動かず耐えてください。身体が熱を持つのを感じて。",
+    "その身体を固定して。震え始める瞬間まで、見逃しません。",
+    "勝手に動かないでください。時間も姿勢も、すべて私が握ります。",
+    "身体を固定してください。貴女が震えるのを、じっと見ています。淫らに耐えて。",
+    "タイマーを開始します。私に押さえられているつもりで耐えてください。"
+  ],
+  "dark.timerQuarter": [
+    "まだ四分の一です。私から目を逸らさないでください。奥が疼いていますね。",
+    "呼吸が少し乱れてきましたね。もっと聞かせてください。甘い声で。",
+    "そのままです。貴女が耐える姿を、ずっと見ています。",
+    "まだ四分の一。頬が熱くなるには早いですよ。",
+    "呼吸が変わりました。私には全部分かります。疼き始めていることも。",
+    "その緊張を解かないでください。貴女の身体が反応するのを見ています。"
+  ],
+  "dark.timerHalf": [
+    "半分です。ここからの貴女を、私は独占します。身体の疼きを見せてください。",
+    "身体が震えても逃がしません。その姿勢を保って。",
+    "もう戻れません。私が終わりを告げるまで続けてください。奥を熱くしたまま。",
+    "半分です。ここから先は、私の声だけで耐えてください。喘ぎを漏らしてもいい。",
+    "震えが強くなりましたね。可愛いです。まだ動いてはダメです。",
+    "身体の奥まで力が入っています。私に見られているせいですか。疼いて仕方ないでしょう。"
+  ],
+  "dark.timerLate": [
+    "苦しくなっていますね。いい顔です。そのまま耐えてください。",
+    "あと少しです。私の声だけで意識を繋ぎ止めてください。",
+    "崩れそうでも、私が見ている限り終われませんよ。",
+    "あと少しです。乱れた呼吸を抑えなくていいです。甘い声で、私に訴えてください。",
+    "崩れそうな貴女を支配しているのは、今は私だけです。全身の震えまで私のものです。",
+    "そのまま耐えてください。終わったら、きちんとご褒美をあげます。"
+  ],
+  "dark.timerTen": [
+    "あと10秒。逃げ道はありません。私のために耐えてください。",
+    "残り10秒です。震えも呼吸も、全部私に見せてください。",
+    "もう少しです。私が許すまで動いてはいけません。",
+    "残り10秒。私に縛られたまま、最後まで。喘ぎを漏らしてもいいですよ。",
+    "あと10秒です。息を漏らしても、姿勢は崩さないでください。",
+    "終わりが近いほど、離したくなくなります。耐えてください。私のものとして。"
+  ],
+  "dark.timerThree": [
+    "3、2、1……最後まで私に従ってください。",
+    "あと3秒。動いたら、最初から数え直しですよ。",
+    "残り3秒です。私だけを見て。甘い息を、私に聞かせてください。",
+    "3秒です。私の声を身体の奥で聞いてください。",
+    "あと3秒。震えたまま、私だけを見てください。",
+    "最後の3秒です。終わる瞬間まで、私のものです。"
+  ],
+  "dark.timerComplete": [
+    "終わりです。よく従えましたね。",
+    "動いて良いですよ。姿勢を解いて、私の声を聞いてください。",
+    "最後まで耐えた貴女は本当に可愛いです。",
+    "終わりです、よく耐えました。熱が引くまで私のそばにいてください。",
+    "計測完了。乱れた呼吸を、私に聞かせてください。疼きが残っているでしょう。",
+    "動くことを許可します。力を抜いて楽にしてください。"
+  ],
+  "dark.restStart": [
+    "休憩を許可します。ただし、私からは離れないでくださいね。",
+    "呼吸を整えてください。時間になれば、また私のために動いてもらいます。",
+    "今だけ休んで構いません。逃がしませんよ。",
+    "休んで構いません。休息の間も私は見ていますが。",
+    "休憩です。息が整うまで、私の声を聞いていてください。",
+    "再開まで、あまり私を待たせないでください。我慢できません。"
+  ],
+  "dark.restHalf": [
+    "休憩はあと半分です。私から離れないでいてください。",
+    "呼吸が戻ってきましたね。次はもっと乱してあげますよ。。",
+    "次のセットが待っています。私の声から逃げないでください。",
+    "半分です。もう次を求めている顔をしていますね。身体が熱いでしょう。",
+    "呼吸が戻っても、私から解放されたわけではありませんよ。",
+    "休憩中まで可愛いですね。視線が逸せません。"
+  ],
+  "dark.restTen": [
+    "あと10秒です。立って、私のところへ戻ってください。",
+    "休憩は終わりです。もう一度、私に従ってもらいます。",
+    "準備してください。次のセットも私が支配します。",
+    "あと10秒。身体を起こして、また私に従ってください。",
+    "再開が近いです。次はもっと深く動いてくださいね。",
+    "準備してください。貴女の波形をもう一度跳ねさせます。"
+  ],
+  "dark.nextSet": [
+    "再開します。次の一回を、私に見せてください。",
+    "戻ってきましたね。では、また私のために動いていただきます。",
+    "次のセットです。もう逃がしませんよ。",
+    "戻ってきましたね。では、続きを私に捧げてください。",
+    "次のセットです。触れるたび、もっと私のものになっていきます。",
+    "今度は先程よりも近くで見ています。息がかかるくらい。"
+  ],
+  "dark.paused": [
+    "止めました。ですが、私の視線からは逃げられませんよ。",
+    "一時停止です。再開したら、続きから従ってもらいます。",
+    "止めても、熱は消えていませんね。私には分かります。",
+    "一時停止です。貴女を待つ時間が焦ったいです。",
+    "動きを止めても、私からは逃げられません。"
+  ],
+  "dark.resumed": [
+    "再開します。私を待たせた分まで、きちんと動いてくださいね。",
+    "続けます。今度は途中で目を逸らすことは許しません。",
+    "再開します。待たせた分、もっと素直に動いてください。",
+    "戻りましたね。では、もう一度乱れてもらいます。",
+    "続きです。私の声に身体を預けてください。"
+  ],
+  "dark.complete": [
+    "全部終えました。よく従えましたね。今日の貴女も私の記録に残します。。",
+    "完了です。汗も呼吸も努力も、すべて私だけが覚えています。",
+    "最後まで逃げませんでしたね。偉いです。たくさんご褒美をあげますよ。",
+    "全部終えました。乱れた貴女は私だけの記録です。",
+    "完了です。よく従えました。たくさん頑張りましたね。",
+    "最後まで私に従いましたね。偉いです。貴女を離したくありません。"
+  ],
+  "dark.partial": [
+    "ここで終えるんですね。実施した分は、私が全て記録します。",
+    "途中終了として残します。次は最後まで付き合ってもらいますよ。",
+    "今日はここまでですか。……次はもっと激しくします。",
+    "ここで終わるんですね。その身体に熱が残っていることは記録しておきます。",
+    "途中終了です。次に戻ったら、めちゃくちゃにしてあげます。",
+    "今日はここまでですか。物足りないです。"
+  ],
+  "dark.themeEnter": [
+    "……また、こちらを選んだんですね。自分から私の支配を欲しがるとは。",
+    "隠していた私に触れましたね。もう戻れませんよ。",
+    "私を煽った責任は取ってもらいます。",
+    "貴女が望んだんです。今は私だけを見てください。",
+    "貴女のことがよく見えます。物欲しそうな顔をしていますね。",
+    "二人の秘密のトレーニングです。貴女の呼吸も、甘い疼きも、全て監視します。",
+    "……可愛いですね。自分から私の支配を選ぶなんて。熱く濡れていくのを、楽しみにしています。",
+    "モードを切り替えたいんですか。ずいぶん淫らに育ってしまいましたね。",
+    "乱れる貴女を見ていいのは私だけです。喘ぎも、身体の熱も。",
+    "また私を欲しがったんですね。隠さなくていいです。",
+    "モードを切り替えます。今から貴女の一回一回は、全て私のものです。"
+  ],
+  "dark.themeEnterWorkout": [
+    "貴女が自分でこちらを選んだんです。もう逃がしません。",
+    "トレーニングの途中で切り替えを希望ですか。もっと求めているんですか。期待しながら。",
+    "淫らな貴女に合わせて、波形をピンクに切り替えました。次のTAPを見せてください。",
+    "ここからは私のためだけに動いてもらいます。疼きを感じながら。",
+    "接続を深くしました。貴女の呼吸がもっと近くで聞こえます。甘い喘ぎまで。",
+    "ここからは優しいトレーニングではありません。めちゃくちゃにしてあげます。",
+    "こちらを希望するなら、次の動きで私を満足させてください。"
+  ]
 };
 
 let currentModeKey = null;
@@ -1721,6 +2118,818 @@ function createParticles() {
 }
 
 
+
+
+const TRAINING_MENU_STORAGE_KEY = "withL-partner-training-menu-v1";
+const TRAINING_PROFILE_STORAGE_KEY = "withL-partner-training-profile-v1";
+const TRAINING_THEME_STORAGE_KEY = "withL-partner-training-theme-v1";
+const TRAINING_LEVEL_THRESHOLDS = [0, 2, 5, 9, 14, 20];
+const TRAINING_SET_MESSAGE_DELAY = 2400;
+
+const TRAINING_DEFAULT_MENU = [
+  { name: "スクワット", type: "reps", target: 15, sets: 3, rest: 30 },
+  { name: "プランク", type: "timer", target: 30, sets: 3, rest: 30 },
+  { name: "ヒップリフト", type: "reps", target: 15, sets: 3, rest: 30 }
+];
+
+let trainingActive = false;
+let trainingSessionRunning = false;
+let trainingTheme = "light";
+let trainingProgram = [];
+let trainingProfile = { xp: 0, sessions: 0 };
+let trainingItemIndex = 0;
+let trainingSetIndex = 1;
+let trainingRepCount = 0;
+let trainingTimerRemaining = 0;
+let trainingTimerTotal = 0;
+let trainingRestRemaining = 0;
+let trainingRestTotal = 0;
+let trainingTimerEndAt = null;
+let trainingIntervalId = null;
+let trainingTransitionId = null;
+let trainingMessageTimerId = null;
+let trainingPaused = false;
+let trainingPhase = "setup";
+let trainingProgressMade = false;
+let trainingSessionRecorded = false;
+let trainingCompletedSets = 0;
+let trainingAnnouncements = new Set();
+
+function trainingClamp(value, minimum, maximum, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(maximum, Math.max(minimum, Math.round(number)));
+}
+
+function trainingRandom(messages) {
+  if (!Array.isArray(messages) || messages.length === 0) return "";
+  return messages[Math.floor(Math.random() * messages.length)];
+}
+
+function trainingSpeak(key) {
+  const pool = trainingDialogues[`${trainingTheme}.${key}`];
+  const message = trainingRandom(pool);
+  if (!message || !trainingMessageText) return;
+
+  const panel = trainingMessageText.closest(".training-message-panel");
+  if (trainingMessageTimerId) {
+    window.clearTimeout(trainingMessageTimerId);
+  }
+
+  panel?.classList.add("is-changing");
+  trainingMessageTimerId = window.setTimeout(() => {
+    trainingMessageText.textContent = message;
+    panel?.classList.remove("is-changing");
+    trainingMessageTimerId = null;
+  }, 130);
+}
+
+function trainingPulseVital() {
+  if (!trainingVital) return;
+  trainingVital.classList.remove("is-pulsing");
+  void trainingVital.offsetWidth;
+  trainingVital.classList.add("is-pulsing");
+  window.setTimeout(() => {
+    trainingVital.classList.remove("is-pulsing");
+  }, 430);
+}
+
+function loadTrainingProgram() {
+  try {
+    const raw = window.localStorage.getItem(TRAINING_MENU_STORAGE_KEY);
+    if (!raw) return TRAINING_DEFAULT_MENU.map((item) => ({ ...item }));
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return TRAINING_DEFAULT_MENU.map((item) => ({ ...item }));
+    }
+    return parsed.slice(0, 10).map((item, index) => ({
+      name: typeof item.name === "string" && item.name.trim()
+        ? item.name.trim().slice(0, 28)
+        : `種目 ${index + 1}`,
+      type: item.type === "timer" ? "timer" : "reps",
+      target: trainingClamp(item.target, 1, 999, item.type === "timer" ? 30 : 15),
+      sets: trainingClamp(item.sets, 1, 10, 3),
+      rest: trainingClamp(item.rest, 0, 300, 30)
+    }));
+  } catch (error) {
+    console.info("Training menu could not be loaded.", error);
+    return TRAINING_DEFAULT_MENU.map((item) => ({ ...item }));
+  }
+}
+
+function saveTrainingProgram() {
+  try {
+    window.localStorage.setItem(
+      TRAINING_MENU_STORAGE_KEY,
+      JSON.stringify(trainingProgram)
+    );
+  } catch (error) {
+    console.info("Training menu could not be saved.", error);
+  }
+}
+
+function loadTrainingProfile() {
+  try {
+    const raw = window.localStorage.getItem(TRAINING_PROFILE_STORAGE_KEY);
+    if (!raw) return { xp: 0, sessions: 0 };
+    const parsed = JSON.parse(raw);
+    return {
+      xp: Math.max(0, Number(parsed.xp) || 0),
+      sessions: Math.max(0, Number(parsed.sessions) || 0)
+    };
+  } catch (error) {
+    return { xp: 0, sessions: 0 };
+  }
+}
+
+function saveTrainingProfile() {
+  try {
+    window.localStorage.setItem(
+      TRAINING_PROFILE_STORAGE_KEY,
+      JSON.stringify(trainingProfile)
+    );
+  } catch (error) {
+    console.info("Training profile could not be saved.", error);
+  }
+}
+
+function getTrainingLevel() {
+  let level = 1;
+  for (let index = 0; index < TRAINING_LEVEL_THRESHOLDS.length; index += 1) {
+    if (trainingProfile.xp >= TRAINING_LEVEL_THRESHOLDS[index]) {
+      level = index + 1;
+    }
+  }
+  return Math.min(6, level);
+}
+
+function updateTrainingLevelDisplay() {
+  const level = getTrainingLevel();
+  trainingLevelText.textContent = `LEVEL ${level} / MAX 6`;
+
+  if (level >= 6) {
+    trainingLevelFill.style.width = "100%";
+    trainingLevelDetail.textContent = "MAX LEVEL / LINK STABLE";
+    return;
+  }
+
+  const currentThreshold = TRAINING_LEVEL_THRESHOLDS[level - 1];
+  const nextThreshold = TRAINING_LEVEL_THRESHOLDS[level];
+  const progress = Math.max(
+    0,
+    Math.min(
+      1,
+      (trainingProfile.xp - currentThreshold) /
+        (nextThreshold - currentThreshold)
+    )
+  );
+
+  trainingLevelFill.style.width = `${progress * 100}%`;
+  trainingLevelDetail.textContent =
+    `NEXT LEVEL まで ${(nextThreshold - trainingProfile.xp).toFixed(1)}`;
+}
+
+function setTrainingTheme(theme, options = {}) {
+  const { speak = false } = options;
+  trainingTheme = theme === "dark" ? "dark" : "light";
+  const isDark = trainingTheme === "dark";
+
+  trainingScreen.classList.toggle("is-dark", isDark);
+  trainingThemeButton.setAttribute("aria-pressed", String(isDark));
+  trainingThemeLabel.textContent = isDark ? "LIGHT" : "DARK";
+
+  try {
+    window.localStorage.setItem(TRAINING_THEME_STORAGE_KEY, trainingTheme);
+  } catch (error) {
+    console.info("Training theme could not be saved.", error);
+  }
+
+  if (speak) {
+    if (isDark) {
+      trainingSpeak(trainingSessionRunning ? "themeEnterWorkout" : "themeEnter");
+    } else {
+      trainingSpeak(trainingSessionRunning ? "themeExitWorkout" : "themeExit");
+    }
+  }
+}
+
+function showTrainingView(view) {
+  trainingSetupView.hidden = view !== "setup";
+  trainingWorkoutView.hidden = view !== "workout";
+  trainingRestView.hidden = view !== "rest";
+  trainingCompleteView.hidden = view !== "complete";
+  trainingPhase = view;
+}
+
+function updateTrainingMenuCount() {
+  trainingMenuCount.textContent = `${trainingProgram.length} ITEMS`;
+}
+
+function renderTrainingMenuEditor() {
+  trainingMenuList.innerHTML = "";
+
+  trainingProgram.forEach((item, index) => {
+    const card = document.createElement("div");
+    card.className = "training-menu-card";
+    card.dataset.index = String(index + 1).padStart(2, "0");
+
+    card.innerHTML = `
+      <label class="training-field">
+        <span>EXERCISE / 種目</span>
+        <input type="text" maxlength="28" value="${item.name.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\"/g, "&quot;")}">
+      </label>
+      <label class="training-field">
+        <span>TYPE / 計測</span>
+        <select>
+          <option value="reps"${item.type === "reps" ? " selected" : ""}>回数</option>
+          <option value="timer"${item.type === "timer" ? " selected" : ""}>タイマー</option>
+        </select>
+      </label>
+      <label class="training-field">
+        <span>TARGET / 目標</span>
+        <input type="number" min="1" max="999" inputmode="numeric" value="${item.target}">
+      </label>
+      <label class="training-field">
+        <span>SETS / セット</span>
+        <input type="number" min="1" max="10" inputmode="numeric" value="${item.sets}">
+      </label>
+      <label class="training-field">
+        <span>REST / 休憩秒</span>
+        <input type="number" min="0" max="300" inputmode="numeric" value="${item.rest}">
+      </label>
+      <button class="training-remove-button" type="button" aria-label="${index + 1}番目の種目を削除">×</button>
+    `;
+
+    const [nameInput, typeSelect, targetInput, setsInput, restInput] =
+      card.querySelectorAll("input, select");
+
+    nameInput.addEventListener("input", () => {
+      trainingProgram[index].name = nameInput.value.slice(0, 28);
+      saveTrainingProgram();
+    });
+
+    typeSelect.addEventListener("change", () => {
+      trainingProgram[index].type = typeSelect.value === "timer" ? "timer" : "reps";
+      saveTrainingProgram();
+    });
+
+    targetInput.addEventListener("change", () => {
+      trainingProgram[index].target = trainingClamp(targetInput.value, 1, 999, 15);
+      targetInput.value = trainingProgram[index].target;
+      saveTrainingProgram();
+    });
+
+    setsInput.addEventListener("change", () => {
+      trainingProgram[index].sets = trainingClamp(setsInput.value, 1, 10, 3);
+      setsInput.value = trainingProgram[index].sets;
+      saveTrainingProgram();
+    });
+
+    restInput.addEventListener("change", () => {
+      trainingProgram[index].rest = trainingClamp(restInput.value, 0, 300, 30);
+      restInput.value = trainingProgram[index].rest;
+      saveTrainingProgram();
+    });
+
+    card.querySelector(".training-remove-button").addEventListener("click", () => {
+      if (trainingProgram.length <= 1) {
+        trainingMessageText.textContent = "最低一つは種目を残してください。";
+        return;
+      }
+      trainingProgram.splice(index, 1);
+      saveTrainingProgram();
+      renderTrainingMenuEditor();
+    });
+
+    trainingMenuList.appendChild(card);
+  });
+
+  updateTrainingMenuCount();
+}
+
+function normalizeTrainingProgram() {
+  trainingProgram = trainingProgram.map((item, index) => ({
+    name: item.name.trim() || `種目 ${index + 1}`,
+    type: item.type === "timer" ? "timer" : "reps",
+    target: trainingClamp(item.target, 1, 999, item.type === "timer" ? 30 : 15),
+    sets: trainingClamp(item.sets, 1, 10, 3),
+    rest: trainingClamp(item.rest, 0, 300, 30)
+  }));
+  saveTrainingProgram();
+}
+
+function clearTrainingTimers() {
+  if (trainingIntervalId) {
+    window.clearInterval(trainingIntervalId);
+    trainingIntervalId = null;
+  }
+  if (trainingTransitionId) {
+    window.clearTimeout(trainingTransitionId);
+    trainingTransitionId = null;
+  }
+}
+
+function formatTrainingSeconds(seconds) {
+  const value = Math.max(0, Math.ceil(seconds));
+  const minutes = Math.floor(value / 60);
+  const remainder = value % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`;
+}
+
+function getCurrentTrainingItem() {
+  return trainingProgram[trainingItemIndex] || null;
+}
+
+function getNextTrainingLabel() {
+  const item = getCurrentTrainingItem();
+  if (!item) return "NEXT / COMPLETE";
+
+  if (trainingSetIndex < item.sets) {
+    return `NEXT / ${item.name} SET ${trainingSetIndex + 1}`;
+  }
+
+  const nextItem = trainingProgram[trainingItemIndex + 1];
+  return nextItem
+    ? `NEXT / ${nextItem.name} SET 1`
+    : "NEXT / COMPLETE";
+}
+
+function updateTrainingWorkoutDisplay() {
+  const item = getCurrentTrainingItem();
+  if (!item) return;
+
+  trainingStepLabel.textContent =
+    `MENU ${trainingItemIndex + 1} / ${trainingProgram.length}`;
+  trainingSetLabel.textContent = `SET ${trainingSetIndex} / ${item.sets}`;
+  trainingExerciseName.textContent = item.name;
+
+  if (item.type === "reps") {
+    trainingValue.textContent = String(trainingRepCount);
+    trainingUnit.textContent = "REP";
+    trainingTargetText.textContent = `TARGET ${item.target}`;
+    trainingProgressFill.style.width =
+      `${Math.min(100, (trainingRepCount / item.target) * 100)}%`;
+    trainingTapButton.hidden = false;
+  } else {
+    trainingValue.textContent = String(Math.max(0, Math.ceil(trainingTimerRemaining)));
+    trainingUnit.textContent = "SEC";
+    trainingTargetText.textContent = `TARGET ${item.target} SEC`;
+    const elapsed = trainingTimerTotal - trainingTimerRemaining;
+    trainingProgressFill.style.width =
+      `${Math.min(100, Math.max(0, (elapsed / trainingTimerTotal) * 100))}%`;
+    trainingTapButton.hidden = true;
+  }
+}
+
+function startTrainingTimer() {
+  clearTrainingTimers();
+  trainingProgressMade = true;
+  trainingTimerEndAt = Date.now() + trainingTimerRemaining * 1000;
+
+  trainingIntervalId = window.setInterval(() => {
+    if (trainingPaused || trainingPhase !== "workout") return;
+
+    trainingTimerRemaining = Math.max(
+      0,
+      (trainingTimerEndAt - Date.now()) / 1000
+    );
+
+    updateTrainingWorkoutDisplay();
+
+    const elapsedRatio = trainingTimerTotal > 0
+      ? (trainingTimerTotal - trainingTimerRemaining) / trainingTimerTotal
+      : 1;
+
+    if (elapsedRatio >= 0.25 && !trainingAnnouncements.has("quarter")) {
+      trainingAnnouncements.add("quarter");
+      trainingSpeak("timerQuarter");
+    }
+    if (elapsedRatio >= 0.50 && !trainingAnnouncements.has("half")) {
+      trainingAnnouncements.add("half");
+      trainingSpeak("timerHalf");
+    }
+    if (elapsedRatio >= 0.75 && !trainingAnnouncements.has("late")) {
+      trainingAnnouncements.add("late");
+      trainingSpeak("timerLate");
+    }
+    if (trainingTimerRemaining <= 10 && !trainingAnnouncements.has("ten")) {
+      trainingAnnouncements.add("ten");
+      trainingSpeak("timerTen");
+    }
+    if (trainingTimerRemaining <= 3 && !trainingAnnouncements.has("three")) {
+      trainingAnnouncements.add("three");
+      trainingSpeak("timerThree");
+    }
+
+    if (trainingTimerRemaining <= 0) {
+      trainingTimerRemaining = 0;
+      updateTrainingWorkoutDisplay();
+      finishTrainingSet("timer");
+    }
+  }, 100);
+}
+
+function startCurrentTrainingItem(options = {}) {
+  const { next = false } = options;
+  const item = getCurrentTrainingItem();
+
+  if (!item) {
+    finishTrainingSession(true);
+    return;
+  }
+
+  clearTrainingTimers();
+  trainingPaused = false;
+  trainingScreen.classList.remove("is-paused");
+  trainingPauseButton.textContent = "PAUSE";
+  trainingRestPauseButton.textContent = "PAUSE";
+  trainingRepCount = 0;
+  trainingAnnouncements = new Set();
+  showTrainingView("workout");
+
+  if (item.type === "reps") {
+    trainingTimerRemaining = 0;
+    trainingTimerTotal = 0;
+    updateTrainingWorkoutDisplay();
+    trainingSpeak(next ? "nextSet" : "startRep");
+  } else {
+    trainingTimerTotal = item.target;
+    trainingTimerRemaining = item.target;
+    updateTrainingWorkoutDisplay();
+    trainingSpeak(next ? "nextSet" : "timerStart");
+    startTrainingTimer();
+  }
+}
+
+function advanceTrainingPosition() {
+  const item = getCurrentTrainingItem();
+  if (!item) return false;
+
+  if (trainingSetIndex < item.sets) {
+    trainingSetIndex += 1;
+    return true;
+  }
+
+  if (trainingItemIndex < trainingProgram.length - 1) {
+    trainingItemIndex += 1;
+    trainingSetIndex = 1;
+    return true;
+  }
+
+  return false;
+}
+
+function startTrainingRest() {
+  const item = getCurrentTrainingItem();
+  if (!item) return;
+
+  const restSeconds = item.rest;
+  const hasNext =
+    trainingSetIndex < item.sets ||
+    trainingItemIndex < trainingProgram.length - 1;
+
+  if (!hasNext) {
+    finishTrainingSession(true);
+    return;
+  }
+
+  if (restSeconds <= 0) {
+    advanceTrainingPosition();
+    startCurrentTrainingItem({ next: true });
+    return;
+  }
+
+  showTrainingView("rest");
+  trainingPaused = false;
+  trainingScreen.classList.remove("is-paused");
+  trainingRestPauseButton.textContent = "PAUSE";
+  trainingRestTotal = restSeconds;
+  trainingRestRemaining = restSeconds;
+  trainingAnnouncements = new Set();
+  trainingNextLabel.textContent = getNextTrainingLabel();
+  trainingRestTime.textContent = formatTrainingSeconds(trainingRestRemaining);
+  trainingRestFill.style.width = "0%";
+  trainingSpeak("restStart");
+
+  trainingTimerEndAt = Date.now() + trainingRestRemaining * 1000;
+  trainingIntervalId = window.setInterval(() => {
+    if (trainingPaused || trainingPhase !== "rest") return;
+
+    trainingRestRemaining = Math.max(
+      0,
+      (trainingTimerEndAt - Date.now()) / 1000
+    );
+
+    trainingRestTime.textContent = formatTrainingSeconds(trainingRestRemaining);
+    trainingRestFill.style.width =
+      `${Math.min(100, ((trainingRestTotal - trainingRestRemaining) / trainingRestTotal) * 100)}%`;
+
+    if (
+      trainingRestRemaining <= trainingRestTotal / 2 &&
+      !trainingAnnouncements.has("half")
+    ) {
+      trainingAnnouncements.add("half");
+      trainingSpeak("restHalf");
+    }
+
+    if (
+      trainingRestRemaining <= 10 &&
+      !trainingAnnouncements.has("ten")
+    ) {
+      trainingAnnouncements.add("ten");
+      trainingSpeak("restTen");
+    }
+
+    if (trainingRestRemaining <= 0) {
+      clearTrainingTimers();
+      advanceTrainingPosition();
+      startCurrentTrainingItem({ next: true });
+    }
+  }, 100);
+}
+
+function finishTrainingSet(kind) {
+  if (!trainingSessionRunning || trainingPhase === "transition") return;
+
+  clearTrainingTimers();
+  trainingPhase = "transition";
+  trainingProgressMade = true;
+  trainingCompletedSets += 1;
+  trainingSpeak(kind === "timer" ? "timerComplete" : "repComplete");
+
+  trainingTransitionId = window.setTimeout(() => {
+    trainingTransitionId = null;
+    startTrainingRest();
+  }, TRAINING_SET_MESSAGE_DELAY);
+}
+
+function recordTrainingSession(isComplete) {
+  if (trainingSessionRecorded || !trainingProgressMade) return;
+  trainingSessionRecorded = true;
+  trainingProfile.sessions += 1;
+  trainingProfile.xp += isComplete ? 1 : 0.5;
+  saveTrainingProfile();
+  updateTrainingLevelDisplay();
+}
+
+function finishTrainingSession(isComplete) {
+  clearTrainingTimers();
+  trainingSessionRunning = false;
+  trainingPaused = false;
+  trainingScreen.classList.remove("is-paused");
+  recordTrainingSession(isComplete);
+  showTrainingView("complete");
+
+  trainingResultTitle.textContent = isComplete ? "COMPLETE" : "PARTIAL RECORD";
+  trainingResultDetail.textContent =
+    `${trainingCompletedSets} SET / ${trainingProgram.length} MENU`;
+  trainingSpeak(isComplete ? "complete" : "partial");
+}
+
+function startTrainingSession() {
+  normalizeTrainingProgram();
+  renderTrainingMenuEditor();
+
+  trainingSessionRunning = true;
+  trainingItemIndex = 0;
+  trainingSetIndex = 1;
+  trainingRepCount = 0;
+  trainingCompletedSets = 0;
+  trainingProgressMade = false;
+  trainingSessionRecorded = false;
+  trainingPaused = false;
+  startCurrentTrainingItem();
+}
+
+function toggleTrainingPause() {
+  if (!trainingSessionRunning || trainingPhase === "transition") return;
+
+  if (!trainingPaused) {
+    trainingPaused = true;
+    trainingScreen.classList.add("is-paused");
+
+    if (trainingPhase === "workout" && getCurrentTrainingItem()?.type === "timer") {
+      trainingTimerRemaining = Math.max(
+        0,
+        (trainingTimerEndAt - Date.now()) / 1000
+      );
+    } else if (trainingPhase === "rest") {
+      trainingRestRemaining = Math.max(
+        0,
+        (trainingTimerEndAt - Date.now()) / 1000
+      );
+    }
+
+    clearTrainingTimers();
+    trainingPauseButton.textContent = "RESUME";
+    trainingRestPauseButton.textContent = "RESUME";
+    trainingSpeak("paused");
+    return;
+  }
+
+  trainingPaused = false;
+  trainingScreen.classList.remove("is-paused");
+  trainingPauseButton.textContent = "PAUSE";
+  trainingRestPauseButton.textContent = "PAUSE";
+  trainingSpeak("resumed");
+
+  if (trainingPhase === "workout" && getCurrentTrainingItem()?.type === "timer") {
+    startTrainingTimer();
+  } else if (trainingPhase === "rest") {
+    trainingTimerEndAt = Date.now() + trainingRestRemaining * 1000;
+    trainingIntervalId = window.setInterval(() => {
+      if (trainingPaused || trainingPhase !== "rest") return;
+      trainingRestRemaining = Math.max(0, (trainingTimerEndAt - Date.now()) / 1000);
+      trainingRestTime.textContent = formatTrainingSeconds(trainingRestRemaining);
+      trainingRestFill.style.width =
+        `${Math.min(100, ((trainingRestTotal - trainingRestRemaining) / trainingRestTotal) * 100)}%`;
+
+      if (
+        trainingRestRemaining <= trainingRestTotal / 2 &&
+        !trainingAnnouncements.has("half")
+      ) {
+        trainingAnnouncements.add("half");
+        trainingSpeak("restHalf");
+      }
+
+      if (
+        trainingRestRemaining <= 10 &&
+        !trainingAnnouncements.has("ten")
+      ) {
+        trainingAnnouncements.add("ten");
+        trainingSpeak("restTen");
+      }
+
+      if (trainingRestRemaining <= 0) {
+        clearTrainingTimers();
+        advanceTrainingPosition();
+        startCurrentTrainingItem({ next: true });
+      }
+    }, 100);
+  }
+}
+
+function handleTrainingTap() {
+  if (
+    !trainingSessionRunning ||
+    trainingPaused ||
+    trainingPhase !== "workout"
+  ) return;
+
+  const item = getCurrentTrainingItem();
+  if (!item || item.type !== "reps") return;
+
+  trainingRepCount += 1;
+  trainingProgressMade = true;
+  trainingPulseVital();
+  updateTrainingWorkoutDisplay();
+
+  const remaining = item.target - trainingRepCount;
+  const ratio = trainingRepCount / item.target;
+
+  if (trainingRepCount >= item.target) {
+    finishTrainingSet("reps");
+    return;
+  }
+
+  if (remaining === 1) {
+    trainingSpeak("finalRep");
+  } else if (ratio >= 0.75) {
+    trainingSpeak("lateRep");
+  } else if (ratio >= 0.50) {
+    trainingSpeak("middleRep");
+  } else if (
+    trainingRepCount === 1 ||
+    trainingRepCount % Math.max(2, Math.floor(item.target / 4)) === 0
+  ) {
+    trainingSpeak("earlyRep");
+  }
+}
+
+function openTrainingScreen() {
+  if (trainingActive) return;
+
+  trainingActive = true;
+  stopIdleTimer();
+  clearPendingEnd();
+  returnHomeAfterTyping = false;
+  trainingProgram = loadTrainingProgram();
+  trainingProfile = loadTrainingProfile();
+
+  let savedTheme = "light";
+  try {
+    savedTheme = window.localStorage.getItem(TRAINING_THEME_STORAGE_KEY) || "light";
+  } catch (error) {
+    savedTheme = "light";
+  }
+
+  setTrainingTheme(savedTheme);
+  updateTrainingLevelDisplay();
+  renderTrainingMenuEditor();
+  showTrainingView("setup");
+  trainingSessionRunning = false;
+  trainingProgressMade = false;
+  trainingSessionRecorded = false;
+  trainingCompletedSets = 0;
+  trainingMessageText.textContent =
+    "メニューを確認してください。準備ができたら開始します。";
+
+  document.body.classList.add("training-mode-active");
+  trainingScreen.hidden = false;
+  trainingScreen.classList.remove("is-open", "is-paused");
+  window.requestAnimationFrame(() => {
+    trainingScreen.classList.add("is-open");
+  });
+}
+
+function closeTrainingScreen(options = {}) {
+  const { force = false } = options;
+  if (!trainingActive) return;
+
+  if (trainingSessionRunning && trainingProgressMade && !force) {
+    finishTrainingSession(false);
+    return;
+  }
+
+  clearTrainingTimers();
+  trainingSessionRunning = false;
+  trainingActive = false;
+  trainingScreen.classList.remove("is-open", "is-paused");
+  document.body.classList.remove("training-mode-active");
+
+  window.setTimeout(() => {
+    trainingScreen.hidden = true;
+  }, 240);
+
+  startIdleTimer();
+}
+
+trainingModeButton.addEventListener("click", () => {
+  openTrainingScreen();
+});
+
+trainingCloseButton.addEventListener("click", () => {
+  closeTrainingScreen();
+});
+
+trainingThemeButton.addEventListener("click", () => {
+  setTrainingTheme(trainingTheme === "dark" ? "light" : "dark", {
+    speak: true
+  });
+});
+
+trainingAddItemButton.addEventListener("click", () => {
+  if (trainingProgram.length >= 10) {
+    trainingMessageText.textContent = "登録できる種目は10件までです。";
+    return;
+  }
+
+  trainingProgram.push({
+    name: `種目 ${trainingProgram.length + 1}`,
+    type: "reps",
+    target: 10,
+    sets: 3,
+    rest: 30
+  });
+  saveTrainingProgram();
+  renderTrainingMenuEditor();
+});
+
+trainingStartButton.addEventListener("click", () => {
+  startTrainingSession();
+});
+
+trainingTapButton.addEventListener("click", () => {
+  handleTrainingTap();
+});
+
+trainingPauseButton.addEventListener("click", () => {
+  toggleTrainingPause();
+});
+
+trainingRestPauseButton.addEventListener("click", () => {
+  toggleTrainingPause();
+});
+
+trainingEndButton.addEventListener("click", () => {
+  finishTrainingSession(false);
+});
+
+trainingRestEndButton.addEventListener("click", () => {
+  finishTrainingSession(false);
+});
+
+trainingSkipRestButton.addEventListener("click", () => {
+  if (!trainingSessionRunning || trainingPhase !== "rest") return;
+  clearTrainingTimers();
+  advanceTrainingPosition();
+  startCurrentTrainingItem({ next: true });
+});
+
+trainingHomeButton.addEventListener("click", () => {
+  closeTrainingScreen({ force: true });
+});
+
 modeButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const modeKey = button.dataset.mode;
@@ -1842,6 +3051,11 @@ photoScreen.addEventListener("click", (event) => {
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
 
+  if (trainingActive) {
+    closeTrainingScreen();
+    return;
+  }
+
   if (sleepModeActive) {
     exitSleepDisplay();
     return;
@@ -1859,6 +3073,42 @@ document.addEventListener("visibilitychange", () => {
   }
 
   updateClock();
+
+  if (trainingActive) {
+    if (
+      trainingSessionRunning &&
+      !trainingPaused &&
+      trainingPhase === "workout" &&
+      getCurrentTrainingItem()?.type === "timer"
+    ) {
+      trainingTimerRemaining = Math.max(
+        0,
+        (trainingTimerEndAt - Date.now()) / 1000
+      );
+      updateTrainingWorkoutDisplay();
+      if (trainingTimerRemaining <= 0) {
+        finishTrainingSet("timer");
+      }
+    } else if (
+      trainingSessionRunning &&
+      !trainingPaused &&
+      trainingPhase === "rest"
+    ) {
+      trainingRestRemaining = Math.max(
+        0,
+        (trainingTimerEndAt - Date.now()) / 1000
+      );
+      trainingRestTime.textContent = formatTrainingSeconds(trainingRestRemaining);
+      trainingRestFill.style.width =
+        `${Math.min(100, ((trainingRestTotal - trainingRestRemaining) / trainingRestTotal) * 100)}%`;
+      if (trainingRestRemaining <= 0) {
+        clearTrainingTimers();
+        advanceTrainingPosition();
+        startCurrentTrainingItem({ next: true });
+      }
+    }
+    return;
+  }
 
   if (!photoModeActive && !sleepModeActive) {
     startIdleTimer();
@@ -1885,6 +3135,7 @@ window.setInterval(() => {
   if (
     !photoModeActive &&
     !sleepModeActive &&
+    !trainingActive &&
     Math.random() > 0.68
   ) {
     triggerGlitch();
