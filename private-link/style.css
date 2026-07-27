@@ -421,10 +421,50 @@ button:focus-visible {
   margin: -8px 0 0;
   color: var(--ink);
   font-family: var(--font-display);
-  font-size: clamp(1.02rem, 4.1vw, 1.25rem);
   font-weight: 400;
+}
+
+.app-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  line-height: 1;
+}
+
+.app-title-main {
+  font-size: clamp(1.02rem, 4.1vw, 1.25rem);
   letter-spacing: 0.30em;
   text-indent: 0.30em;
+}
+
+.app-title-access {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: clamp(0.48rem, 1.75vw, 0.58rem);
+  letter-spacing: 0.20em;
+  text-indent: 0.20em;
+  white-space: nowrap;
+}
+
+.app-title-access::before,
+.app-title-access::after {
+  content: "";
+  width: clamp(16px, 5vw, 28px);
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--line)
+  );
+}
+
+.app-title-access::after {
+  transform: scaleX(-1);
 }
 
 .tagline {
@@ -1197,8 +1237,16 @@ button:focus-visible {
     width: min(51vw, 215px);
   }
 
-  .hero h1 {
+  .app-title {
+    gap: 4px;
+  }
+
+  .app-title-main {
     font-size: 0.95rem;
+  }
+
+  .app-title-access {
+    font-size: 0.46rem;
   }
 
   .tagline {
