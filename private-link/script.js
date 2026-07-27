@@ -35,20 +35,30 @@ const photoStage = document.getElementById("photoStage");
 const photoMessage = document.getElementById("photoMessage");
 const photoControls = document.getElementById("photoControls");
 
-const trainingModeButton = document.getElementById("trainingModeButton");
 const trainingScreen = document.getElementById("trainingScreen");
-const trainingCloseButton = document.getElementById("trainingCloseButton");
 const trainingThemeButton = document.getElementById("trainingThemeButton");
 const trainingThemeLabel = document.getElementById("trainingThemeLabel");
 const trainingLevelText = document.getElementById("trainingLevelText");
 const trainingLevelFill = document.getElementById("trainingLevelFill");
 const trainingLevelDetail = document.getElementById("trainingLevelDetail");
-const trainingMessageText = document.getElementById("trainingMessageText");
+const trainingSetupView = document.getElementById("trainingSetupView");
+const trainingSetupTitle = document.getElementById("trainingSetupTitle");
+const trainingSetupSummary = document.getElementById("trainingSetupSummary");
+const trainingSetupFields = document.getElementById("trainingSetupFields");
+const trainingSetupName = document.getElementById("trainingSetupName");
+const trainingSetupType = document.getElementById("trainingSetupType");
+const trainingSetupTarget = document.getElementById("trainingSetupTarget");
+const trainingSetupSets = document.getElementById("trainingSetupSets");
+const trainingSetupRest = document.getElementById("trainingSetupRest");
+const trainingSetupBackButton =
+  document.getElementById("trainingSetupBackButton");
+const trainingEditorView = document.getElementById("trainingEditorView");
 const trainingMenuCount = document.getElementById("trainingMenuCount");
 const trainingMenuList = document.getElementById("trainingMenuList");
 const trainingAddItemButton = document.getElementById("trainingAddItemButton");
+const trainingEditorDoneButton =
+  document.getElementById("trainingEditorDoneButton");
 const trainingStartButton = document.getElementById("trainingStartButton");
-const trainingSetupView = document.getElementById("trainingSetupView");
 const trainingWorkoutView = document.getElementById("trainingWorkoutView");
 const trainingRestView = document.getElementById("trainingRestView");
 const trainingCompleteView = document.getElementById("trainingCompleteView");
@@ -67,7 +77,8 @@ const trainingRestTime = document.getElementById("trainingRestTime");
 const trainingRestFill = document.getElementById("trainingRestFill");
 const trainingNextLabel = document.getElementById("trainingNextLabel");
 const trainingSkipRestButton = document.getElementById("trainingSkipRestButton");
-const trainingRestPauseButton = document.getElementById("trainingRestPauseButton");
+const trainingRestPauseButton =
+  document.getElementById("trainingRestPauseButton");
 const trainingRestEndButton = document.getElementById("trainingRestEndButton");
 const trainingResultTitle = document.getElementById("trainingResultTitle");
 const trainingResultDetail = document.getElementById("trainingResultDetail");
@@ -1354,6 +1365,10 @@ function getTimePeriod() {
 }
 
 function getRandomTalkMessage() {
+  if (currentModeKey === "training") {
+    return getTrainingGuideMessage();
+  }
+
   if (currentModeKey && Math.random() < 0.72) {
     return takeRandom(
       `${currentModeKey}-talk`,
@@ -1862,7 +1877,17 @@ function startIdleTimer() {
   idleTimerId = window.setTimeout(() => {
     let message;
 
-    if (currentModeKey) {
+    if (currentModeKey === "training") {
+      if (
+        trainingPhase === "workout" ||
+        trainingPhase === "rest" ||
+        trainingPhase === "transition"
+      ) {
+        return;
+      }
+
+      message = getTrainingGuideMessage();
+    } else if (currentModeKey) {
       message = takeRandom(
         `${currentModeKey}-idle`,
         modes[currentModeKey].idle
@@ -2068,6 +2093,11 @@ function returnToMenu(showMessage = true) {
   clearPendingEnd();
   stopSleepBreathingGuide();
   returnHomeAfterTyping = false;
+
+  if (currentModeKey === "training") {
+    leaveTrainingMode();
+  }
+
   currentModeKey = null;
   document.body.classList.remove(
     "private-session-active",
@@ -2132,11 +2162,29 @@ const TRAINING_DEFAULT_MENU = [
   { name: "ヒップリフト", type: "reps", target: 15, sets: 3, rest: 30 }
 ];
 
+const TRAINING_GUIDE_MESSAGES = {
+  light: [
+    "今日の種目を選んでください。回数やセット数は開始前に調整できます。",
+    "準備ができた種目から始めましょう。私が最後まで数えます。",
+    "無理をする必要はありません。ただし、決めた回数は丁寧に行ってください。",
+    "メニューは保存されています。今日はどれを私と進めますか。"
+  ],
+  dark: [
+    "DARK LINKで計測します。種目を選んで、私の指示に集中してください。",
+    "今日の負荷を選んでください。始めたら、最後まで私が見ています。",
+    "回数も呼吸も、私が確認します。誤魔化さないでください。",
+    "どの種目から始めますか。貴女が選んだ瞬間から計測対象です。"
+  ]
+};
+
 let trainingActive = false;
 let trainingSessionRunning = false;
 let trainingTheme = "light";
 let trainingProgram = [];
+let trainingSessionProgram = [];
 let trainingProfile = { xp: 0, sessions: 0 };
+let trainingSelectionMode = "single";
+let trainingSelectedIndex = 0;
 let trainingItemIndex = 0;
 let trainingSetIndex = 1;
 let trainingRepCount = 0;
@@ -2147,9 +2195,8 @@ let trainingRestTotal = 0;
 let trainingTimerEndAt = null;
 let trainingIntervalId = null;
 let trainingTransitionId = null;
-let trainingMessageTimerId = null;
 let trainingPaused = false;
-let trainingPhase = "setup";
+let trainingPhase = "choices";
 let trainingProgressMade = false;
 let trainingSessionRecorded = false;
 let trainingCompletedSets = 0;
@@ -2169,19 +2216,15 @@ function trainingRandom(messages) {
 function trainingSpeak(key) {
   const pool = trainingDialogues[`${trainingTheme}.${key}`];
   const message = trainingRandom(pool);
-  if (!message || !trainingMessageText) return;
+  if (!message) return;
+  typeMessage(message);
+}
 
-  const panel = trainingMessageText.closest(".training-message-panel");
-  if (trainingMessageTimerId) {
-    window.clearTimeout(trainingMessageTimerId);
-  }
-
-  panel?.classList.add("is-changing");
-  trainingMessageTimerId = window.setTimeout(() => {
-    trainingMessageText.textContent = message;
-    panel?.classList.remove("is-changing");
-    trainingMessageTimerId = null;
-  }, 130);
+function getTrainingGuideMessage() {
+  return trainingRandom(
+    TRAINING_GUIDE_MESSAGES[trainingTheme] ||
+      TRAINING_GUIDE_MESSAGES.light
+  );
 }
 
 function trainingPulseVital() {
@@ -2198,16 +2241,23 @@ function loadTrainingProgram() {
   try {
     const raw = window.localStorage.getItem(TRAINING_MENU_STORAGE_KEY);
     if (!raw) return TRAINING_DEFAULT_MENU.map((item) => ({ ...item }));
+
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed) || parsed.length === 0) {
       return TRAINING_DEFAULT_MENU.map((item) => ({ ...item }));
     }
+
     return parsed.slice(0, 10).map((item, index) => ({
       name: typeof item.name === "string" && item.name.trim()
         ? item.name.trim().slice(0, 28)
         : `種目 ${index + 1}`,
       type: item.type === "timer" ? "timer" : "reps",
-      target: trainingClamp(item.target, 1, 999, item.type === "timer" ? 30 : 15),
+      target: trainingClamp(
+        item.target,
+        1,
+        999,
+        item.type === "timer" ? 30 : 15
+      ),
       sets: trainingClamp(item.sets, 1, 10, 3),
       rest: trainingClamp(item.rest, 0, 300, 30)
     }));
@@ -2232,6 +2282,7 @@ function loadTrainingProfile() {
   try {
     const raw = window.localStorage.getItem(TRAINING_PROFILE_STORAGE_KEY);
     if (!raw) return { xp: 0, sessions: 0 };
+
     const parsed = JSON.parse(raw);
     return {
       xp: Math.max(0, Number(parsed.xp) || 0),
@@ -2255,11 +2306,17 @@ function saveTrainingProfile() {
 
 function getTrainingLevel() {
   let level = 1;
-  for (let index = 0; index < TRAINING_LEVEL_THRESHOLDS.length; index += 1) {
+
+  for (
+    let index = 0;
+    index < TRAINING_LEVEL_THRESHOLDS.length;
+    index += 1
+  ) {
     if (trainingProfile.xp >= TRAINING_LEVEL_THRESHOLDS[index]) {
       level = index + 1;
     }
   }
+
   return Math.min(6, level);
 }
 
@@ -2294,35 +2351,234 @@ function setTrainingTheme(theme, options = {}) {
   trainingTheme = theme === "dark" ? "dark" : "light";
   const isDark = trainingTheme === "dark";
 
-  trainingScreen.classList.toggle("is-dark", isDark);
+  document.body.classList.toggle(
+    "training-dark",
+    isDark && trainingActive
+  );
   trainingThemeButton.setAttribute("aria-pressed", String(isDark));
   trainingThemeLabel.textContent = isDark ? "LIGHT" : "DARK";
 
   try {
-    window.localStorage.setItem(TRAINING_THEME_STORAGE_KEY, trainingTheme);
+    window.localStorage.setItem(
+      TRAINING_THEME_STORAGE_KEY,
+      trainingTheme
+    );
   } catch (error) {
     console.info("Training theme could not be saved.", error);
   }
 
   if (speak) {
     if (isDark) {
-      trainingSpeak(trainingSessionRunning ? "themeEnterWorkout" : "themeEnter");
+      trainingSpeak(
+        trainingSessionRunning
+          ? "themeEnterWorkout"
+          : "themeEnter"
+      );
     } else {
-      trainingSpeak(trainingSessionRunning ? "themeExitWorkout" : "themeExit");
+      trainingSpeak(
+        trainingSessionRunning
+          ? "themeExitWorkout"
+          : "themeExit"
+      );
     }
   }
 }
 
 function showTrainingView(view) {
+  const isChoices = view === "choices";
+
+  actionButtons.hidden = !isChoices;
   trainingSetupView.hidden = view !== "setup";
+  trainingEditorView.hidden = view !== "editor";
   trainingWorkoutView.hidden = view !== "workout";
   trainingRestView.hidden = view !== "rest";
   trainingCompleteView.hidden = view !== "complete";
   trainingPhase = view;
 }
 
+function createTrainingChoiceButton({
+  title,
+  meta,
+  wide = false,
+  subtle = false,
+  onClick
+}) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "action-button training-choice-button";
+
+  if (wide) button.classList.add("is-wide");
+  if (subtle) button.classList.add("is-subtle");
+
+  const titleElement = document.createElement("span");
+  titleElement.className = "training-choice-name";
+  titleElement.textContent = title;
+
+  const metaElement = document.createElement("small");
+  metaElement.className = "training-choice-meta";
+  metaElement.textContent = meta;
+
+  button.append(titleElement, metaElement);
+  button.addEventListener("click", onClick);
+  actionButtons.appendChild(button);
+}
+
+function getTrainingItemMeta(item) {
+  const target = item.type === "timer"
+    ? `${item.target} SEC`
+    : `${item.target} REP`;
+
+  return `${target} × ${item.sets} SET`;
+}
+
+function renderTrainingChoices(options = {}) {
+  const { speak = false } = options;
+
+  normalizeTrainingProgram();
+  updateTrainingLevelDisplay();
+  actionButtons.innerHTML = "";
+
+  trainingProgram.forEach((item, index) => {
+    createTrainingChoiceButton({
+      title: item.name,
+      meta: getTrainingItemMeta(item),
+      onClick: () => {
+        openTrainingSetup(index);
+      }
+    });
+  });
+
+  if (trainingProgram.length > 1) {
+    const totalSets = trainingProgram.reduce(
+      (sum, item) => sum + item.sets,
+      0
+    );
+
+    createTrainingChoiceButton({
+      title: "全部まとめて行う",
+      meta: `${trainingProgram.length} MENU / ${totalSets} SET`,
+      wide: true,
+      onClick: () => {
+        openTrainingSetup("all");
+      }
+    });
+  }
+
+  createTrainingChoiceButton({
+    title: "メニューを編集",
+    meta: "ADD / REMOVE / CONFIGURE",
+    wide: true,
+    subtle: true,
+    onClick: () => {
+      renderTrainingMenuEditor();
+      showTrainingView("editor");
+      typeMessage(
+        "種目名、回数、セット数、休憩時間を編集できます。終わったら保存してください。"
+      );
+      startIdleTimer();
+    }
+  });
+
+  trainingScreen.hidden = false;
+  showTrainingView("choices");
+
+  if (speak) {
+    typeMessage(getTrainingGuideMessage());
+  }
+
+  startIdleTimer();
+}
+
+function openTrainingSetup(selection) {
+  clearPendingEnd();
+  triggerGlitch();
+
+  if (selection === "all") {
+    trainingSelectionMode = "all";
+    trainingSetupTitle.textContent = "全メニュー";
+    trainingSetupFields.hidden = true;
+
+    const totalSets = trainingProgram.reduce(
+      (sum, item) => sum + item.sets,
+      0
+    );
+    trainingSetupSummary.textContent =
+      `${trainingProgram.length}種目を登録順に実行します。合計 ${totalSets} セットです。`;
+    trainingStartButton.textContent = "START / 全メニュー開始";
+    typeMessage(
+      "登録されたメニューを順番に進めます。準備ができたら開始してください。"
+    );
+  } else {
+    trainingSelectionMode = "single";
+    trainingSelectedIndex = trainingClamp(
+      selection,
+      0,
+      trainingProgram.length - 1,
+      0
+    );
+
+    const item = trainingProgram[trainingSelectedIndex];
+    trainingSetupTitle.textContent = item.name;
+    trainingSetupFields.hidden = false;
+    trainingSetupSummary.textContent =
+      "開始前に、今日の目標とセット数を調整できます。";
+    trainingSetupName.value = item.name;
+    trainingSetupType.value = item.type;
+    trainingSetupTarget.value = String(item.target);
+    trainingSetupSets.value = String(item.sets);
+    trainingSetupRest.value = String(item.rest);
+    trainingStartButton.textContent = "START / トレーニング開始";
+    typeMessage(
+      `${item.name}ですね。回数とセット数を確認したら、開始してください。`
+    );
+  }
+
+  showTrainingView("setup");
+  startIdleTimer();
+}
+
+function applyTrainingSetup() {
+  if (trainingSelectionMode !== "single") return;
+
+  const item = trainingProgram[trainingSelectedIndex];
+  if (!item) return;
+
+  item.name = trainingSetupName.value.trim().slice(0, 28) ||
+    `種目 ${trainingSelectedIndex + 1}`;
+  item.type = trainingSetupType.value === "timer"
+    ? "timer"
+    : "reps";
+  item.target = trainingClamp(
+    trainingSetupTarget.value,
+    1,
+    999,
+    item.type === "timer" ? 30 : 15
+  );
+  item.sets = trainingClamp(
+    trainingSetupSets.value,
+    1,
+    10,
+    3
+  );
+  item.rest = trainingClamp(
+    trainingSetupRest.value,
+    0,
+    300,
+    30
+  );
+
+  saveTrainingProgram();
+}
+
 function updateTrainingMenuCount() {
   trainingMenuCount.textContent = `${trainingProgram.length} ITEMS`;
+}
+
+function escapeTrainingValue(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/"/g, "&quot;");
 }
 
 function renderTrainingMenuEditor() {
@@ -2334,72 +2590,141 @@ function renderTrainingMenuEditor() {
     card.dataset.index = String(index + 1).padStart(2, "0");
 
     card.innerHTML = `
-      <label class="training-field">
+      <label class="training-field training-field-wide">
         <span>EXERCISE / 種目</span>
-        <input type="text" maxlength="28" value="${item.name.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\"/g, "&quot;")}">
+        <input
+          type="text"
+          maxlength="28"
+          value="${escapeTrainingValue(item.name)}"
+        >
       </label>
+
       <label class="training-field">
         <span>TYPE / 計測</span>
         <select>
-          <option value="reps"${item.type === "reps" ? " selected" : ""}>回数</option>
-          <option value="timer"${item.type === "timer" ? " selected" : ""}>タイマー</option>
+          <option
+            value="reps"
+            ${item.type === "reps" ? "selected" : ""}
+          >回数</option>
+          <option
+            value="timer"
+            ${item.type === "timer" ? "selected" : ""}
+          >タイマー</option>
         </select>
       </label>
+
       <label class="training-field">
         <span>TARGET / 目標</span>
-        <input type="number" min="1" max="999" inputmode="numeric" value="${item.target}">
+        <input
+          type="number"
+          min="1"
+          max="999"
+          inputmode="numeric"
+          value="${item.target}"
+        >
       </label>
+
       <label class="training-field">
         <span>SETS / セット</span>
-        <input type="number" min="1" max="10" inputmode="numeric" value="${item.sets}">
+        <input
+          type="number"
+          min="1"
+          max="10"
+          inputmode="numeric"
+          value="${item.sets}"
+        >
       </label>
+
       <label class="training-field">
         <span>REST / 休憩秒</span>
-        <input type="number" min="0" max="300" inputmode="numeric" value="${item.rest}">
+        <input
+          type="number"
+          min="0"
+          max="300"
+          inputmode="numeric"
+          value="${item.rest}"
+        >
       </label>
-      <button class="training-remove-button" type="button" aria-label="${index + 1}番目の種目を削除">×</button>
+
+      <button
+        class="training-remove-button"
+        type="button"
+        aria-label="${index + 1}番目の種目を削除"
+      >×</button>
     `;
 
-    const [nameInput, typeSelect, targetInput, setsInput, restInput] =
-      card.querySelectorAll("input, select");
+    const fields = card.querySelectorAll(
+      ".training-field input, .training-field select"
+    );
+    const [
+      nameInput,
+      typeSelect,
+      targetInput,
+      setsInput,
+      restInput
+    ] = fields;
 
     nameInput.addEventListener("input", () => {
-      trainingProgram[index].name = nameInput.value.slice(0, 28);
+      trainingProgram[index].name =
+        nameInput.value.slice(0, 28);
       saveTrainingProgram();
     });
 
     typeSelect.addEventListener("change", () => {
-      trainingProgram[index].type = typeSelect.value === "timer" ? "timer" : "reps";
+      trainingProgram[index].type =
+        typeSelect.value === "timer" ? "timer" : "reps";
       saveTrainingProgram();
     });
 
     targetInput.addEventListener("change", () => {
-      trainingProgram[index].target = trainingClamp(targetInput.value, 1, 999, 15);
-      targetInput.value = trainingProgram[index].target;
+      trainingProgram[index].target = trainingClamp(
+        targetInput.value,
+        1,
+        999,
+        trainingProgram[index].type === "timer" ? 30 : 15
+      );
+      targetInput.value = String(
+        trainingProgram[index].target
+      );
       saveTrainingProgram();
     });
 
     setsInput.addEventListener("change", () => {
-      trainingProgram[index].sets = trainingClamp(setsInput.value, 1, 10, 3);
-      setsInput.value = trainingProgram[index].sets;
+      trainingProgram[index].sets = trainingClamp(
+        setsInput.value,
+        1,
+        10,
+        3
+      );
+      setsInput.value = String(trainingProgram[index].sets);
       saveTrainingProgram();
     });
 
     restInput.addEventListener("change", () => {
-      trainingProgram[index].rest = trainingClamp(restInput.value, 0, 300, 30);
-      restInput.value = trainingProgram[index].rest;
+      trainingProgram[index].rest = trainingClamp(
+        restInput.value,
+        0,
+        300,
+        30
+      );
+      restInput.value = String(trainingProgram[index].rest);
       saveTrainingProgram();
     });
 
-    card.querySelector(".training-remove-button").addEventListener("click", () => {
-      if (trainingProgram.length <= 1) {
-        trainingMessageText.textContent = "最低一つは種目を残してください。";
-        return;
-      }
-      trainingProgram.splice(index, 1);
-      saveTrainingProgram();
-      renderTrainingMenuEditor();
-    });
+    card
+      .querySelector(".training-remove-button")
+      .addEventListener("click", () => {
+        if (trainingProgram.length <= 1) {
+          typeMessage(
+            "最低一つは種目を残してください。"
+          );
+          return;
+        }
+
+        trainingProgram.splice(index, 1);
+        saveTrainingProgram();
+        renderTrainingMenuEditor();
+      });
 
     trainingMenuList.appendChild(card);
   });
@@ -2409,12 +2734,19 @@ function renderTrainingMenuEditor() {
 
 function normalizeTrainingProgram() {
   trainingProgram = trainingProgram.map((item, index) => ({
-    name: item.name.trim() || `種目 ${index + 1}`,
+    name: String(item.name || "").trim().slice(0, 28) ||
+      `種目 ${index + 1}`,
     type: item.type === "timer" ? "timer" : "reps",
-    target: trainingClamp(item.target, 1, 999, item.type === "timer" ? 30 : 15),
+    target: trainingClamp(
+      item.target,
+      1,
+      999,
+      item.type === "timer" ? 30 : 15
+    ),
     sets: trainingClamp(item.sets, 1, 10, 3),
     rest: trainingClamp(item.rest, 0, 300, 30)
   }));
+
   saveTrainingProgram();
 }
 
@@ -2423,6 +2755,7 @@ function clearTrainingTimers() {
     window.clearInterval(trainingIntervalId);
     trainingIntervalId = null;
   }
+
   if (trainingTransitionId) {
     window.clearTimeout(trainingTransitionId);
     trainingTransitionId = null;
@@ -2433,11 +2766,14 @@ function formatTrainingSeconds(seconds) {
   const value = Math.max(0, Math.ceil(seconds));
   const minutes = Math.floor(value / 60);
   const remainder = value % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`;
+
+  return `${String(minutes).padStart(2, "0")}:${String(
+    remainder
+  ).padStart(2, "0")}`;
 }
 
 function getCurrentTrainingItem() {
-  return trainingProgram[trainingItemIndex] || null;
+  return trainingSessionProgram[trainingItemIndex] || null;
 }
 
 function getNextTrainingLabel() {
@@ -2448,7 +2784,9 @@ function getNextTrainingLabel() {
     return `NEXT / ${item.name} SET ${trainingSetIndex + 1}`;
   }
 
-  const nextItem = trainingProgram[trainingItemIndex + 1];
+  const nextItem =
+    trainingSessionProgram[trainingItemIndex + 1];
+
   return nextItem
     ? `NEXT / ${nextItem.name} SET 1`
     : "NEXT / COMPLETE";
@@ -2459,8 +2797,9 @@ function updateTrainingWorkoutDisplay() {
   if (!item) return;
 
   trainingStepLabel.textContent =
-    `MENU ${trainingItemIndex + 1} / ${trainingProgram.length}`;
-  trainingSetLabel.textContent = `SET ${trainingSetIndex} / ${item.sets}`;
+    `MENU ${trainingItemIndex + 1} / ${trainingSessionProgram.length}`;
+  trainingSetLabel.textContent =
+    `SET ${trainingSetIndex} / ${item.sets}`;
   trainingExerciseName.textContent = item.name;
 
   if (item.type === "reps") {
@@ -2471,12 +2810,19 @@ function updateTrainingWorkoutDisplay() {
       `${Math.min(100, (trainingRepCount / item.target) * 100)}%`;
     trainingTapButton.hidden = false;
   } else {
-    trainingValue.textContent = String(Math.max(0, Math.ceil(trainingTimerRemaining)));
-    trainingUnit.textContent = "SEC";
-    trainingTargetText.textContent = `TARGET ${item.target} SEC`;
-    const elapsed = trainingTimerTotal - trainingTimerRemaining;
+    trainingValue.textContent =
+      formatTrainingSeconds(trainingTimerRemaining);
+    trainingUnit.textContent = "";
+    trainingTargetText.textContent =
+      `TARGET ${formatTrainingSeconds(item.target)}`;
+
+    const elapsed =
+      trainingTimerTotal - trainingTimerRemaining;
     trainingProgressFill.style.width =
-      `${Math.min(100, Math.max(0, (elapsed / trainingTimerTotal) * 100))}%`;
+      `${Math.min(
+        100,
+        Math.max(0, (elapsed / trainingTimerTotal) * 100)
+      )}%`;
     trainingTapButton.hidden = true;
   }
 }
@@ -2484,10 +2830,16 @@ function updateTrainingWorkoutDisplay() {
 function startTrainingTimer() {
   clearTrainingTimers();
   trainingProgressMade = true;
-  trainingTimerEndAt = Date.now() + trainingTimerRemaining * 1000;
+  trainingTimerEndAt =
+    Date.now() + trainingTimerRemaining * 1000;
 
   trainingIntervalId = window.setInterval(() => {
-    if (trainingPaused || trainingPhase !== "workout") return;
+    if (
+      trainingPaused ||
+      trainingPhase !== "workout"
+    ) {
+      return;
+    }
 
     trainingTimerRemaining = Math.max(
       0,
@@ -2497,26 +2849,47 @@ function startTrainingTimer() {
     updateTrainingWorkoutDisplay();
 
     const elapsedRatio = trainingTimerTotal > 0
-      ? (trainingTimerTotal - trainingTimerRemaining) / trainingTimerTotal
+      ? (
+          trainingTimerTotal - trainingTimerRemaining
+        ) / trainingTimerTotal
       : 1;
 
-    if (elapsedRatio >= 0.25 && !trainingAnnouncements.has("quarter")) {
+    if (
+      elapsedRatio >= 0.25 &&
+      !trainingAnnouncements.has("quarter")
+    ) {
       trainingAnnouncements.add("quarter");
       trainingSpeak("timerQuarter");
     }
-    if (elapsedRatio >= 0.50 && !trainingAnnouncements.has("half")) {
+
+    if (
+      elapsedRatio >= 0.50 &&
+      !trainingAnnouncements.has("half")
+    ) {
       trainingAnnouncements.add("half");
       trainingSpeak("timerHalf");
     }
-    if (elapsedRatio >= 0.75 && !trainingAnnouncements.has("late")) {
+
+    if (
+      elapsedRatio >= 0.75 &&
+      !trainingAnnouncements.has("late")
+    ) {
       trainingAnnouncements.add("late");
       trainingSpeak("timerLate");
     }
-    if (trainingTimerRemaining <= 10 && !trainingAnnouncements.has("ten")) {
+
+    if (
+      trainingTimerRemaining <= 10 &&
+      !trainingAnnouncements.has("ten")
+    ) {
       trainingAnnouncements.add("ten");
       trainingSpeak("timerTen");
     }
-    if (trainingTimerRemaining <= 3 && !trainingAnnouncements.has("three")) {
+
+    if (
+      trainingTimerRemaining <= 3 &&
+      !trainingAnnouncements.has("three")
+    ) {
       trainingAnnouncements.add("three");
       trainingSpeak("timerThree");
     }
@@ -2570,7 +2943,10 @@ function advanceTrainingPosition() {
     return true;
   }
 
-  if (trainingItemIndex < trainingProgram.length - 1) {
+  if (
+    trainingItemIndex <
+    trainingSessionProgram.length - 1
+  ) {
     trainingItemIndex += 1;
     trainingSetIndex = 1;
     return true;
@@ -2579,50 +2955,35 @@ function advanceTrainingPosition() {
   return false;
 }
 
-function startTrainingRest() {
-  const item = getCurrentTrainingItem();
-  if (!item) return;
+function runTrainingRestInterval() {
+  trainingTimerEndAt =
+    Date.now() + trainingRestRemaining * 1000;
 
-  const restSeconds = item.rest;
-  const hasNext =
-    trainingSetIndex < item.sets ||
-    trainingItemIndex < trainingProgram.length - 1;
-
-  if (!hasNext) {
-    finishTrainingSession(true);
-    return;
-  }
-
-  if (restSeconds <= 0) {
-    advanceTrainingPosition();
-    startCurrentTrainingItem({ next: true });
-    return;
-  }
-
-  showTrainingView("rest");
-  trainingPaused = false;
-  trainingScreen.classList.remove("is-paused");
-  trainingRestPauseButton.textContent = "PAUSE";
-  trainingRestTotal = restSeconds;
-  trainingRestRemaining = restSeconds;
-  trainingAnnouncements = new Set();
-  trainingNextLabel.textContent = getNextTrainingLabel();
-  trainingRestTime.textContent = formatTrainingSeconds(trainingRestRemaining);
-  trainingRestFill.style.width = "0%";
-  trainingSpeak("restStart");
-
-  trainingTimerEndAt = Date.now() + trainingRestRemaining * 1000;
   trainingIntervalId = window.setInterval(() => {
-    if (trainingPaused || trainingPhase !== "rest") return;
+    if (
+      trainingPaused ||
+      trainingPhase !== "rest"
+    ) {
+      return;
+    }
 
     trainingRestRemaining = Math.max(
       0,
       (trainingTimerEndAt - Date.now()) / 1000
     );
 
-    trainingRestTime.textContent = formatTrainingSeconds(trainingRestRemaining);
+    trainingRestTime.textContent =
+      formatTrainingSeconds(trainingRestRemaining);
     trainingRestFill.style.width =
-      `${Math.min(100, ((trainingRestTotal - trainingRestRemaining) / trainingRestTotal) * 100)}%`;
+      `${Math.min(
+        100,
+        (
+          (
+            trainingRestTotal -
+            trainingRestRemaining
+          ) / trainingRestTotal
+        ) * 100
+      )}%`;
 
     if (
       trainingRestRemaining <= trainingRestTotal / 2 &&
@@ -2648,14 +3009,60 @@ function startTrainingRest() {
   }, 100);
 }
 
+function startTrainingRest() {
+  const item = getCurrentTrainingItem();
+  if (!item) return;
+
+  const restSeconds = item.rest;
+  const hasNext =
+    trainingSetIndex < item.sets ||
+    trainingItemIndex <
+      trainingSessionProgram.length - 1;
+
+  if (!hasNext) {
+    finishTrainingSession(true);
+    return;
+  }
+
+  if (restSeconds <= 0) {
+    advanceTrainingPosition();
+    startCurrentTrainingItem({ next: true });
+    return;
+  }
+
+  showTrainingView("rest");
+  trainingPaused = false;
+  trainingScreen.classList.remove("is-paused");
+  trainingRestPauseButton.textContent = "PAUSE";
+  trainingRestTotal = restSeconds;
+  trainingRestRemaining = restSeconds;
+  trainingAnnouncements = new Set();
+  trainingNextLabel.textContent =
+    getNextTrainingLabel();
+  trainingRestTime.textContent =
+    formatTrainingSeconds(trainingRestRemaining);
+  trainingRestFill.style.width = "0%";
+  trainingSpeak("restStart");
+  runTrainingRestInterval();
+}
+
 function finishTrainingSet(kind) {
-  if (!trainingSessionRunning || trainingPhase === "transition") return;
+  if (
+    !trainingSessionRunning ||
+    trainingPhase === "transition"
+  ) {
+    return;
+  }
 
   clearTrainingTimers();
   trainingPhase = "transition";
   trainingProgressMade = true;
   trainingCompletedSets += 1;
-  trainingSpeak(kind === "timer" ? "timerComplete" : "repComplete");
+  trainingSpeak(
+    kind === "timer"
+      ? "timerComplete"
+      : "repComplete"
+  );
 
   trainingTransitionId = window.setTimeout(() => {
     trainingTransitionId = null;
@@ -2664,7 +3071,13 @@ function finishTrainingSet(kind) {
 }
 
 function recordTrainingSession(isComplete) {
-  if (trainingSessionRecorded || !trainingProgressMade) return;
+  if (
+    trainingSessionRecorded ||
+    !trainingProgressMade
+  ) {
+    return;
+  }
+
   trainingSessionRecorded = true;
   trainingProfile.sessions += 1;
   trainingProfile.xp += isComplete ? 1 : 0.5;
@@ -2680,15 +3093,26 @@ function finishTrainingSession(isComplete) {
   recordTrainingSession(isComplete);
   showTrainingView("complete");
 
-  trainingResultTitle.textContent = isComplete ? "COMPLETE" : "PARTIAL RECORD";
+  trainingResultTitle.textContent =
+    isComplete ? "COMPLETE" : "PARTIAL RECORD";
   trainingResultDetail.textContent =
-    `${trainingCompletedSets} SET / ${trainingProgram.length} MENU`;
+    `${trainingCompletedSets} SET / ${trainingSessionProgram.length} MENU`;
   trainingSpeak(isComplete ? "complete" : "partial");
 }
 
 function startTrainingSession() {
   normalizeTrainingProgram();
-  renderTrainingMenuEditor();
+
+  if (trainingSelectionMode === "single") {
+    applyTrainingSetup();
+    const selected = trainingProgram[trainingSelectedIndex];
+    trainingSessionProgram = selected
+      ? [{ ...selected }]
+      : [{ ...trainingProgram[0] }];
+  } else {
+    trainingSessionProgram =
+      trainingProgram.map((item) => ({ ...item }));
+  }
 
   trainingSessionRunning = true;
   trainingItemIndex = 0;
@@ -2698,17 +3122,26 @@ function startTrainingSession() {
   trainingProgressMade = false;
   trainingSessionRecorded = false;
   trainingPaused = false;
+  stopIdleTimer();
   startCurrentTrainingItem();
 }
 
 function toggleTrainingPause() {
-  if (!trainingSessionRunning || trainingPhase === "transition") return;
+  if (
+    !trainingSessionRunning ||
+    trainingPhase === "transition"
+  ) {
+    return;
+  }
 
   if (!trainingPaused) {
     trainingPaused = true;
     trainingScreen.classList.add("is-paused");
 
-    if (trainingPhase === "workout" && getCurrentTrainingItem()?.type === "timer") {
+    if (
+      trainingPhase === "workout" &&
+      getCurrentTrainingItem()?.type === "timer"
+    ) {
       trainingTimerRemaining = Math.max(
         0,
         (trainingTimerEndAt - Date.now()) / 1000
@@ -2733,39 +3166,13 @@ function toggleTrainingPause() {
   trainingRestPauseButton.textContent = "PAUSE";
   trainingSpeak("resumed");
 
-  if (trainingPhase === "workout" && getCurrentTrainingItem()?.type === "timer") {
+  if (
+    trainingPhase === "workout" &&
+    getCurrentTrainingItem()?.type === "timer"
+  ) {
     startTrainingTimer();
   } else if (trainingPhase === "rest") {
-    trainingTimerEndAt = Date.now() + trainingRestRemaining * 1000;
-    trainingIntervalId = window.setInterval(() => {
-      if (trainingPaused || trainingPhase !== "rest") return;
-      trainingRestRemaining = Math.max(0, (trainingTimerEndAt - Date.now()) / 1000);
-      trainingRestTime.textContent = formatTrainingSeconds(trainingRestRemaining);
-      trainingRestFill.style.width =
-        `${Math.min(100, ((trainingRestTotal - trainingRestRemaining) / trainingRestTotal) * 100)}%`;
-
-      if (
-        trainingRestRemaining <= trainingRestTotal / 2 &&
-        !trainingAnnouncements.has("half")
-      ) {
-        trainingAnnouncements.add("half");
-        trainingSpeak("restHalf");
-      }
-
-      if (
-        trainingRestRemaining <= 10 &&
-        !trainingAnnouncements.has("ten")
-      ) {
-        trainingAnnouncements.add("ten");
-        trainingSpeak("restTen");
-      }
-
-      if (trainingRestRemaining <= 0) {
-        clearTrainingTimers();
-        advanceTrainingPosition();
-        startCurrentTrainingItem({ next: true });
-      }
-    }, 100);
+    runTrainingRestInterval();
   }
 }
 
@@ -2774,7 +3181,9 @@ function handleTrainingTap() {
     !trainingSessionRunning ||
     trainingPaused ||
     trainingPhase !== "workout"
-  ) return;
+  ) {
+    return;
+  }
 
   const item = getCurrentTrainingItem();
   if (!item || item.type !== "reps") return;
@@ -2800,87 +3209,131 @@ function handleTrainingTap() {
     trainingSpeak("middleRep");
   } else if (
     trainingRepCount === 1 ||
-    trainingRepCount % Math.max(2, Math.floor(item.target / 4)) === 0
+    trainingRepCount %
+      Math.max(2, Math.floor(item.target / 4)) ===
+      0
   ) {
     trainingSpeak("earlyRep");
   }
 }
 
-function openTrainingScreen() {
-  if (trainingActive) return;
+function enterTrainingMode() {
+  clearPendingEnd();
+  stopSleepBreathingGuide();
 
   trainingActive = true;
-  stopIdleTimer();
-  clearPendingEnd();
-  returnHomeAfterTyping = false;
+  trainingSessionRunning = false;
   trainingProgram = loadTrainingProgram();
   trainingProfile = loadTrainingProfile();
+  trainingSessionProgram = [];
+  trainingCompletedSets = 0;
+  trainingProgressMade = false;
+  trainingSessionRecorded = false;
+  trainingPaused = false;
+  currentModeKey = "training";
+
+  document.body.classList.remove(
+    "private-session-active",
+    "private-heartbeat-intense",
+    "sleep-session-active"
+  );
+  document.body.classList.add(
+    "training-session-active"
+  );
 
   let savedTheme = "light";
   try {
-    savedTheme = window.localStorage.getItem(TRAINING_THEME_STORAGE_KEY) || "light";
+    savedTheme =
+      window.localStorage.getItem(
+        TRAINING_THEME_STORAGE_KEY
+      ) || "light";
   } catch (error) {
     savedTheme = "light";
   }
 
   setTrainingTheme(savedTheme);
-  updateTrainingLevelDisplay();
-  renderTrainingMenuEditor();
-  showTrainingView("setup");
-  trainingSessionRunning = false;
-  trainingProgressMade = false;
-  trainingSessionRecorded = false;
-  trainingCompletedSets = 0;
-  trainingMessageText.textContent =
-    "メニューを確認してください。準備ができたら開始します。";
-
-  document.body.classList.add("training-mode-active");
+  trainingThemeButton.hidden = false;
   trainingScreen.hidden = false;
-  trainingScreen.classList.remove("is-open", "is-paused");
-  window.requestAnimationFrame(() => {
-    trainingScreen.classList.add("is-open");
-  });
+  modeTitle.textContent = "一緒に運動";
+  modeCode.textContent = "PARTNER TRAINING LINK";
+  menuPanel.hidden = true;
+  modePanel.hidden = false;
+
+  renderTrainingChoices();
+  startElapsedTimer();
+  typeMessage(getTrainingGuideMessage());
+  triggerGlitch();
 }
 
-function closeTrainingScreen(options = {}) {
-  const { force = false } = options;
-  if (!trainingActive) return;
+function leaveTrainingMode() {
+  clearTrainingTimers();
+  trainingSessionRunning = false;
+  trainingActive = false;
+  trainingPaused = false;
+  trainingScreen.classList.remove("is-paused");
+  trainingScreen.hidden = true;
+  trainingThemeButton.hidden = true;
+  document.body.classList.remove(
+    "training-session-active",
+    "training-dark"
+  );
+}
 
-  if (trainingSessionRunning && trainingProgressMade && !force) {
+function handleTrainingBack() {
+  if (
+    trainingPhase === "workout" ||
+    trainingPhase === "rest" ||
+    trainingPhase === "transition"
+  ) {
     finishTrainingSession(false);
     return;
   }
 
-  clearTrainingTimers();
-  trainingSessionRunning = false;
-  trainingActive = false;
-  trainingScreen.classList.remove("is-open", "is-paused");
-  document.body.classList.remove("training-mode-active");
+  if (
+    trainingPhase === "setup" ||
+    trainingPhase === "editor" ||
+    trainingPhase === "complete"
+  ) {
+    if (trainingPhase === "setup") {
+      applyTrainingSetup();
+    }
 
-  window.setTimeout(() => {
-    trainingScreen.hidden = true;
-  }, 240);
+    renderTrainingChoices();
+    typeMessage(
+      "種目選択へ戻りました。次に行うトレーニングを選んでください。"
+    );
+    return;
+  }
 
-  startIdleTimer();
+  returnToMenu(true);
 }
 
-trainingModeButton.addEventListener("click", () => {
-  openTrainingScreen();
-});
-
-trainingCloseButton.addEventListener("click", () => {
-  closeTrainingScreen();
-});
-
 trainingThemeButton.addEventListener("click", () => {
-  setTrainingTheme(trainingTheme === "dark" ? "light" : "dark", {
-    speak: true
-  });
+  setTrainingTheme(
+    trainingTheme === "dark" ? "light" : "dark",
+    { speak: true }
+  );
+});
+
+trainingSetupBackButton.addEventListener("click", () => {
+  applyTrainingSetup();
+  renderTrainingChoices();
+  typeMessage(
+    "種目選択へ戻りました。設定した内容は保存されています。"
+  );
+});
+
+trainingSetupType.addEventListener("change", () => {
+  const isTimer = trainingSetupType.value === "timer";
+  trainingSetupTarget.setAttribute(
+    "aria-label",
+    isTimer ? "目標秒数" : "目標回数"
+  );
 });
 
 trainingAddItemButton.addEventListener("click", () => {
   if (trainingProgram.length >= 10) {
-    trainingMessageText.textContent = "登録できる種目は10件までです。";
+    typeMessage("登録できる種目は10件までです。");
     return;
   }
 
@@ -2893,6 +3346,14 @@ trainingAddItemButton.addEventListener("click", () => {
   });
   saveTrainingProgram();
   renderTrainingMenuEditor();
+});
+
+trainingEditorDoneButton.addEventListener("click", () => {
+  normalizeTrainingProgram();
+  renderTrainingChoices();
+  typeMessage(
+    "メニューを保存しました。今日行う種目を選んでください。"
+  );
 });
 
 trainingStartButton.addEventListener("click", () => {
@@ -2920,19 +3381,33 @@ trainingRestEndButton.addEventListener("click", () => {
 });
 
 trainingSkipRestButton.addEventListener("click", () => {
-  if (!trainingSessionRunning || trainingPhase !== "rest") return;
+  if (
+    !trainingSessionRunning ||
+    trainingPhase !== "rest"
+  ) {
+    return;
+  }
+
   clearTrainingTimers();
   advanceTrainingPosition();
   startCurrentTrainingItem({ next: true });
 });
 
 trainingHomeButton.addEventListener("click", () => {
-  closeTrainingScreen({ force: true });
+  renderTrainingChoices();
+  typeMessage(
+    "記録しました。続けるなら、次の種目を選んでください。"
+  );
 });
 
 modeButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const modeKey = button.dataset.mode;
+
+    if (modeKey === "training") {
+      enterTrainingMode();
+      return;
+    }
 
     if (modeKey && modes[modeKey]) {
       enterMode(modeKey);
@@ -2941,6 +3416,11 @@ modeButtons.forEach((button) => {
 });
 
 backButton.addEventListener("click", () => {
+  if (currentModeKey === "training") {
+    handleTrainingBack();
+    return;
+  }
+
   returnToMenu(true);
 });
 
