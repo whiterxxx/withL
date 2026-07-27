@@ -1,4 +1,4 @@
-:root {
+ :root {
   --bg: #f3f6f7;
   --surface: rgba(255, 255, 255, 0.82);
   --ink: #15232b;
@@ -4333,28 +4333,38 @@ body.training-dark .training-tap-button.is-counted .training-tap-value strong {
   fill: none;
   stroke-linecap: round;
   shape-rendering: geometricPrecision;
+  vector-effect: non-scaling-stroke;
 }
 
 .training-logo-ring-outer .training-logo-ring-progress {
-  opacity: 0.78;
+  stroke-width: 0.72px;
+  opacity: 0.82;
+  filter:
+    drop-shadow(0 0 1px rgba(94, 135, 153, 0.22))
+    drop-shadow(0 0 4px rgba(94, 135, 153, 0.08));
 }
 
 .training-logo-ring-inner .training-logo-ring-progress {
-  opacity: 0.58;
+  stroke-width: 0.50px;
+  opacity: 0.56;
+  filter:
+    drop-shadow(0 0 1px rgba(94, 135, 153, 0.14));
+}
+
+.training-logo-ring-outer .training-logo-ring-track {
+  stroke-width: 0.42px;
+}
+
+.training-logo-ring-inner .training-logo-ring-track {
+  stroke-width: 0.30px;
 }
 
 .training-logo-ring-track {
-  stroke: rgba(106, 137, 151, 0.11);
-  stroke-width: 0.72;
+  stroke: rgba(106, 137, 151, 0.09);
 }
 
 .training-logo-ring-progress {
-  stroke: rgba(94, 135, 153, 0.72);
-  stroke-width: 0.92;
-  filter:
-    blur(0.32px)
-    drop-shadow(0 0 3px rgba(94, 135, 153, 0.16))
-    drop-shadow(0 0 7px rgba(94, 135, 153, 0.07));
+  stroke: rgba(94, 135, 153, 0.76);
 }
 
 #trainingLogoOuterProgress {
@@ -4365,12 +4375,20 @@ body.training-dark .training-tap-button.is-counted .training-tap-value strong {
 #trainingLogoInnerProgress {
   stroke-dasharray: 276.46;
   stroke-dashoffset: 276.46;
-  opacity: 0.68;
 }
 
 .training-logo-timer.is-rest .training-logo-ring-progress {
-  stroke: rgba(124, 151, 162, 0.66);
-  opacity: 0.68;
+  stroke: rgba(124, 151, 162, 0.68);
+}
+
+.training-logo-timer.is-rest
+  .training-logo-ring-outer .training-logo-ring-progress {
+  opacity: 0.70;
+}
+
+.training-logo-timer.is-rest
+  .training-logo-ring-inner .training-logo-ring-progress {
+  opacity: 0.44;
 }
 
 body.training-dark .training-logo-ring-track {
@@ -4378,19 +4396,37 @@ body.training-dark .training-logo-ring-track {
 }
 
 body.training-dark .training-logo-timer.is-timer .training-logo-ring-progress {
-  stroke: rgba(229, 160, 189, 0.78);
+  stroke: rgba(229, 160, 189, 0.82);
+}
+
+body.training-dark .training-logo-timer.is-timer
+  .training-logo-ring-outer .training-logo-ring-progress {
   filter:
-    blur(0.34px)
-    drop-shadow(0 0 4px rgba(228, 107, 157, 0.26))
-    drop-shadow(0 0 10px rgba(228, 107, 157, 0.11));
+    drop-shadow(0 0 1px rgba(228, 107, 157, 0.34))
+    drop-shadow(0 0 5px rgba(228, 107, 157, 0.12));
+}
+
+body.training-dark .training-logo-timer.is-timer
+  .training-logo-ring-inner .training-logo-ring-progress {
+  filter:
+    drop-shadow(0 0 1px rgba(228, 107, 157, 0.20));
 }
 
 body.training-dark .training-logo-timer.is-rest .training-logo-ring-progress {
-  stroke: rgba(216, 153, 182, 0.64);
+  stroke: rgba(216, 153, 182, 0.68);
+}
+
+body.training-dark .training-logo-timer.is-rest
+  .training-logo-ring-outer .training-logo-ring-progress {
   filter:
-    blur(0.30px)
-    drop-shadow(0 0 3px rgba(228, 107, 157, 0.18))
-    drop-shadow(0 0 8px rgba(228, 107, 157, 0.08));
+    drop-shadow(0 0 1px rgba(228, 107, 157, 0.24))
+    drop-shadow(0 0 4px rgba(228, 107, 157, 0.09));
+}
+
+body.training-dark .training-logo-timer.is-rest
+  .training-logo-ring-inner .training-logo-ring-progress {
+  filter:
+    drop-shadow(0 0 1px rgba(228, 107, 157, 0.14));
 }
 
 body.training-dark .training-logo-timer.is-warning .training-logo-ring-progress {
@@ -4400,18 +4436,16 @@ body.training-dark .training-logo-timer.is-warning .training-logo-ring-progress 
 @keyframes trainingRingWarning {
   0%,
   100% {
-    opacity: 0.76;
+    opacity: 0.78;
     filter:
-      blur(0.34px)
-      drop-shadow(0 0 4px rgba(228, 107, 157, 0.30))
-      drop-shadow(0 0 10px rgba(228, 107, 157, 0.12));
+      drop-shadow(0 0 1px rgba(228, 107, 157, 0.34))
+      drop-shadow(0 0 6px rgba(228, 107, 157, 0.12));
   }
   50% {
     opacity: 1;
     filter:
-      blur(0.46px)
-      drop-shadow(0 0 7px rgba(228, 107, 157, 0.52))
-      drop-shadow(0 0 16px rgba(228, 107, 157, 0.24));
+      drop-shadow(0 0 2px rgba(228, 107, 157, 0.58))
+      drop-shadow(0 0 11px rgba(228, 107, 157, 0.28));
   }
 }
 
