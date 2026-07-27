@@ -3528,26 +3528,8 @@ body.photo-mode-active {
   font-size: 0.55rem;
 }
 
-.training-progress-track,
-.training-rest-meter {
-  height: 5px;
-  overflow: hidden;
-  border: 1px solid var(--line-soft);
-  background: rgba(255, 255, 255, 0.45);
-}
 
-.training-progress-track {
-  margin-top: 7px;
-}
 
-.training-progress-track span,
-.training-rest-meter span {
-  display: block;
-  width: 0;
-  height: 100%;
-  background: var(--accent);
-  transition: width 220ms ease;
-}
 
 .training-tap-button {
   display: grid;
@@ -3967,36 +3949,7 @@ body.training-dark .training-vital-pulse {
   letter-spacing: 0.035em;
 }
 
-.training-workout-view.is-timer .training-progress-track {
-  height: 13px;
-  margin: 7px 0 8px;
-  border-color: var(--line);
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(106, 137, 151, 0.09) 0,
-      rgba(106, 137, 151, 0.09) 1px,
-      transparent 1px,
-      transparent 12.5%
-    ),
-    rgba(255, 255, 255, 0.42);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.26);
-}
 
-.training-workout-view.is-timer .training-progress-track::after {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  pointer-events: none;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      transparent 0,
-      transparent calc(12.5% - 1px),
-      rgba(255, 255, 255, 0.34) calc(12.5% - 1px),
-      rgba(255, 255, 255, 0.34) 12.5%
-    );
-}
 
 .training-workout-view.is-timer .training-progress-track span {
   background:
@@ -4124,28 +4077,7 @@ body.training-dark .training-value-stage.is-counted .training-value-line strong 
   animation-name: trainingCountNumberDark;
 }
 
-body.training-dark .training-workout-view.is-timer .training-progress-track {
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(228, 107, 157, 0.10) 0,
-      rgba(228, 107, 157, 0.10) 1px,
-      transparent 1px,
-      transparent 12.5%
-    ),
-    rgba(24, 23, 30, 0.72);
-}
 
-body.training-dark .training-workout-view.is-timer .training-progress-track span {
-  background:
-    linear-gradient(
-      90deg,
-      #f0a2c2,
-      #d95d91
-    );
-  box-shadow:
-    0 0 9px rgba(228, 107, 157, 0.42);
-}
 
 @keyframes trainingTapPressDark {
   0% {
@@ -4293,11 +4225,6 @@ body.training-dark .training-workout-view.is-timer .training-progress-track span
   letter-spacing: 0.11em;
 }
 
-.training-progress-track {
-  height: 7px;
-  margin: 5px 0 7px;
-}
-
 .training-tap-button.is-timer {
   grid-template-columns: 60px 1fr;
   grid-template-areas:
@@ -4313,11 +4240,6 @@ body.training-dark .training-workout-view.is-timer .training-progress-track span
 
 .training-tap-button.is-timer .training-tap-value > span {
   display: none;
-}
-
-.training-workout-view.is-timer .training-progress-track {
-  height: 14px;
-  margin: 5px 0 8px;
 }
 
 .training-tap-button.is-counted .training-tap-value strong {
@@ -4365,5 +4287,119 @@ body.training-dark .training-tap-button.is-counted .training-tap-value strong {
   .training-tap-button.is-timer .training-tap-value strong {
     font-size: clamp(2rem, 10vw, 2.9rem);
   }
+}
+
+
+
+/* v1.7.7 — time-based circular timer around the L logo */
+.logo-stage {
+  position: relative;
+}
+
+.training-logo-timer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(84vw, 410px);
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.training-logo-timer.is-visible {
+  opacity: 1;
+}
+
+.training-logo-ring {
+  position: absolute;
+  inset: 0;
+}
+
+.training-logo-ring-inner {
+  inset: 10%;
+}
+
+.training-logo-ring svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+.training-logo-ring-track,
+.training-logo-ring-progress {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.training-logo-ring-track {
+  stroke: rgba(106, 137, 151, 0.16);
+  stroke-width: 1.3;
+}
+
+.training-logo-ring-progress {
+  stroke: rgba(94, 135, 153, 0.82);
+  stroke-width: 1.55;
+  filter: drop-shadow(0 0 3px rgba(94, 135, 153, 0.15));
+}
+
+#trainingLogoOuterProgress {
+  stroke-dasharray: 333.01;
+  stroke-dashoffset: 333.01;
+}
+
+#trainingLogoInnerProgress {
+  stroke-dasharray: 276.46;
+  stroke-dashoffset: 276.46;
+  opacity: 0.82;
+}
+
+.training-logo-timer.is-rest .training-logo-ring-progress {
+  stroke: rgba(124, 151, 162, 0.78);
+  opacity: 0.76;
+}
+
+body.training-dark .training-logo-ring-track {
+  stroke: rgba(229, 160, 189, 0.14);
+}
+
+body.training-dark .training-logo-timer.is-timer .training-logo-ring-progress {
+  stroke: rgba(229, 160, 189, 0.88);
+  filter:
+    drop-shadow(0 0 4px rgba(228, 107, 157, 0.30))
+    drop-shadow(0 0 10px rgba(228, 107, 157, 0.12));
+}
+
+body.training-dark .training-logo-timer.is-rest .training-logo-ring-progress {
+  stroke: rgba(216, 153, 182, 0.74);
+  filter:
+    drop-shadow(0 0 3px rgba(228, 107, 157, 0.18))
+    drop-shadow(0 0 8px rgba(228, 107, 157, 0.08));
+}
+
+body.training-dark .training-logo-timer.is-warning .training-logo-ring-progress {
+  animation: trainingRingWarning 1s ease-in-out infinite;
+}
+
+@keyframes trainingRingWarning {
+  0%,
+  100% {
+    opacity: 0.78;
+    filter:
+      drop-shadow(0 0 4px rgba(228, 107, 157, 0.36))
+      drop-shadow(0 0 10px rgba(228, 107, 157, 0.14));
+  }
+  50% {
+    opacity: 1;
+    filter:
+      drop-shadow(0 0 8px rgba(228, 107, 157, 0.62))
+      drop-shadow(0 0 18px rgba(228, 107, 157, 0.34));
+  }
+}
+
+body.training-logo-timer-active .logo-glow {
+  opacity: 0.26;
 }
 
