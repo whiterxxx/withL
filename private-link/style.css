@@ -4333,25 +4333,38 @@ body.training-dark .training-tap-button.is-counted .training-tap-value strong {
   fill: none;
   stroke-linecap: round;
   shape-rendering: geometricPrecision;
-}
-
-.training-logo-ring-outer .training-logo-ring-progress {
-  opacity: 0.78;
-}
-
-.training-logo-ring-inner .training-logo-ring-progress {
-  opacity: 0.58;
+  vector-effect: non-scaling-stroke;
 }
 
 .training-logo-ring-track {
-  stroke: rgba(106, 137, 151, 0.11);
-  stroke-width: 0.72;
+  stroke: rgba(106, 137, 151, 0.10);
 }
 
 .training-logo-ring-progress {
-  stroke: rgba(94, 135, 153, 0.72);
-  stroke-width: 0.92;
-  filter: drop-shadow(0 0 2px rgba(94, 135, 153, 0.10));
+  stroke: rgba(94, 135, 153, 0.76);
+}
+
+.training-logo-ring-outer .training-logo-ring-track {
+  stroke-width: 0.55px;
+}
+
+.training-logo-ring-inner .training-logo-ring-track {
+  stroke-width: 0.42px;
+}
+
+.training-logo-ring-outer .training-logo-ring-progress {
+  stroke-width: 0.90px;
+  opacity: 0.78;
+  filter:
+    drop-shadow(0 0 1px rgba(94, 135, 153, 0.18))
+    drop-shadow(0 0 4px rgba(94, 135, 153, 0.06));
+}
+
+.training-logo-ring-inner .training-logo-ring-progress {
+  stroke-width: 0.65px;
+  opacity: 0.56;
+  filter:
+    drop-shadow(0 0 1px rgba(94, 135, 153, 0.12));
 }
 
 #trainingLogoOuterProgress {
@@ -4362,12 +4375,18 @@ body.training-dark .training-tap-button.is-counted .training-tap-value strong {
 #trainingLogoInnerProgress {
   stroke-dasharray: 276.46;
   stroke-dashoffset: 276.46;
-  opacity: 0.68;
 }
 
 .training-logo-timer.is-rest .training-logo-ring-progress {
-  stroke: rgba(124, 151, 162, 0.66);
+  stroke: rgba(124, 151, 162, 0.68);
+}
+
+.training-logo-timer.is-rest .training-logo-ring-outer .training-logo-ring-progress {
   opacity: 0.68;
+}
+
+.training-logo-timer.is-rest .training-logo-ring-inner .training-logo-ring-progress {
+  opacity: 0.46;
 }
 
 body.training-dark .training-logo-ring-track {
@@ -4375,17 +4394,37 @@ body.training-dark .training-logo-ring-track {
 }
 
 body.training-dark .training-logo-timer.is-timer .training-logo-ring-progress {
-  stroke: rgba(229, 160, 189, 0.78);
+  stroke: rgba(229, 160, 189, 0.80);
+}
+
+body.training-dark .training-logo-timer.is-timer
+  .training-logo-ring-outer .training-logo-ring-progress {
   filter:
-    drop-shadow(0 0 2px rgba(228, 107, 157, 0.22))
-    drop-shadow(0 0 7px rgba(228, 107, 157, 0.08));
+    drop-shadow(0 0 1px rgba(228, 107, 157, 0.28))
+    drop-shadow(0 0 5px rgba(228, 107, 157, 0.10));
+}
+
+body.training-dark .training-logo-timer.is-timer
+  .training-logo-ring-inner .training-logo-ring-progress {
+  filter:
+    drop-shadow(0 0 1px rgba(228, 107, 157, 0.18));
 }
 
 body.training-dark .training-logo-timer.is-rest .training-logo-ring-progress {
-  stroke: rgba(216, 153, 182, 0.64);
+  stroke: rgba(216, 153, 182, 0.66);
+}
+
+body.training-dark .training-logo-timer.is-rest
+  .training-logo-ring-outer .training-logo-ring-progress {
   filter:
-    drop-shadow(0 0 2px rgba(228, 107, 157, 0.14))
-    drop-shadow(0 0 6px rgba(228, 107, 157, 0.06));
+    drop-shadow(0 0 1px rgba(228, 107, 157, 0.20))
+    drop-shadow(0 0 4px rgba(228, 107, 157, 0.07));
+}
+
+body.training-dark .training-logo-timer.is-rest
+  .training-logo-ring-inner .training-logo-ring-progress {
+  filter:
+    drop-shadow(0 0 1px rgba(228, 107, 157, 0.12));
 }
 
 body.training-dark .training-logo-timer.is-warning .training-logo-ring-progress {
@@ -4395,16 +4434,16 @@ body.training-dark .training-logo-timer.is-warning .training-logo-ring-progress 
 @keyframes trainingRingWarning {
   0%,
   100% {
-    opacity: 0.78;
+    opacity: 0.76;
     filter:
-      drop-shadow(0 0 3px rgba(228, 107, 157, 0.30))
-      drop-shadow(0 0 8px rgba(228, 107, 157, 0.10));
+      drop-shadow(0 0 1px rgba(228, 107, 157, 0.30))
+      drop-shadow(0 0 5px rgba(228, 107, 157, 0.10));
   }
   50% {
     opacity: 1;
     filter:
-      drop-shadow(0 0 5px rgba(228, 107, 157, 0.48))
-      drop-shadow(0 0 12px rgba(228, 107, 157, 0.20));
+      drop-shadow(0 0 2px rgba(228, 107, 157, 0.55))
+      drop-shadow(0 0 9px rgba(228, 107, 157, 0.24));
   }
 }
 
