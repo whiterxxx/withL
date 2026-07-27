@@ -428,7 +428,7 @@ button:focus-visible {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: clamp(8px, 2.6vw, 14px);
+  gap: clamp(7px, 2.2vw, 11px);
   line-height: 1;
   white-space: nowrap;
 }
@@ -440,22 +440,34 @@ button:focus-visible {
 }
 
 .app-title-access {
-  position: relative;
-  color: var(--muted);
-  font-size: clamp(0.48rem, 1.75vw, 0.58rem);
-  letter-spacing: 0.18em;
-  text-indent: 0.18em;
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(5px, 1.5vw, 8px);
+  color: var(--accent-dark);
+  font-family: var(--font-ui);
+  font-size: clamp(0.59rem, 2.05vw, 0.70rem);
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-indent: 0.15em;
+  opacity: 0.90;
 }
 
-.app-title-access::before {
+.app-title-access::before,
+.app-title-access::after {
   content: "";
-  position: absolute;
-  top: 50%;
-  left: calc(clamp(8px, 2.6vw, 14px) / -2);
-  width: 1px;
-  height: 0.92em;
-  background: var(--line);
-  transform: translateY(-50%);
+  display: block;
+  width: clamp(10px, 3vw, 17px);
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--line)
+  );
+  opacity: 0.88;
+}
+
+.app-title-access::after {
+  transform: scaleX(-1);
 }
 
 .tagline {
@@ -1229,7 +1241,7 @@ button:focus-visible {
   }
 
   .app-title {
-    gap: 8px;
+    gap: 7px;
   }
 
   .app-title-main {
@@ -1237,7 +1249,13 @@ button:focus-visible {
   }
 
   .app-title-access {
-    font-size: 0.44rem;
+    gap: 4px;
+    font-size: 0.54rem;
+  }
+
+  .app-title-access::before,
+  .app-title-access::after {
+    width: 9px;
   }
 
   .tagline {
