@@ -3126,17 +3126,34 @@ body.photo-mode-active {
 }
 
 .training-theme-button {
-  min-width: 56px;
-  height: 30px;
-  padding: 0 8px;
-  color: var(--accent-dark);
+  display: grid;
+  place-items: center;
+  width: 29px;
+  min-width: 29px;
+  height: 29px;
+  padding: 0;
+  color: var(--muted);
   border: 1px solid var(--line);
   border-radius: 0;
-  background: rgba(255, 255, 255, 0.70);
+  background: rgba(255, 255, 255, 0.58);
   font-family: var(--font-display);
-  font-size: 0.54rem;
-  letter-spacing: 0.13em;
+  font-size: 0.70rem;
+  letter-spacing: 0;
   cursor: pointer;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.training-theme-button[aria-pressed="true"] {
+  color: #f2dce5;
+  border-color: rgba(229, 160, 189, 0.72);
+  background: rgba(88, 40, 62, 0.88);
+  box-shadow:
+    0 0 0 2px rgba(201, 133, 162, 0.10),
+    0 0 9px rgba(201, 133, 162, 0.24);
 }
 
 .training-inline {
@@ -3145,58 +3162,6 @@ body.photo-mode-active {
   animation: trainingViewIn 220ms ease both;
 }
 
-.training-profile-band {
-  display: grid;
-  grid-template-columns: auto minmax(72px, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  padding: 9px 11px;
-  border: 1px solid var(--line-soft);
-  background: rgba(255, 255, 255, 0.62);
-  box-shadow:
-    0 4px 12px rgba(72, 99, 114, 0.07),
-    inset 0 0 0 3px rgba(255, 255, 255, 0.40);
-}
-
-.training-profile-band span,
-.training-profile-band p {
-  color: var(--muted);
-  font-family: var(--font-display);
-  font-size: 0.47rem;
-  letter-spacing: 0.11em;
-}
-
-.training-profile-band strong {
-  display: block;
-  margin-top: 2px;
-  color: var(--accent-dark);
-  font-family: var(--font-ui);
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-}
-
-.training-profile-band p {
-  margin: 0;
-  text-align: right;
-  white-space: nowrap;
-}
-
-.training-level-meter {
-  height: 4px;
-  overflow: hidden;
-  border: 1px solid var(--line-soft);
-  background: rgba(255, 255, 255, 0.48);
-}
-
-.training-level-meter span {
-  display: block;
-  width: 0;
-  height: 100%;
-  background: var(--accent);
-  transition: width 420ms ease;
-}
 
 .training-view {
   padding: 10px;
@@ -3799,7 +3764,6 @@ body.training-dark .logo-glow {
 
 body.training-dark .back-button,
 body.training-dark .training-theme-button,
-body.training-dark .training-profile-band,
 body.training-dark .training-view,
 body.training-dark .training-config-card,
 body.training-dark .training-menu-card,
@@ -3862,9 +3826,6 @@ body.training-session-active .hero {
   padding-bottom: 5px;
 }
 
-body.training-session-active .logo-stage {
-  width: min(48vw, 210px);
-}
 
 body.training-session-active .ornament {
   margin-top: 5px;
@@ -3914,19 +3875,6 @@ body.training-session-active .mode-panel {
 }
 
 @media (max-width: 520px) {
-  .training-profile-band {
-    grid-template-columns: 1fr auto;
-  }
-
-  .training-level-meter {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
-  .training-profile-band p {
-    grid-column: 2;
-    grid-row: 1;
-  }
 
   .training-config-card,
   .training-menu-card {
@@ -3944,10 +3892,11 @@ body.training-session-active .mode-panel {
   }
 
   .training-theme-button {
-    min-width: 50px;
-    height: 28px;
-    padding: 0 6px;
-    font-size: 0.49rem;
+    width: 27px;
+    min-width: 27px;
+    height: 27px;
+    padding: 0;
+    font-size: 0.66rem;
   }
 
   .training-choice-meta {
@@ -3968,27 +3917,15 @@ body.training-session-active .mode-panel {
 }
 
 @media (max-width: 600px) and (max-height: 760px) {
-  body.training-session-active .logo-stage {
-    width: min(39vw, 165px);
-  }
-
-  body.training-session-active .tagline {
-    display: none;
-  }
-
-  body.training-session-active .ornament {
-    display: none;
-  }
 
   body.training-session-active .dialogue-window {
-    min-height: 108px;
+    min-height: 88px;
   }
 
-  .training-profile-band {
-    margin-bottom: 6px;
-    padding-top: 7px;
-    padding-bottom: 7px;
+  body.training-session-active .dialogue-content {
+    min-height: 58px;
   }
+
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3996,6 +3933,339 @@ body.training-session-active .mode-panel {
     animation: none !important;
     stroke-dashoffset: 0;
     opacity: 0.38;
+  }
+}
+
+
+
+/* Compact one-screen training layout */
+body.training-session-active .hero {
+  gap: 2px;
+  padding-bottom: 2px;
+}
+
+
+body.training-session-active .tagline,
+body.training-session-active .ornament {
+  display: none;
+}
+
+body.training-session-active .mode-panel {
+  margin-bottom: 4px;
+}
+
+body.training-session-active .mode-heading {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+body.training-session-active .dialogue-window {
+  min-height: 96px;
+  margin-top: 5px;
+}
+
+body.training-session-active .dialogue-content {
+  min-height: 64px;
+  padding-top: 10px;
+  padding-bottom: 9px;
+}
+
+.training-workout-view {
+  padding: 7px 9px 8px;
+}
+
+.training-workout-meta {
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 0.48rem;
+}
+
+.training-exercise-name {
+  margin: 4px 0 3px;
+  font-size: clamp(0.92rem, 3.6vw, 1.12rem);
+  line-height: 1.15;
+}
+
+.training-value-stage {
+  min-height: 82px;
+  padding: 9px 7px 5px;
+}
+
+.training-value-label {
+  font-size: 0.43rem;
+}
+
+.training-value-line {
+  min-height: 48px;
+}
+
+.training-value-line strong {
+  font-size: clamp(2.35rem, 10vw, 3.65rem);
+}
+
+.training-value-line > span {
+  font-size: 0.58rem;
+}
+
+.training-value-stage p {
+  margin-top: 1px;
+  font-size: 0.48rem;
+}
+
+.training-progress-track {
+  position: relative;
+  height: 6px;
+  margin-top: 5px;
+  overflow: hidden;
+}
+
+.training-workout-view.is-timer .training-value-stage {
+  min-height: 70px;
+  padding-top: 8px;
+  padding-bottom: 3px;
+}
+
+.training-workout-view.is-timer .training-value-label {
+  display: none;
+}
+
+.training-workout-view.is-timer .training-value-line {
+  min-height: 39px;
+}
+
+.training-workout-view.is-timer .training-value-line strong {
+  font-size: clamp(1.95rem, 8.5vw, 3rem);
+  letter-spacing: 0.035em;
+}
+
+.training-workout-view.is-timer .training-progress-track {
+  height: 13px;
+  margin: 7px 0 8px;
+  border-color: var(--line);
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(106, 137, 151, 0.09) 0,
+      rgba(106, 137, 151, 0.09) 1px,
+      transparent 1px,
+      transparent 12.5%
+    ),
+    rgba(255, 255, 255, 0.42);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.26);
+}
+
+.training-workout-view.is-timer .training-progress-track::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent calc(12.5% - 1px),
+      rgba(255, 255, 255, 0.34) calc(12.5% - 1px),
+      rgba(255, 255, 255, 0.34) 12.5%
+    );
+}
+
+.training-workout-view.is-timer .training-progress-track span {
+  background:
+    linear-gradient(
+      90deg,
+      var(--accent-dark),
+      var(--accent)
+    );
+  transition: width 100ms linear;
+  box-shadow:
+    0 0 8px rgba(94, 135, 153, 0.24);
+}
+
+.training-tap-button {
+  min-height: 49px;
+  margin: 7px 0 6px;
+}
+
+.training-tap-button span {
+  font-size: 1.02rem;
+}
+
+.training-tap-button small {
+  margin-top: 1px;
+  font-size: 0.41rem;
+}
+
+.training-control-button {
+  min-height: 34px;
+}
+
+/* Clear feedback for every TAP */
+.training-tap-button.is-tapped {
+  animation: trainingTapPress 340ms ease-out both;
+}
+
+.training-tap-button.is-tapped span {
+  animation: trainingTapLabel 340ms ease-out both;
+}
+
+.training-value-stage.is-counted {
+  animation: trainingCountStage 340ms ease-out both;
+}
+
+.training-value-stage.is-counted .training-value-line strong {
+  animation: trainingCountNumber 340ms ease-out both;
+}
+
+@keyframes trainingTapPress {
+  0% {
+    transform: scale(1);
+    border-color: var(--line);
+    box-shadow:
+      0 5px 16px rgba(72, 99, 114, 0.10),
+      inset 0 0 0 3px rgba(255, 255, 255, 0.48);
+  }
+  32% {
+    transform: scale(0.975);
+    border-color: var(--accent-dark);
+    background:
+      linear-gradient(
+        120deg,
+        rgba(217, 236, 244, 0.98),
+        rgba(196, 224, 235, 0.94)
+      );
+    box-shadow:
+      0 0 0 3px rgba(94, 135, 153, 0.14),
+      0 0 16px rgba(94, 135, 153, 0.26),
+      inset 0 0 0 3px rgba(255, 255, 255, 0.58);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes trainingTapLabel {
+  0%,
+  100% {
+    letter-spacing: 0.18em;
+  }
+  34% {
+    letter-spacing: 0.28em;
+    text-shadow: 0 0 8px rgba(94, 135, 153, 0.30);
+  }
+}
+
+@keyframes trainingCountStage {
+  0%,
+  100% {
+    background: transparent;
+  }
+  35% {
+    background:
+      linear-gradient(
+        90deg,
+        transparent,
+        rgba(111, 154, 173, 0.12),
+        transparent
+      );
+  }
+}
+
+@keyframes trainingCountNumber {
+  0% {
+    transform: scale(1);
+  }
+  36% {
+    transform: scale(1.12);
+    text-shadow: 0 0 12px rgba(94, 135, 153, 0.30);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+body.training-dark .training-tap-button.is-tapped {
+  animation-name: trainingTapPressDark;
+}
+
+body.training-dark .training-value-stage.is-counted {
+  animation-name: trainingCountStageDark;
+}
+
+body.training-dark .training-value-stage.is-counted .training-value-line strong {
+  animation-name: trainingCountNumberDark;
+}
+
+body.training-dark .training-workout-view.is-timer .training-progress-track {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(228, 107, 157, 0.10) 0,
+      rgba(228, 107, 157, 0.10) 1px,
+      transparent 1px,
+      transparent 12.5%
+    ),
+    rgba(24, 23, 30, 0.72);
+}
+
+body.training-dark .training-workout-view.is-timer .training-progress-track span {
+  background:
+    linear-gradient(
+      90deg,
+      #f0a2c2,
+      #d95d91
+    );
+  box-shadow:
+    0 0 9px rgba(228, 107, 157, 0.42);
+}
+
+@keyframes trainingTapPressDark {
+  0% {
+    transform: scale(1);
+  }
+  32% {
+    transform: scale(0.975);
+    border-color: #e5a0bd;
+    background:
+      linear-gradient(
+        120deg,
+        rgba(71, 35, 53, 0.98),
+        rgba(93, 39, 63, 0.94)
+      );
+    box-shadow:
+      0 0 0 3px rgba(228, 107, 157, 0.12),
+      0 0 17px rgba(228, 107, 157, 0.32);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes trainingCountStageDark {
+  0%,
+  100% {
+    background: transparent;
+  }
+  35% {
+    background:
+      linear-gradient(
+        90deg,
+        transparent,
+        rgba(228, 107, 157, 0.12),
+        transparent
+      );
+  }
+}
+
+@keyframes trainingCountNumberDark {
+  0% {
+    transform: scale(1);
+  }
+  36% {
+    transform: scale(1.12);
+    text-shadow: 0 0 13px rgba(228, 107, 157, 0.48);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 
