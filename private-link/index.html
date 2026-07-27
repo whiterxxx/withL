@@ -25,7 +25,7 @@
     <header class="top-hud" aria-label="端末情報">
       <div class="hud-block hud-left">
         <p class="hud-main">ID: PARTNER/01</p>
-        <p class="hud-sub">private.1.7.3</p>
+        <p class="hud-sub">private.1.7.5</p>
         <div class="mini-meter" aria-hidden="true"><span></span></div>
       </div>
 
@@ -219,9 +219,11 @@
             class="training-theme-button"
             type="button"
             aria-pressed="false"
+            aria-label="ダークモードに切り替える"
+            title="DARK MODE"
             hidden
           >
-            <span id="trainingThemeLabel">DARK</span>
+            <span id="trainingThemeLabel">D</span>
           </button>
 
           <div class="elapsed-wrap">
@@ -239,16 +241,6 @@
         aria-label="一緒に運動"
         hidden
       >
-        <section class="training-profile-band" aria-label="トレーニングレベル">
-          <div>
-            <span>PARTNER TRAINING LEVEL</span>
-            <strong id="trainingLevelText">LEVEL 1 / MAX 6</strong>
-          </div>
-          <div class="training-level-meter" aria-hidden="true">
-            <span id="trainingLevelFill"></span>
-          </div>
-          <p id="trainingLevelDetail">NEXT LEVEL まで 2.0</p>
-        </section>
 
         <section id="trainingSetupView" class="training-view training-setup-view" hidden>
           <div class="training-section-heading">
@@ -356,7 +348,7 @@
 
           <h3 id="trainingExerciseName" class="training-exercise-name">スクワット</h3>
 
-          <div class="training-value-stage">
+          <div id="trainingValueStage" class="training-value-stage">
             <div id="trainingVital" class="training-vital" aria-hidden="true">
               <svg viewBox="0 0 480 92" preserveAspectRatio="none">
                 <path class="training-vital-base" d="M0 46H112l17-1 13-28 17 59 16-31 19 1h61l14-1 11-18 14 36 16-18h170"></path>
