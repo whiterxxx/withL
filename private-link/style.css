@@ -3612,30 +3612,25 @@ body.photo-mode-active {
   color: #8b5262;
 }
 
-.training-rest-view,
-.training-complete-view {
+.training-rest-view {
   padding: 19px 14px;
   text-align: center;
 }
 
 .training-rest-code,
 .training-rest-view h3,
-.training-rest-view p,
-.training-complete-view p,
-.training-complete-view h3 {
+.training-rest-view p {
   margin: 0;
 }
 
-.training-rest-code,
-.training-complete-view > p {
+.training-rest-code {
   color: var(--muted);
   font-family: var(--font-display);
   font-size: 0.51rem;
   letter-spacing: 0.14em;
 }
 
-.training-rest-view h3,
-.training-complete-view h3 {
+.training-rest-view h3 {
   margin-top: 5px;
   font-family: var(--font-display);
   font-size: 1.08rem;
@@ -3669,32 +3664,6 @@ body.photo-mode-active {
   margin-bottom: 10px;
 }
 
-.training-complete-mark {
-  display: grid;
-  place-items: center;
-  width: 62px;
-  height: 62px;
-  margin: 0 auto 11px;
-  color: var(--accent-dark);
-  border: 1px solid var(--line);
-  transform: rotate(45deg);
-  font-family: var(--font-ui);
-  font-size: 1.5rem;
-}
-
-.training-complete-mark span {
-  transform: rotate(-45deg);
-}
-
-.training-complete-view > strong {
-  display: block;
-  margin: 10px 0 2px;
-  color: var(--accent-dark);
-  font-family: var(--font-ui);
-  font-size: 0.82rem;
-  font-weight: 500;
-  letter-spacing: 0.07em;
-}
 
 .training-inline.is-paused .training-vital-pulse {
   animation-play-state: paused;
@@ -3822,18 +3791,9 @@ body.training-dark .training-vital-pulse {
     drop-shadow(0 0 9px rgba(228, 107, 157, 0.20));
 }
 
-body.training-session-active .hero {
-  padding-bottom: 5px;
-}
 
 
-body.training-session-active .ornament {
-  margin-top: 5px;
-}
 
-body.training-session-active .mode-panel {
-  margin-bottom: 6px;
-}
 
 @keyframes trainingVitalIdle {
   0% {
@@ -3918,13 +3878,6 @@ body.training-session-active .mode-panel {
 
 @media (max-width: 600px) and (max-height: 760px) {
 
-  body.training-session-active .dialogue-window {
-    min-height: 88px;
-  }
-
-  body.training-session-active .dialogue-content {
-    min-height: 58px;
-  }
 
 }
 
@@ -3939,36 +3892,12 @@ body.training-session-active .mode-panel {
 
 
 /* Compact one-screen training layout */
-body.training-session-active .hero {
-  gap: 2px;
-  padding-bottom: 2px;
-}
 
 
-body.training-session-active .tagline,
-body.training-session-active .ornament {
-  display: none;
-}
 
-body.training-session-active .mode-panel {
-  margin-bottom: 4px;
-}
 
-body.training-session-active .mode-heading {
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
 
-body.training-session-active .dialogue-window {
-  min-height: 96px;
-  margin-top: 5px;
-}
 
-body.training-session-active .dialogue-content {
-  min-height: 64px;
-  padding-top: 10px;
-  padding-bottom: 9px;
-}
 
 .training-workout-view {
   padding: 7px 9px 8px;
@@ -4266,6 +4195,175 @@ body.training-dark .training-workout-view.is-timer .training-progress-track span
   }
   100% {
     transform: scale(1);
+  }
+}
+
+
+
+/* v1.7.6 — counter and TAP are one control */
+.training-workout-view {
+  padding: 9px 10px 10px;
+}
+
+.training-workout-meta {
+  padding-bottom: 4px;
+}
+
+.training-exercise-name {
+  margin: 5px 0 5px;
+  font-size: clamp(1rem, 3.8vw, 1.18rem);
+}
+
+.training-tap-button {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    "label value unit"
+    "label target target";
+  align-items: center;
+  gap: 0 8px;
+  width: 100%;
+  min-height: 86px;
+  margin: 0;
+  padding: 10px 15px;
+  overflow: hidden;
+  isolation: isolate;
+  text-align: left;
+}
+
+.training-tap-button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.training-tap-button .training-vital {
+  z-index: -1;
+  inset: 4px 0;
+  opacity: 0.34;
+}
+
+.training-tap-label {
+  grid-area: label;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  min-width: 54px;
+  padding-right: 12px;
+  color: var(--accent-dark);
+  border-right: 1px solid var(--line-soft);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.15em;
+  text-indent: 0.15em;
+}
+
+.training-tap-value {
+  grid-area: value;
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  line-height: 1;
+}
+
+.training-tap-value strong {
+  color: var(--accent-dark);
+  font-family: var(--font-ui);
+  font-size: clamp(2.65rem, 11vw, 4rem);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.92;
+}
+
+.training-tap-value > span {
+  margin-left: 5px;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.61rem;
+  letter-spacing: 0.11em;
+}
+
+.training-tap-button > small {
+  grid-area: target;
+  align-self: start;
+  margin: 1px 0 0;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.47rem;
+  letter-spacing: 0.11em;
+}
+
+.training-progress-track {
+  height: 7px;
+  margin: 5px 0 7px;
+}
+
+.training-tap-button.is-timer {
+  grid-template-columns: 60px 1fr;
+  grid-template-areas:
+    "label value"
+    "label target";
+  min-height: 78px;
+}
+
+.training-tap-button.is-timer .training-tap-value strong {
+  font-size: clamp(2.2rem, 9vw, 3.25rem);
+  letter-spacing: 0.025em;
+}
+
+.training-tap-button.is-timer .training-tap-value > span {
+  display: none;
+}
+
+.training-workout-view.is-timer .training-progress-track {
+  height: 14px;
+  margin: 5px 0 8px;
+}
+
+.training-tap-button.is-counted .training-tap-value strong {
+  animation: trainingCountNumber 340ms ease-out both;
+}
+
+.training-tap-button.is-counted {
+  animation:
+    trainingTapPress 340ms ease-out both,
+    trainingCountStage 340ms ease-out both;
+}
+
+body.training-dark .training-tap-button.is-counted {
+  animation:
+    trainingTapPressDark 340ms ease-out both,
+    trainingCountStageDark 340ms ease-out both;
+}
+
+body.training-dark .training-tap-button.is-counted .training-tap-value strong {
+  animation: trainingCountNumberDark 340ms ease-out both;
+}
+
+@media (max-width: 430px) {
+  .training-tap-button {
+    grid-template-columns: 49px 1fr auto;
+    min-height: 80px;
+    padding: 9px 11px;
+    gap: 0 6px;
+  }
+
+  .training-tap-label {
+    min-width: 45px;
+    padding-right: 8px;
+    font-size: 0.68rem;
+  }
+
+  .training-tap-value strong {
+    font-size: clamp(2.45rem, 13vw, 3.5rem);
+  }
+
+  .training-tap-button.is-timer {
+    grid-template-columns: 51px 1fr;
+  }
+
+  .training-tap-button.is-timer .training-tap-value strong {
+    font-size: clamp(2rem, 10vw, 2.9rem);
   }
 }
 
