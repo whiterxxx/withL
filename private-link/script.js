@@ -38,9 +38,6 @@ const photoControls = document.getElementById("photoControls");
 const trainingScreen = document.getElementById("trainingScreen");
 const trainingThemeButton = document.getElementById("trainingThemeButton");
 const trainingThemeLabel = document.getElementById("trainingThemeLabel");
-const trainingLevelText = document.getElementById("trainingLevelText");
-const trainingLevelFill = document.getElementById("trainingLevelFill");
-const trainingLevelDetail = document.getElementById("trainingLevelDetail");
 const trainingSetupView = document.getElementById("trainingSetupView");
 const trainingSetupTitle = document.getElementById("trainingSetupTitle");
 const trainingSetupSummary = document.getElementById("trainingSetupSummary");
@@ -66,6 +63,7 @@ const trainingStepLabel = document.getElementById("trainingStepLabel");
 const trainingSetLabel = document.getElementById("trainingSetLabel");
 const trainingExerciseName = document.getElementById("trainingExerciseName");
 const trainingVital = document.getElementById("trainingVital");
+const trainingValueStage = document.getElementById("trainingValueStage");
 const trainingValue = document.getElementById("trainingValue");
 const trainingUnit = document.getElementById("trainingUnit");
 const trainingTargetText = document.getElementById("trainingTargetText");
@@ -2151,9 +2149,7 @@ function createParticles() {
 
 
 const TRAINING_MENU_STORAGE_KEY = "withL-partner-training-menu-v1";
-const TRAINING_PROFILE_STORAGE_KEY = "withL-partner-training-profile-v1";
 const TRAINING_THEME_STORAGE_KEY = "withL-partner-training-theme-v1";
-const TRAINING_LEVEL_THRESHOLDS = [0, 2, 5, 9, 14, 20];
 const TRAINING_SET_MESSAGE_DELAY = 2400;
 
 const TRAINING_DEFAULT_MENU = [
@@ -2183,7 +2179,6 @@ let trainingSessionRunning = false;
 let trainingTheme = "light";
 let trainingProgram = [];
 let trainingSessionProgram = [];
-let trainingProfile = { xp: 0, sessions: 0 };
 let trainingSelectionMode = "single";
 let trainingSelectedIndex = 0;
 let trainingItemIndex = 0;
@@ -2198,8 +2193,6 @@ let trainingIntervalId = null;
 let trainingTransitionId = null;
 let trainingPaused = false;
 let trainingPhase = "choices";
-let trainingProgressMade = false;
-let trainingSessionRecorded = false;
 let trainingCompletedSets = 0;
 let trainingAnnouncements = new Set();
 
@@ -2291,74 +2284,6 @@ function saveTrainingProgram() {
   }
 }
 
-function loadTrainingProfile() {
-  try {
-    const raw = window.localStorage.getItem(TRAINING_PROFILE_STORAGE_KEY);
-    if (!raw) return { xp: 0, sessions: 0 };
-
-    const parsed = JSON.parse(raw);
-    return {
-      xp: Math.max(0, Number(parsed.xp) || 0),
-      sessions: Math.max(0, Number(parsed.sessions) || 0)
-    };
-  } catch (error) {
-    return { xp: 0, sessions: 0 };
-  }
-}
-
-function saveTrainingProfile() {
-  try {
-    window.localStorage.setItem(
-      TRAINING_PROFILE_STORAGE_KEY,
-      JSON.stringify(trainingProfile)
-    );
-  } catch (error) {
-    console.info("Training profile could not be saved.", error);
-  }
-}
-
-function getTrainingLevel() {
-  let level = 1;
-
-  for (
-    let index = 0;
-    index < TRAINING_LEVEL_THRESHOLDS.length;
-    index += 1
-  ) {
-    if (trainingProfile.xp >= TRAINING_LEVEL_THRESHOLDS[index]) {
-      level = index + 1;
-    }
-  }
-
-  return Math.min(6, level);
-}
-
-function updateTrainingLevelDisplay() {
-  const level = getTrainingLevel();
-  trainingLevelText.textContent = `LEVEL ${level} / MAX 6`;
-
-  if (level >= 6) {
-    trainingLevelFill.style.width = "100%";
-    trainingLevelDetail.textContent = "MAX LEVEL / LINK STABLE";
-    return;
-  }
-
-  const currentThreshold = TRAINING_LEVEL_THRESHOLDS[level - 1];
-  const nextThreshold = TRAINING_LEVEL_THRESHOLDS[level];
-  const progress = Math.max(
-    0,
-    Math.min(
-      1,
-      (trainingProfile.xp - currentThreshold) /
-        (nextThreshold - currentThreshold)
-    )
-  );
-
-  trainingLevelFill.style.width = `${progress * 100}%`;
-  trainingLevelDetail.textContent =
-    `NEXT LEVEL まで ${(nextThreshold - trainingProfile.xp).toFixed(1)}`;
-}
-
 function setTrainingTheme(theme, options = {}) {
   const { speak = false } = options;
   trainingTheme = theme === "dark" ? "dark" : "light";
@@ -2369,7 +2294,16 @@ function setTrainingTheme(theme, options = {}) {
     isDark && trainingActive
   );
   trainingThemeButton.setAttribute("aria-pressed", String(isDark));
-  trainingThemeLabel.textContent = isDark ? "LIGHT" : "DARK";
+  trainingThemeButton.setAttribute(
+    "aria-label",
+    isDark
+      ? "ライトモードに戻す"
+      : "ダークモードに切り替える"
+  );
+  trainingThemeButton.title = isDark
+    ? "LIGHT MODE"
+    : "DARK MODE";
+  trainingThemeLabel.textContent = "D";
 
   try {
     window.localStorage.setItem(
@@ -2448,7 +2382,6 @@ function renderTrainingChoices(options = {}) {
   const { speak = false } = options;
 
   normalizeTrainingProgram();
-  updateTrainingLevelDisplay();
   actionButtons.innerHTML = "";
 
   trainingProgram.forEach((item, index) => {
@@ -2818,13 +2751,17 @@ function updateTrainingWorkoutDisplay() {
   const item = getCurrentTrainingItem();
   if (!item) return;
 
+  const isTimer = item.type === "timer";
+  trainingWorkoutView.classList.toggle("is-timer", isTimer);
+  trainingWorkoutView.classList.toggle("is-reps", !isTimer);
+
   trainingStepLabel.textContent =
     `MENU ${trainingItemIndex + 1} / ${trainingSessionProgram.length}`;
   trainingSetLabel.textContent =
     `SET ${trainingSetIndex} / ${item.sets}`;
   trainingExerciseName.textContent = item.name;
 
-  if (item.type === "reps") {
+  if (!isTimer) {
     trainingValue.textContent = String(trainingRepCount);
     trainingUnit.textContent = "REP";
     trainingTargetText.textContent = `TARGET ${item.target}`;
@@ -2836,14 +2773,16 @@ function updateTrainingWorkoutDisplay() {
       formatTrainingSeconds(trainingTimerRemaining);
     trainingUnit.textContent = "";
     trainingTargetText.textContent =
-      `TARGET ${formatTrainingSeconds(item.target)}`;
+      `REMAINING / TARGET ${formatTrainingSeconds(item.target)}`;
 
-    const elapsed =
-      trainingTimerTotal - trainingTimerRemaining;
+    const remainingRatio = trainingTimerTotal > 0
+      ? trainingTimerRemaining / trainingTimerTotal
+      : 0;
+
     trainingProgressFill.style.width =
       `${Math.min(
         100,
-        Math.max(0, (elapsed / trainingTimerTotal) * 100)
+        Math.max(0, remainingRatio * 100)
       )}%`;
     trainingTapButton.hidden = true;
   }
@@ -2851,7 +2790,6 @@ function updateTrainingWorkoutDisplay() {
 
 function startTrainingTimer() {
   clearTrainingTimers();
-  trainingProgressMade = true;
   trainingTimerEndAt =
     Date.now() + trainingTimerRemaining * 1000;
 
@@ -3078,7 +3016,6 @@ function finishTrainingSet(kind) {
 
   clearTrainingTimers();
   trainingPhase = "transition";
-  trainingProgressMade = true;
   trainingCompletedSets += 1;
   trainingSpeak(
     kind === "timer"
@@ -3092,27 +3029,11 @@ function finishTrainingSet(kind) {
   }, TRAINING_SET_MESSAGE_DELAY);
 }
 
-function recordTrainingSession(isComplete) {
-  if (
-    trainingSessionRecorded ||
-    !trainingProgressMade
-  ) {
-    return;
-  }
-
-  trainingSessionRecorded = true;
-  trainingProfile.sessions += 1;
-  trainingProfile.xp += isComplete ? 1 : 0.5;
-  saveTrainingProfile();
-  updateTrainingLevelDisplay();
-}
-
 function finishTrainingSession(isComplete) {
   clearTrainingTimers();
   trainingSessionRunning = false;
   trainingPaused = false;
   trainingScreen.classList.remove("is-paused");
-  recordTrainingSession(isComplete);
   showTrainingView("complete");
 
   trainingResultTitle.textContent =
@@ -3140,8 +3061,6 @@ function startTrainingSession() {
   trainingSetIndex = 1;
   trainingRepCount = 0;
   trainingCompletedSets = 0;
-  trainingProgressMade = false;
-  trainingSessionRecorded = false;
   trainingPaused = false;
   stopIdleTimer();
   startCurrentTrainingItem();
@@ -3210,8 +3129,23 @@ function handleTrainingTap() {
   if (!item || item.type !== "reps") return;
 
   trainingRepCount += 1;
-  trainingProgressMade = true;
   trainingPulseVital();
+
+  trainingTapButton.classList.remove("is-tapped");
+  trainingValueStage.classList.remove("is-counted");
+  void trainingTapButton.offsetWidth;
+  trainingTapButton.classList.add("is-tapped");
+  trainingValueStage.classList.add("is-counted");
+
+  window.setTimeout(() => {
+    trainingTapButton.classList.remove("is-tapped");
+    trainingValueStage.classList.remove("is-counted");
+  }, 360);
+
+  if (navigator.vibrate) {
+    navigator.vibrate(12);
+  }
+
   updateTrainingWorkoutDisplay();
 
   const remaining = item.target - trainingRepCount;
@@ -3245,11 +3179,8 @@ function enterTrainingMode() {
   trainingActive = true;
   trainingSessionRunning = false;
   trainingProgram = loadTrainingProgram();
-  trainingProfile = loadTrainingProfile();
   trainingSessionProgram = [];
   trainingCompletedSets = 0;
-  trainingProgressMade = false;
-  trainingSessionRecorded = false;
   trainingPaused = false;
   currentModeKey = "training";
 
