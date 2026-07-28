@@ -2293,15 +2293,19 @@ body.photo-mode-active {
 }
 
 .private-edition .menu-panel .mode-button {
+  grid-template-columns: 30px minmax(0, 1fr) 12px;
   min-height: 61px;
   margin: 0;
-  padding-right: 13px;
-  padding-left: 13px;
+  padding-right: 10px;
+  padding-left: 10px;
 }
 
 .private-edition .menu-panel .mode-label {
-  font-size: clamp(0.88rem, 3.25vw, 1.03rem);
-  letter-spacing: 0.035em;
+  min-width: 0;
+  font-size: clamp(0.82rem, 3.05vw, 0.98rem);
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+  text-align: center;
 }
 
 
