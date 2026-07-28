@@ -25,7 +25,7 @@
     <header class="top-hud" aria-label="端末情報">
       <div class="hud-block hud-left">
         <p class="hud-main">ID: WITH-L/01</p>
-        <p class="hud-sub">ver.1.7.0</p>
+        <p class="hud-sub">ver.1.8.0</p>
         <div class="mini-meter" aria-hidden="true"><span></span></div>
       </div>
 
@@ -172,7 +172,50 @@
 
       <div id="actionButtons" class="action-grid"></div>
 
-      <section id="focusScreen" class="focus-screen" aria-label="ポモドーロタイマー" hidden>
+      <section id="focusScreen" class="focus-screen" aria-label="集中タイマー" hidden>
+        <div class="focus-type-switch" role="group" aria-label="タイマーの種類">
+          <button
+            class="focus-type-button is-active"
+            type="button"
+            data-focus-timer-mode="pomodoro"
+            aria-pressed="true"
+          >POMODORO</button>
+          <button
+            class="focus-type-button"
+            type="button"
+            data-focus-timer-mode="custom"
+            aria-pressed="false"
+          >CUSTOM</button>
+        </div>
+
+        <div id="focusCustomSetup" class="focus-custom-setup" hidden>
+          <label>
+            <span>MIN</span>
+            <input
+              id="focusCustomMinutes"
+              type="number"
+              inputmode="numeric"
+              min="0"
+              max="180"
+              value="45"
+              aria-label="カスタムタイマーの分"
+            >
+          </label>
+          <b aria-hidden="true">:</b>
+          <label>
+            <span>SEC</span>
+            <input
+              id="focusCustomSeconds"
+              type="number"
+              inputmode="numeric"
+              min="0"
+              max="59"
+              value="00"
+              aria-label="カスタムタイマーの秒"
+            >
+          </label>
+        </div>
+
         <div class="focus-status">
           <span id="focusPhaseLabel">FOCUS SESSION</span>
           <span id="focusCycleLabel">CYCLE 1 / 4</span>
@@ -200,7 +243,7 @@
           </button>
         </div>
 
-        <p class="focus-note">25 MIN FOCUS / 5 MIN BREAK</p>
+        <p id="focusNote" class="focus-note">25 MIN FOCUS / 5 MIN BREAK</p>
       </section>
     </section>
 
