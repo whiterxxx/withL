@@ -21,6 +21,15 @@ const focusIntervalLabel = document.getElementById("focusIntervalLabel");
 const focusProgressBar = document.getElementById("focusProgressBar");
 const focusStartButton = document.getElementById("focusStartButton");
 const focusResetButton = document.getElementById("focusResetButton");
+const focusNote = document.getElementById("focusNote");
+const focusCustomSetup = document.getElementById("focusCustomSetup");
+const focusCustomMinutes =
+  document.getElementById("focusCustomMinutes");
+const focusCustomSeconds =
+  document.getElementById("focusCustomSeconds");
+const focusTimerModeButtons = [
+  ...document.querySelectorAll("[data-focus-timer-mode]")
+];
 const focusCycleDots = [
   ...document.querySelectorAll(".focus-cycle-dots i")
 ];
@@ -495,15 +504,15 @@ const modes = {
     "title": "一緒に集中",
     "code": "FOCUS LINK",
     "start": [
-      "集中するんですね。25分だけ、私と作業だけを見てください。",
-      "始める準備はできていますか。時間は私が管理します。",
-      "必要なものを揃えてください。次の25分は、途中で逃げないことです。"
+      "集中するんですね。使うタイマーを選んでください。時間は私が管理します。",
+      "始める準備はできていますか。必要な時間だけ、私が見ています。",
+      "必要なものを揃えてください。始めたら、途中で逃げないことです。"
     ],
     "idle": [],
     "talk": [
       "今は作業へ戻ってください。話は区切りがついてから聞きます。",
       "手が止まっていますよ。次の一つだけ進めてください。",
-      "完璧でなくて構いません。25分間、続けることを優先してください。",
+      "完璧でなくて構いません。設定した時間、続けることを優先してください。",
       "私はここで時間を見ています。貴女は目の前のことだけ考えてください。"
     ],
     "actions": []
@@ -522,7 +531,11 @@ const HOME_RETURN_DELAY = 1600;
 const FOCUS_DURATION_SECONDS = 25 * 60;
 const FOCUS_BREAK_SECONDS = 5 * 60;
 const FOCUS_TOTAL_CYCLES = 4;
+const CUSTOM_DEFAULT_DURATION_SECONDS = 45 * 60;
+const CUSTOM_MAX_MINUTES = 180;
 
+let focusTimerMode = "pomodoro";
+let customDurationSeconds = CUSTOM_DEFAULT_DURATION_SECONDS;
 let focusPhase = "focus";
 let focusCycle = 1;
 let focusRemainingSeconds = FOCUS_DURATION_SECONDS;
@@ -803,7 +816,53 @@ function formatFocusTime(totalSeconds) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+function clampFocusNumber(value, minimum, maximum) {
+  const parsed = Number.parseInt(value, 10);
+
+  if (!Number.isFinite(parsed)) {
+    return minimum;
+  }
+
+  return Math.max(minimum, Math.min(maximum, parsed));
+}
+
+function readCustomDurationFromInputs() {
+  const minutes = clampFocusNumber(
+    focusCustomMinutes.value,
+    0,
+    CUSTOM_MAX_MINUTES
+  );
+  const seconds = clampFocusNumber(
+    focusCustomSeconds.value,
+    0,
+    59
+  );
+
+  return minutes * 60 + seconds;
+}
+
+function normalizeCustomTimerInputs() {
+  const minutes = clampFocusNumber(
+    focusCustomMinutes.value,
+    0,
+    CUSTOM_MAX_MINUTES
+  );
+  const seconds = clampFocusNumber(
+    focusCustomSeconds.value,
+    0,
+    59
+  );
+
+  focusCustomMinutes.value = String(minutes);
+  focusCustomSeconds.value = String(seconds).padStart(2, "0");
+  customDurationSeconds = minutes * 60 + seconds;
+}
+
 function getFocusPhaseDuration() {
+  if (focusTimerMode === "custom") {
+    return customDurationSeconds;
+  }
+
   return focusPhase === "break"
     ? FOCUS_BREAK_SECONDS
     : FOCUS_DURATION_SECONDS;
@@ -817,7 +876,8 @@ function stopFocusInterval() {
 }
 
 function updateFocusDisplay() {
-  const duration = getFocusPhaseDuration();
+  const isCustom = focusTimerMode === "custom";
+  const duration = Math.max(1, getFocusPhaseDuration());
   const progress = focusPhase === "complete"
     ? 1
     : Math.max(
@@ -826,51 +886,99 @@ function updateFocusDisplay() {
       );
 
   focusTime.textContent = formatFocusTime(focusRemainingSeconds);
-  focusTime.dateTime = `PT${Math.max(0, Math.ceil(focusRemainingSeconds))}S`;
+  focusTime.dateTime =
+    `PT${Math.max(0, Math.ceil(focusRemainingSeconds))}S`;
 
-  focusPhaseLabel.textContent =
-    focusPhase === "break"
-      ? "BREAK"
-      : focusPhase === "complete"
-        ? "SESSION COMPLETE"
-        : "FOCUS SESSION";
-
-  focusIntervalLabel.textContent =
-    focusPhase === "break"
-      ? "RECOVERY INTERVAL"
-      : focusPhase === "complete"
-        ? "FOUR CYCLES COMPLETE"
-        : "WORK INTERVAL";
-
-  focusCycleLabel.textContent =
-    focusPhase === "complete"
-      ? `${FOCUS_TOTAL_CYCLES} / ${FOCUS_TOTAL_CYCLES} COMPLETE`
-      : `CYCLE ${focusCycle} / ${FOCUS_TOTAL_CYCLES}`;
-
-  focusProgressBar.style.transform = `scaleX(${progress})`;
-
-  focusScreen.classList.toggle("is-break", focusPhase === "break");
+  focusScreen.classList.toggle("is-custom", isCustom);
+  focusScreen.classList.toggle(
+    "is-break",
+    !isCustom && focusPhase === "break"
+  );
   focusScreen.classList.toggle(
     "is-complete",
     focusPhase === "complete"
   );
 
-  focusCycleDots.forEach((dot, index) => {
-    const cycleNumber = index + 1;
-    const isCompleted =
-      focusPhase === "complete" || cycleNumber < focusCycle;
-    const isActive =
-      focusPhase !== "complete" && cycleNumber === focusCycle;
+  focusCustomSetup.hidden = !isCustom;
+  document.querySelector(".focus-cycle-dots").hidden = isCustom;
 
-    dot.classList.toggle("is-complete", isCompleted);
-    dot.classList.toggle("is-active", isActive);
+  focusTimerModeButtons.forEach((button) => {
+    const isActive =
+      button.dataset.focusTimerMode === focusTimerMode;
+
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+    button.disabled = focusRunning;
   });
+
+  if (isCustom) {
+    focusPhaseLabel.textContent =
+      focusPhase === "complete"
+        ? "SESSION COMPLETE"
+        : "CUSTOM TIMER";
+
+    focusCycleLabel.textContent =
+      focusPhase === "complete"
+        ? "TIMER COMPLETE"
+        : "SINGLE SESSION";
+
+    focusIntervalLabel.textContent =
+      focusPhase === "complete"
+        ? "TIME COMPLETE"
+        : "COUNTDOWN";
+
+    focusNote.textContent = "CUSTOM COUNTDOWN / SINGLE SESSION";
+
+    const customSettingsLocked =
+      focusRunning ||
+      focusPhase === "complete" ||
+      focusRemainingSeconds !== customDurationSeconds;
+
+    focusCustomMinutes.disabled = customSettingsLocked;
+    focusCustomSeconds.disabled = customSettingsLocked;
+  } else {
+    focusPhaseLabel.textContent =
+      focusPhase === "break"
+        ? "BREAK"
+        : focusPhase === "complete"
+          ? "SESSION COMPLETE"
+          : "FOCUS SESSION";
+
+    focusIntervalLabel.textContent =
+      focusPhase === "break"
+        ? "RECOVERY INTERVAL"
+        : focusPhase === "complete"
+          ? "FOUR CYCLES COMPLETE"
+          : "WORK INTERVAL";
+
+    focusCycleLabel.textContent =
+      focusPhase === "complete"
+        ? `${FOCUS_TOTAL_CYCLES} / ${FOCUS_TOTAL_CYCLES} COMPLETE`
+        : `CYCLE ${focusCycle} / ${FOCUS_TOTAL_CYCLES}`;
+
+    focusNote.textContent = "25 MIN FOCUS / 5 MIN BREAK";
+    focusCustomMinutes.disabled = false;
+    focusCustomSeconds.disabled = false;
+
+    focusCycleDots.forEach((dot, index) => {
+      const cycleNumber = index + 1;
+      const isCompleted =
+        focusPhase === "complete" || cycleNumber < focusCycle;
+      const isActive =
+        focusPhase !== "complete" && cycleNumber === focusCycle;
+
+      dot.classList.toggle("is-complete", isCompleted);
+      dot.classList.toggle("is-active", isActive);
+    });
+  }
+
+  focusProgressBar.style.transform = `scaleX(${progress})`;
 
   if (focusPhase === "complete") {
     focusStartButton.textContent = "RESTART";
   } else if (focusRunning) {
     focusStartButton.textContent = "PAUSE";
-  } else if (focusRemainingSeconds < duration) {
+  } else if (focusRemainingSeconds < getFocusPhaseDuration()) {
     focusStartButton.textContent = "RESUME";
   } else {
     focusStartButton.textContent = "START";
@@ -883,14 +991,75 @@ function resetFocusTimer(options = {}) {
   stopFocusInterval();
   focusPhase = "focus";
   focusCycle = 1;
-  focusRemainingSeconds = FOCUS_DURATION_SECONDS;
   focusEndAt = null;
   focusRunning = false;
+
+  if (focusTimerMode === "custom") {
+    normalizeCustomTimerInputs();
+    focusRemainingSeconds = customDurationSeconds;
+  } else {
+    focusRemainingSeconds = FOCUS_DURATION_SECONDS;
+  }
+
   updateFocusDisplay();
 
   if (announce && currentModeKey === "focus") {
-    typeMessage("最初の25分に戻しました。準備ができたら始めてください。");
+    typeMessage(
+      focusTimerMode === "custom"
+        ? "設定した時間に戻しました。準備ができたら始めてください。"
+        : "最初の25分に戻しました。準備ができたら始めてください。"
+    );
   }
+}
+
+function setFocusTimerMode(nextMode, options = {}) {
+  const { announce = true } = options;
+
+  if (!["pomodoro", "custom"].includes(nextMode)) {
+    return;
+  }
+
+  if (focusRunning || nextMode === focusTimerMode) {
+    return;
+  }
+
+  stopFocusInterval();
+  focusTimerMode = nextMode;
+  focusPhase = "focus";
+  focusCycle = 1;
+  focusEndAt = null;
+  focusRunning = false;
+
+  if (focusTimerMode === "custom") {
+    normalizeCustomTimerInputs();
+    focusRemainingSeconds = customDurationSeconds;
+  } else {
+    focusRemainingSeconds = FOCUS_DURATION_SECONDS;
+  }
+
+  updateFocusDisplay();
+
+  if (announce && currentModeKey === "focus") {
+    typeMessage(
+      focusTimerMode === "custom"
+        ? "カスタムタイマーに切り替えました。時間を指定してください。"
+        : "ポモドーロに切り替えました。25分集中、5分休憩です。"
+    );
+  }
+}
+
+function updateCustomTimerDraft() {
+  if (
+    focusTimerMode !== "custom" ||
+    focusRunning ||
+    focusPhase === "complete"
+  ) {
+    return;
+  }
+
+  customDurationSeconds = readCustomDurationFromInputs();
+  focusRemainingSeconds = customDurationSeconds;
+  updateFocusDisplay();
 }
 
 function pauseFocusTimer() {
@@ -921,6 +1090,14 @@ function beginFocusCountdown(options = {}) {
 
   if (focusRunning) return;
 
+  if (
+    focusTimerMode === "custom" &&
+    focusRemainingSeconds <= 0
+  ) {
+    typeMessage("時間を1秒以上に設定してください。");
+    return;
+  }
+
   focusRunning = true;
   focusEndAt = Date.now() + focusRemainingSeconds * 1000;
   updateFocusDisplay();
@@ -930,11 +1107,15 @@ function beginFocusCountdown(options = {}) {
     const isResume = focusRemainingSeconds < duration;
 
     typeMessage(
-      focusPhase === "break"
-        ? "5分だけ休んでください。次の区切りまで、私が時間を見ています。"
-        : isResume
-          ? "再開します。残り時間は、目の前の作業だけに使ってください。"
-          : "始めます。次の25分は、他のことを考えないでください。"
+      focusTimerMode === "custom"
+        ? isResume
+          ? "再開します。残り時間は、目の前のことだけに使ってください。"
+          : "設定した時間を始めます。終わるまで、私が見ています。"
+        : focusPhase === "break"
+          ? "5分だけ休んでください。次の区切りまで、私が時間を見ています。"
+          : isResume
+            ? "再開します。残り時間は、目の前の作業だけに使ってください。"
+            : "始めます。次の25分は、他のことを考えないでください。"
     );
   }
 
@@ -946,6 +1127,16 @@ function completeFocusPhase() {
   stopFocusInterval();
   focusRunning = false;
   focusEndAt = null;
+
+  if (focusTimerMode === "custom") {
+    focusPhase = "complete";
+    focusRemainingSeconds = 0;
+    updateFocusDisplay();
+    typeMessage(
+      "設定した時間が終わりました。よく集中できました。ここで一区切りです。"
+    );
+    return;
+  }
 
   if (focusPhase === "focus") {
     focusPhase = "break";
@@ -1273,6 +1464,27 @@ modeButtons.forEach((button) => {
 
 backButton.addEventListener("click", () => {
   returnToMenu(true);
+});
+
+focusTimerModeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    clearPendingEnd();
+    triggerGlitch();
+    setFocusTimerMode(button.dataset.focusTimerMode);
+  });
+});
+
+focusCustomMinutes.addEventListener("input", updateCustomTimerDraft);
+focusCustomSeconds.addEventListener("input", updateCustomTimerDraft);
+
+focusCustomMinutes.addEventListener("change", () => {
+  normalizeCustomTimerInputs();
+  updateCustomTimerDraft();
+});
+
+focusCustomSeconds.addEventListener("change", () => {
+  normalizeCustomTimerInputs();
+  updateCustomTimerDraft();
 });
 
 focusStartButton.addEventListener("click", () => {
