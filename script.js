@@ -1076,7 +1076,7 @@ function pauseFocusTimer() {
 
   typeMessage(
     focusPhase === "break"
-      ? "休憩を停止しました。戻れる状態になったら再開してください。"
+      ? "停止しました。戻れる状態になったら再開してください。"
       : "停止しました。作業へ戻れる状態になったら再開してください。"
   );
 }
@@ -1109,8 +1109,8 @@ function beginFocusCountdown(options = {}) {
     typeMessage(
       focusTimerMode === "custom"
         ? isResume
-          ? "再開します。残り時間は、目の前のことだけに使ってください。"
-          : "設定した時間を始めます。終わるまで、私が見ています。"
+          ? "再開します。残り時間は目の前のことに集中してください。"
+          : "設定した時間を始めます。終わるまで集中してください。"
         : focusPhase === "break"
           ? "5分だけ休んでください。次の区切りまで、私が時間を見ています。"
           : isResume
@@ -1133,7 +1133,7 @@ function completeFocusPhase() {
     focusRemainingSeconds = 0;
     updateFocusDisplay();
     typeMessage(
-      "設定した時間が終わりました。よく集中できました。ここで一区切りです。"
+      "設定した時間が終わりました。よく頑張りました。ここで一区切りです。"
     );
     return;
   }
@@ -1164,7 +1164,7 @@ function completeFocusPhase() {
   focusRemainingSeconds = 0;
   updateFocusDisplay();
   typeMessage(
-    "4回、完了しました。よく集中できました。今日はここで一区切りです。"
+    "4回、完了です。お疲れ様でした。よく頑張りました。"
   );
 }
 
