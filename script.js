@@ -13,6 +13,18 @@ const dialogueButton = document.getElementById("dialogueButton");
 const elapsedTime = document.getElementById("elapsedTime");
 const glitchParticles = document.getElementById("glitchParticles");
 
+const focusScreen = document.getElementById("focusScreen");
+const focusPhaseLabel = document.getElementById("focusPhaseLabel");
+const focusCycleLabel = document.getElementById("focusCycleLabel");
+const focusTime = document.getElementById("focusTime");
+const focusIntervalLabel = document.getElementById("focusIntervalLabel");
+const focusProgressBar = document.getElementById("focusProgressBar");
+const focusStartButton = document.getElementById("focusStartButton");
+const focusResetButton = document.getElementById("focusResetButton");
+const focusCycleDots = [
+  ...document.querySelectorAll(".focus-cycle-dots i")
+];
+
 const photoModeButton = document.getElementById("photoModeButton");
 const photoScreen = document.getElementById("photoScreen");
 const photoCloseButton = document.getElementById("photoCloseButton");
@@ -37,7 +49,7 @@ const initialMessages = [
   "来ましたね。貴女を待っていました。今日は何をするつもりですか。",
   "貴女と過ごす時間は特別です。",
   "今日は何をするんですか。付き合います。",
-  "外出でも、食事でも、ただ一緒にいるだけでも構いませんよ。"
+  "外出でも、食事でも、集中でも、ただ一緒にいるだけでも構いませんよ。"
 ];
 
 const generalTalk = {
@@ -478,6 +490,23 @@ const modes = {
         "wide": true
       }
     ]
+  },
+  "focus": {
+    "title": "一緒に集中",
+    "code": "FOCUS LINK",
+    "start": [
+      "集中するんですね。25分だけ、私と作業だけを見てください。",
+      "始める準備はできていますか。時間は私が管理します。",
+      "必要なものを揃えてください。次の25分は、途中で逃げないことです。"
+    ],
+    "idle": [],
+    "talk": [
+      "今は作業へ戻ってください。話は区切りがついてから聞きます。",
+      "手が止まっていますよ。次の一つだけ進めてください。",
+      "完璧でなくて構いません。25分間、続けることを優先してください。",
+      "私はここで時間を見ています。貴女は目の前のことだけ考えてください。"
+    ],
+    "actions": []
   }
 };
 
@@ -489,6 +518,17 @@ let typingTimerId = null;
 let pendingEndTimerId = null;
 let returnHomeAfterTyping = false;
 const HOME_RETURN_DELAY = 1600;
+
+const FOCUS_DURATION_SECONDS = 25 * 60;
+const FOCUS_BREAK_SECONDS = 5 * 60;
+const FOCUS_TOTAL_CYCLES = 4;
+
+let focusPhase = "focus";
+let focusCycle = 1;
+let focusRemainingSeconds = FOCUS_DURATION_SECONDS;
+let focusTimerId = null;
+let focusEndAt = null;
+let focusRunning = false;
 
 let photoControlsTimerId = null;
 let photoCloseTimerId = null;
@@ -755,6 +795,208 @@ function closePhotoMode() {
   startIdleTimer();
 }
 
+function formatFocusTime(totalSeconds) {
+  const safeSeconds = Math.max(0, Math.ceil(totalSeconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  const seconds = safeSeconds % 60;
+
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function getFocusPhaseDuration() {
+  return focusPhase === "break"
+    ? FOCUS_BREAK_SECONDS
+    : FOCUS_DURATION_SECONDS;
+}
+
+function stopFocusInterval() {
+  if (focusTimerId) {
+    window.clearInterval(focusTimerId);
+    focusTimerId = null;
+  }
+}
+
+function updateFocusDisplay() {
+  const duration = getFocusPhaseDuration();
+  const progress = focusPhase === "complete"
+    ? 1
+    : Math.max(
+        0,
+        Math.min(1, (duration - focusRemainingSeconds) / duration)
+      );
+
+  focusTime.textContent = formatFocusTime(focusRemainingSeconds);
+  focusTime.dateTime = `PT${Math.max(0, Math.ceil(focusRemainingSeconds))}S`;
+
+  focusPhaseLabel.textContent =
+    focusPhase === "break"
+      ? "BREAK"
+      : focusPhase === "complete"
+        ? "SESSION COMPLETE"
+        : "FOCUS SESSION";
+
+  focusIntervalLabel.textContent =
+    focusPhase === "break"
+      ? "RECOVERY INTERVAL"
+      : focusPhase === "complete"
+        ? "FOUR CYCLES COMPLETE"
+        : "WORK INTERVAL";
+
+  focusCycleLabel.textContent =
+    focusPhase === "complete"
+      ? `${FOCUS_TOTAL_CYCLES} / ${FOCUS_TOTAL_CYCLES} COMPLETE`
+      : `CYCLE ${focusCycle} / ${FOCUS_TOTAL_CYCLES}`;
+
+  focusProgressBar.style.transform = `scaleX(${progress})`;
+
+  focusScreen.classList.toggle("is-break", focusPhase === "break");
+  focusScreen.classList.toggle(
+    "is-complete",
+    focusPhase === "complete"
+  );
+
+  focusCycleDots.forEach((dot, index) => {
+    const cycleNumber = index + 1;
+    const isCompleted =
+      focusPhase === "complete" || cycleNumber < focusCycle;
+    const isActive =
+      focusPhase !== "complete" && cycleNumber === focusCycle;
+
+    dot.classList.toggle("is-complete", isCompleted);
+    dot.classList.toggle("is-active", isActive);
+  });
+
+  if (focusPhase === "complete") {
+    focusStartButton.textContent = "RESTART";
+  } else if (focusRunning) {
+    focusStartButton.textContent = "PAUSE";
+  } else if (focusRemainingSeconds < duration) {
+    focusStartButton.textContent = "RESUME";
+  } else {
+    focusStartButton.textContent = "START";
+  }
+}
+
+function resetFocusTimer(options = {}) {
+  const { announce = false } = options;
+
+  stopFocusInterval();
+  focusPhase = "focus";
+  focusCycle = 1;
+  focusRemainingSeconds = FOCUS_DURATION_SECONDS;
+  focusEndAt = null;
+  focusRunning = false;
+  updateFocusDisplay();
+
+  if (announce && currentModeKey === "focus") {
+    typeMessage("最初の25分に戻しました。準備ができたら始めてください。");
+  }
+}
+
+function pauseFocusTimer() {
+  if (!focusRunning) return;
+
+  focusRemainingSeconds = Math.max(
+    0,
+    Math.ceil((focusEndAt - Date.now()) / 1000)
+  );
+  focusRunning = false;
+  focusEndAt = null;
+  stopFocusInterval();
+  updateFocusDisplay();
+
+  typeMessage(
+    focusPhase === "break"
+      ? "休憩を停止しました。戻れる状態になったら再開してください。"
+      : "停止しました。作業へ戻れる状態になったら再開してください。"
+  );
+}
+
+function beginFocusCountdown(options = {}) {
+  const { announce = true } = options;
+
+  if (focusPhase === "complete") {
+    resetFocusTimer();
+  }
+
+  if (focusRunning) return;
+
+  focusRunning = true;
+  focusEndAt = Date.now() + focusRemainingSeconds * 1000;
+  updateFocusDisplay();
+
+  if (announce) {
+    const duration = getFocusPhaseDuration();
+    const isResume = focusRemainingSeconds < duration;
+
+    typeMessage(
+      focusPhase === "break"
+        ? "5分だけ休んでください。次の区切りまで、私が時間を見ています。"
+        : isResume
+          ? "再開します。残り時間は、目の前の作業だけに使ってください。"
+          : "始めます。次の25分は、他のことを考えないでください。"
+    );
+  }
+
+  stopFocusInterval();
+  focusTimerId = window.setInterval(updateFocusCountdown, 250);
+}
+
+function completeFocusPhase() {
+  stopFocusInterval();
+  focusRunning = false;
+  focusEndAt = null;
+
+  if (focusPhase === "focus") {
+    focusPhase = "break";
+    focusRemainingSeconds = FOCUS_BREAK_SECONDS;
+    updateFocusDisplay();
+    typeMessage(
+      "25分、完了です。5分だけ休んでください。休憩も私が管理します。"
+    );
+    beginFocusCountdown({ announce: false });
+    return;
+  }
+
+  if (focusCycle < FOCUS_TOTAL_CYCLES) {
+    focusCycle += 1;
+    focusPhase = "focus";
+    focusRemainingSeconds = FOCUS_DURATION_SECONDS;
+    updateFocusDisplay();
+    typeMessage(
+      "休憩終了です。準備ができたら、次の25分を始めてください。"
+    );
+    return;
+  }
+
+  focusPhase = "complete";
+  focusRemainingSeconds = 0;
+  updateFocusDisplay();
+  typeMessage(
+    "4回、完了しました。よく集中できました。今日はここで一区切りです。"
+  );
+}
+
+function updateFocusCountdown() {
+  if (!focusRunning || !focusEndAt) return;
+
+  focusRemainingSeconds = Math.max(
+    0,
+    Math.ceil((focusEndAt - Date.now()) / 1000)
+  );
+  updateFocusDisplay();
+
+  if (focusRemainingSeconds <= 0) {
+    completeFocusPhase();
+  }
+}
+
+function leaveFocusMode() {
+  stopFocusInterval();
+  focusRunning = false;
+  focusEndAt = null;
+}
+
 function startElapsedTimer() {
   stopElapsedTimer();
   sessionStartedAt = Date.now();
@@ -774,6 +1016,10 @@ function stopElapsedTimer() {
 
 function startIdleTimer() {
   stopIdleTimer();
+
+  if (currentModeKey === "focus") {
+    return;
+  }
 
   const minimum = currentModeKey ? 30000 : 42000;
   const maximum = currentModeKey ? 52000 : 70000;
@@ -948,7 +1194,16 @@ function enterMode(modeKey) {
   menuPanel.hidden = true;
   modePanel.hidden = false;
 
-  renderActions(modeKey);
+  const isFocusMode = modeKey === "focus";
+  actionButtons.hidden = isFocusMode;
+  focusScreen.hidden = !isFocusMode;
+
+  if (isFocusMode) {
+    resetFocusTimer();
+  } else {
+    renderActions(modeKey);
+  }
+
   startElapsedTimer();
   startIdleTimer();
   typeMessage(takeRandom(`${modeKey}-start`, mode.start));
@@ -963,8 +1218,11 @@ function returnToMenu(showMessage = true) {
 
   stopElapsedTimer();
   stopIdleTimer();
+  leaveFocusMode();
 
   elapsedTime.textContent = "00:00";
+  actionButtons.hidden = false;
+  focusScreen.hidden = true;
   modePanel.hidden = true;
   menuPanel.hidden = false;
 
@@ -1015,6 +1273,23 @@ modeButtons.forEach((button) => {
 
 backButton.addEventListener("click", () => {
   returnToMenu(true);
+});
+
+focusStartButton.addEventListener("click", () => {
+  clearPendingEnd();
+  triggerGlitch();
+
+  if (focusRunning) {
+    pauseFocusTimer();
+  } else {
+    beginFocusCountdown();
+  }
+});
+
+focusResetButton.addEventListener("click", () => {
+  clearPendingEnd();
+  triggerGlitch();
+  resetFocusTimer({ announce: true });
 });
 
 talkButton.addEventListener("click", () => {
