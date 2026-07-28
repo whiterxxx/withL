@@ -550,15 +550,21 @@ button:focus-visible {
   margin: 0 auto 10px;
 }
 
+.menu-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
 .mode-button {
   position: relative;
   display: grid;
-  grid-template-columns: 36px 1fr 20px;
+  grid-template-columns: 32px minmax(0, 1fr) 14px;
   align-items: center;
   width: 100%;
-  min-height: 53px;
-  margin: 0 0 6px;
-  padding: 8px 18px;
+  min-height: 62px;
+  margin: 0;
+  padding: 8px 12px;
   overflow: hidden;
   color: var(--ink);
   border: 1px solid var(--line);
@@ -654,7 +660,7 @@ button:focus-visible {
 
 .mode-label {
   font-family: var(--font-jp);
-  font-size: clamp(1.02rem, 3.9vw, 1.18rem);
+  font-size: clamp(0.88rem, 3.2vw, 1.05rem);
   font-weight: 400;
   letter-spacing: 0.055em;
 }
@@ -773,7 +779,7 @@ button:focus-visible {
 
 .focus-screen {
   position: relative;
-  min-height: 226px;
+  min-height: 270px;
   padding: 16px 18px 14px;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -810,6 +816,108 @@ button:focus-visible {
   bottom: 6px;
   border-right: 1px solid var(--accent);
   border-bottom: 1px solid var(--accent);
+}
+
+.focus-type-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 14px;
+  padding: 3px;
+  border: 1px solid var(--line-soft);
+  background: rgba(224, 236, 242, 0.46);
+}
+
+.focus-type-button {
+  min-height: 31px;
+  color: rgba(86, 115, 129, 0.66);
+  border: 0;
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.focus-type-button.is-active {
+  color: var(--accent-dark);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 2px 7px rgba(55, 84, 98, 0.10),
+    inset 0 0 0 1px rgba(104, 138, 154, 0.12);
+}
+
+.focus-type-button:disabled {
+  cursor: default;
+  opacity: 0.54;
+}
+
+.focus-custom-setup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: end;
+  gap: 10px;
+  margin: -2px 0 14px;
+  padding: 9px 14px 10px;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.focus-custom-setup label {
+  display: grid;
+  gap: 4px;
+  text-align: center;
+}
+
+.focus-custom-setup label span {
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.45rem;
+  letter-spacing: 0.16em;
+}
+
+.focus-custom-setup input {
+  width: 100%;
+  min-width: 0;
+  padding: 2px 4px;
+  color: var(--accent-dark);
+  border: 0;
+  border-bottom: 1px solid rgba(94, 135, 153, 0.26);
+  outline: 0;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 1.35rem;
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  text-align: center;
+  appearance: textfield;
+}
+
+.focus-custom-setup input::-webkit-inner-spin-button,
+.focus-custom-setup input::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.focus-custom-setup input:focus {
+  border-bottom-color: var(--accent-dark);
+  box-shadow: 0 4px 7px -7px rgba(83, 126, 146, 0.45);
+}
+
+.focus-custom-setup input:disabled {
+  opacity: 0.52;
+}
+
+.focus-custom-setup b {
+  padding-bottom: 3px;
+  color: var(--muted);
+  font-family: var(--font-ui);
+  font-size: 1.25rem;
+  font-weight: 300;
 }
 
 .focus-status {
@@ -1327,8 +1435,19 @@ button:focus-visible {
   }
 
   .focus-screen {
-    min-height: 218px;
-    padding: 14px 14px 12px;
+    min-height: 256px;
+    padding: 13px 12px 12px;
+  }
+
+  .focus-type-switch {
+    margin-bottom: 11px;
+  }
+
+  .focus-custom-setup {
+    gap: 7px;
+    margin-bottom: 11px;
+    padding-right: 9px;
+    padding-left: 9px;
   }
 
   .focus-time-block {
@@ -1414,15 +1533,29 @@ button:focus-visible {
     margin-bottom: 5px;
   }
 
+  .menu-panel {
+    gap: 5px;
+  }
+
   .mode-button {
-    min-height: 47px;
-    margin-bottom: 5px;
-    padding-top: 6px;
-    padding-bottom: 6px;
+    grid-template-columns: 28px minmax(0, 1fr) 10px;
+    min-height: 57px;
+    padding: 6px 8px;
+  }
+
+  .mode-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .mode-icon svg {
+    width: 20px;
+    height: 20px;
   }
 
   .mode-label {
-    font-size: 0.98rem;
+    font-size: clamp(0.78rem, 3.7vw, 0.93rem);
+    letter-spacing: 0.035em;
   }
 
   .mode-heading {
@@ -1438,9 +1571,23 @@ button:focus-visible {
   }
 
   .focus-screen {
-    min-height: 196px;
-    padding-top: 11px;
-    padding-bottom: 10px;
+    min-height: 238px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  .focus-type-switch {
+    margin-bottom: 8px;
+  }
+
+  .focus-type-button {
+    min-height: 28px;
+  }
+
+  .focus-custom-setup {
+    margin-bottom: 8px;
+    padding-top: 6px;
+    padding-bottom: 7px;
   }
 
   .focus-cycle-dots {
@@ -2346,4 +2493,17 @@ body.photo-mode-active {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
+
+.focus-screen.is-custom .focus-status {
+  margin-top: 2px;
+}
+
+.focus-screen.is-custom .focus-time-block {
+  min-height: 86px;
+}
+
+.focus-screen.is-custom .focus-time-block time {
+  font-size: clamp(2.8rem, 13vw, 4.35rem);
 }
