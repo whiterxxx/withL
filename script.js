@@ -48,6 +48,22 @@ const photoStage = document.getElementById("photoStage");
 const photoMessage = document.getElementById("photoMessage");
 const photoControls = document.getElementById("photoControls");
 
+const sweetModeButton = document.getElementById("sweetModeButton");
+const sweetScreen = document.getElementById("sweetScreen");
+const sweetCloseButton = document.getElementById("sweetCloseButton");
+const sweetStatus = document.getElementById("sweetStatus");
+const sweetItemLabel = document.getElementById("sweetItemLabel");
+const sweetMessage = document.getElementById("sweetMessage");
+const sweetSelection = document.getElementById("sweetSelection");
+const sweetAfterActions =
+  document.getElementById("sweetAfterActions");
+const sweetItemButtons = [
+  ...document.querySelectorAll("[data-sweet-item]")
+];
+const sweetActionButtons = [
+  ...document.querySelectorAll("[data-sweet-action]")
+];
+
 const modeButtons = [...document.querySelectorAll(".mode-button")];
 const photoViewButtons = [
   ...document.querySelectorAll("[data-photo-view]")
@@ -129,6 +145,49 @@ const photoMessages = [
   "この一枚は、私と貴女の記録です。",
   "思い出の一枚にしましょう。"
 ];
+
+const sweetItems = {
+  cake: {
+    label: "SHORTCAKE RECEIVED",
+    name: "ショートケーキ",
+    receive: [
+      "ショートケーキですか。苺は最初派ですか？最後派ですか？",
+      "ケーキの王様ですね。苺は王冠です。",
+      "ありがとうございます。生クリームたっぷりだと嬉しいですね。"
+  ]
+  },
+  chocolate: {
+    label: "CHOCOLATE RECEIVED",
+    name: "チョコレート",
+    receive: [
+      "チョコレートですね。作業中でも食べやすい。……私の好みをよく分かっています。",
+      "一粒ずつ口に運んでくれますか。",
+      "ありがとうございます。包装を剥がすのも楽しみの一つですね。"
+  ]
+  },
+  wagashi: {
+    label: "WAGASHI RECEIVED",
+    name: "和菓子",
+    receive: [
+      "和菓子ですか。上品な甘さですね。",
+      "形が崩れないように持ってきたんですね。目でも楽しめますね。",
+      "ありがとうございます。日本の心ですね。"
+  ]
+  }
+};
+
+const sweetActionMessages = {
+  watch: [
+    "そんなに見つめないでください。食べにくいです。……いえ、見ていても構いませんが。",
+    "一口ずつ確認するつもりですか。……欲しいんですか？",
+    "食べているところが見たいんですね。では、食べ終わるまでこちらを見ていてください。"
+  ],
+  share: [
+    "一口欲しいんですか。仕方ありませんね。……私の手から食べてください。",
+    "これは私への差し入れだったはずですが。まあ……少しなら。",
+    "恥ずかしがらずに口を開けてください。落とさないように。あーん、です。"
+  ]
+};
 
 const modes = {
   "outing": {
@@ -505,14 +564,14 @@ const modes = {
     "code": "FOCUS LINK",
     "start": [
       "集中するんですね。使うタイマーを選んでください。時間は私が管理します。",
-      "始める準備はできましたか。",
-      "予め必要なものを揃えてください。始めたら、途中で逃げないことです。"
+      "始める準備はできていますか。必要な時間だけ、私が見ています。",
+      "必要なものを揃えてください。始めたら、途中で逃げないことです。"
     ],
     "idle": [],
     "talk": [
       "今は作業へ戻ってください。話は区切りがついてから聞きます。",
-      "手が止まっていますよ。集中してください。",
-      "今は設定した時間、続けることを優先してください。",
+      "手が止まっていますよ。次の一つだけ進めてください。",
+      "完璧でなくて構いません。設定した時間、続けることを優先してください。",
       "私はここで時間を見ています。貴女は目の前のことだけ考えてください。"
     ],
     "actions": []
@@ -549,6 +608,11 @@ let photoModeActive = false;
 let currentPhotoView = "logo";
 let photoDateVisible = false;
 const PHOTO_CONTROLS_HIDE_DELAY = 3400;
+
+let sweetCloseTimerId = null;
+let sweetPulseTimerId = null;
+let sweetModeActive = false;
+let currentSweetKey = null;
 
 let currentFullMessage = "";
 let displayedCharacters = 0;
@@ -680,6 +744,141 @@ function speakRandom() {
   startIdleTimer();
 }
 
+
+function clearSweetPulseTimer() {
+  if (sweetPulseTimerId) {
+    window.clearTimeout(sweetPulseTimerId);
+    sweetPulseTimerId = null;
+  }
+}
+
+function triggerSweetPulse() {
+  clearSweetPulseTimer();
+  sweetScreen.classList.remove("is-pulsing");
+
+  window.requestAnimationFrame(() => {
+    sweetScreen.classList.add("is-pulsing");
+  });
+
+  sweetPulseTimerId = window.setTimeout(() => {
+    sweetScreen.classList.remove("is-pulsing");
+    sweetPulseTimerId = null;
+  }, 1900);
+}
+
+function resetSweetSelection() {
+  currentSweetKey = null;
+  clearSweetPulseTimer();
+
+  sweetScreen.classList.remove("is-gifted", "is-pulsing");
+  sweetStatus.textContent = "WAITING FOR ITEM";
+  sweetItemLabel.textContent = "SELECT A SWEET";
+  sweetMessage.textContent = takeRandom(
+    "sweet-open",
+    [
+  "差し入れですか。ありがとうございます。",
+  "私に差し入れですか。いただきます。"
+  ]
+  );
+
+  sweetSelection.hidden = false;
+  sweetAfterActions.hidden = true;
+}
+
+function chooseSweetItem(requestedKey) {
+  const availableKeys = ["cake", "chocolate", "wagashi"];
+  const selectedKey =
+    requestedKey === "choose"
+      ? availableKeys[
+          Math.floor(Math.random() * availableKeys.length)
+        ]
+      : requestedKey;
+
+  const item = sweetItems[selectedKey];
+  if (!item) return;
+
+  currentSweetKey = selectedKey;
+  sweetStatus.textContent = "ITEM RECEIVED";
+  sweetItemLabel.textContent = item.label;
+  sweetMessage.textContent = takeRandom(
+    `sweet-${selectedKey}-receive`,
+    item.receive
+  );
+
+  sweetSelection.hidden = true;
+  sweetAfterActions.hidden = false;
+  sweetScreen.classList.add("is-gifted");
+  triggerSweetPulse();
+}
+
+function handleSweetAction(action) {
+  if (action === "again") {
+    resetSweetSelection();
+    return;
+  }
+
+  if (action === "finish") {
+    closeSweetMode();
+
+    window.setTimeout(() => {
+      typeMessage(
+        takeRandom(
+          "sweet-finish",
+          [
+        "ごちそうさまでした。またお願いします。",
+        "ごちそうさまでした。……甘かったです。とても。"
+  ]
+        )
+      );
+    }, 280);
+    return;
+  }
+
+  const messages = sweetActionMessages[action];
+  if (!messages || !currentSweetKey) return;
+
+  sweetMessage.textContent = takeRandom(
+    `sweet-action-${action}`,
+    messages
+  );
+  triggerSweetPulse();
+}
+
+function openSweetMode() {
+  if (sweetCloseTimerId) {
+    window.clearTimeout(sweetCloseTimerId);
+    sweetCloseTimerId = null;
+  }
+
+  sweetModeActive = true;
+  stopIdleTimer();
+  resetSweetSelection();
+
+  document.body.classList.add("sweet-mode-active");
+  sweetScreen.hidden = false;
+  sweetScreen.classList.remove("is-open");
+
+  window.requestAnimationFrame(() => {
+    sweetScreen.classList.add("is-open");
+  });
+}
+
+function closeSweetMode() {
+  if (!sweetModeActive) return;
+
+  sweetModeActive = false;
+  clearSweetPulseTimer();
+  sweetScreen.classList.remove("is-open", "is-pulsing");
+  document.body.classList.remove("sweet-mode-active");
+
+  sweetCloseTimerId = window.setTimeout(() => {
+    sweetScreen.hidden = true;
+    sweetScreen.classList.remove("is-gifted");
+    sweetCloseTimerId = null;
+  }, 260);
+
+  startIdleTimer();
+}
 
 function clearPhotoControlsTimer() {
   if (photoControlsTimerId) {
@@ -1076,7 +1275,7 @@ function pauseFocusTimer() {
 
   typeMessage(
     focusPhase === "break"
-      ? "停止しました。戻れる状態になったら再開してください。"
+      ? "休憩を停止しました。戻れる状態になったら再開してください。"
       : "停止しました。作業へ戻れる状態になったら再開してください。"
   );
 }
@@ -1109,8 +1308,8 @@ function beginFocusCountdown(options = {}) {
     typeMessage(
       focusTimerMode === "custom"
         ? isResume
-          ? "再開します。残り時間は目の前のことに集中してください。"
-          : "設定した時間を始めます。終わるまで集中してください。"
+          ? "再開します。残り時間は、目の前のことだけに使ってください。"
+          : "設定した時間を始めます。終わるまで、私が見ています。"
         : focusPhase === "break"
           ? "5分だけ休んでください。次の区切りまで、私が時間を見ています。"
           : isResume
@@ -1133,7 +1332,7 @@ function completeFocusPhase() {
     focusRemainingSeconds = 0;
     updateFocusDisplay();
     typeMessage(
-      "設定した時間が終わりました。よく頑張りました。ここで一区切りです。"
+      "設定した時間が終わりました。よく集中できました。ここで一区切りです。"
     );
     return;
   }
@@ -1164,7 +1363,7 @@ function completeFocusPhase() {
   focusRemainingSeconds = 0;
   updateFocusDisplay();
   typeMessage(
-    "4回、完了です。お疲れ様でした。よく頑張りました。"
+    "4回、完了しました。よく集中できました。今日はここで一区切りです。"
   );
 }
 
@@ -1523,6 +1722,27 @@ dialogueButton.addEventListener("click", () => {
 });
 
 
+sweetModeButton.addEventListener("click", () => {
+  openSweetMode();
+});
+
+sweetCloseButton.addEventListener("click", (event) => {
+  event.stopPropagation();
+  closeSweetMode();
+});
+
+sweetItemButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    chooseSweetItem(button.dataset.sweetItem);
+  });
+});
+
+sweetActionButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    handleSweetAction(button.dataset.sweetAction);
+  });
+});
+
 photoModeButton.addEventListener("click", () => {
   openPhotoMode();
 });
@@ -1586,7 +1806,14 @@ photoScreen.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && photoModeActive) {
+  if (event.key !== "Escape") return;
+
+  if (sweetModeActive) {
+    closeSweetMode();
+    return;
+  }
+
+  if (photoModeActive) {
     closePhotoMode();
   }
 });
@@ -1599,7 +1826,7 @@ document.addEventListener("visibilitychange", () => {
 
   updateClock();
 
-  if (!photoModeActive) {
+  if (!photoModeActive && !sweetModeActive) {
     startIdleTimer();
   }
 });
@@ -1617,7 +1844,11 @@ startIdleTimer();
 window.setInterval(updateClock, 1000);
 
 window.setInterval(() => {
-  if (!photoModeActive && Math.random() > 0.68) {
+  if (
+    !photoModeActive &&
+    !sweetModeActive &&
+    Math.random() > 0.68
+  ) {
     triggerGlitch();
   }
 }, 9000);
