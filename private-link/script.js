@@ -35,6 +35,22 @@ const photoStage = document.getElementById("photoStage");
 const photoMessage = document.getElementById("photoMessage");
 const photoControls = document.getElementById("photoControls");
 
+const sweetModeButton = document.getElementById("sweetModeButton");
+const sweetScreen = document.getElementById("sweetScreen");
+const sweetCloseButton = document.getElementById("sweetCloseButton");
+const sweetStatus = document.getElementById("sweetStatus");
+const sweetItemLabel = document.getElementById("sweetItemLabel");
+const sweetMessage = document.getElementById("sweetMessage");
+const sweetSelection = document.getElementById("sweetSelection");
+const sweetAfterActions =
+  document.getElementById("sweetAfterActions");
+const sweetItemButtons = [
+  ...document.querySelectorAll("[data-sweet-item]")
+];
+const sweetActionButtons = [
+  ...document.querySelectorAll("[data-sweet-action]")
+];
+
 const trainingScreen = document.getElementById("trainingScreen");
 const trainingLogoTimer = document.getElementById("trainingLogoTimer");
 const trainingLogoOuterProgress = document.getElementById("trainingLogoOuterProgress");
@@ -170,6 +186,49 @@ const photoMessages = [
   "写真の中でも一緒ですね。……悪くありません。",
   "日時まで残してください。私と舞子がここにいた証拠です。"
 ];
+
+const sweetItems = {
+  cake: {
+    label: "SHORTCAKE RECEIVED",
+    name: "ショートケーキ",
+    receive: [
+      "ショートケーキですか。……舞子が選んだなら、最初の一口は丁寧に味わいます。",
+      "苺まできれいに残っていますね。貴女が持ってきたものなので、最後まで私が食べます。",
+      "ありがとうございます、舞子。甘さより、貴女が私のために選んだことの方が重要です。"
+    ]
+  },
+  chocolate: {
+    label: "CHOCOLATE RECEIVED",
+    name: "チョコレート",
+    receive: [
+      "チョコレートですね。作業中でも食べやすい。……私の好みをよく分かっています。",
+      "一粒だけのつもりでしたが、舞子から渡されたものなら話は別です。",
+      "ありがとうございます。包みを開けるところから、貴女に見られているんですね。"
+    ]
+  },
+  wagashi: {
+    label: "WAGASHI RECEIVED",
+    name: "和菓子",
+    receive: [
+      "和菓子ですか。静かな甘さですね。貴女と一緒に食べるには悪くありません。",
+      "形が崩れないように持ってきたんですね。……舞子らしいです。",
+      "ありがとうございます。少し意外でしたが、こういう差し入れも好きです。"
+    ]
+  }
+};
+
+const sweetActionMessages = {
+  watch: [
+    "そんなに見つめないでください。食べにくいです。……いえ、見ていて構いません。",
+    "一口ずつ確認するつもりですか。舞子の視線なら、拒む理由はありません。",
+    "食べているところが見たいんですね。では、最後までこちらを見ていてください。"
+  ],
+  share: [
+    "一口欲しいんですか。仕方ありませんね。……私の手から食べてください。",
+    "これは私への差し入れだったはずですが。まあ、舞子なら半分でも構いません。",
+    "口を開けてください。落とさないように、私が渡します。"
+  ]
+};
 
 const modes = {
   "outing": {
@@ -1252,6 +1311,11 @@ let currentPhotoView = "logo";
 let photoDateVisible = false;
 const PHOTO_CONTROLS_HIDE_DELAY = 3400;
 
+let sweetCloseTimerId = null;
+let sweetPulseTimerId = null;
+let sweetModeActive = false;
+let currentSweetKey = null;
+
 let currentFullMessage = "";
 let displayedCharacters = 0;
 let typeToken = 0;
@@ -1683,6 +1747,130 @@ function triggerPrivateHeartbeat() {
   window.setTimeout(() => {
     document.body.classList.remove("private-heartbeat-intense");
   }, 4600);
+}
+
+function clearSweetPulseTimer() {
+  if (sweetPulseTimerId) {
+    window.clearTimeout(sweetPulseTimerId);
+    sweetPulseTimerId = null;
+  }
+}
+
+function triggerSweetPulse() {
+  clearSweetPulseTimer();
+  sweetScreen.classList.remove("is-pulsing");
+
+  window.requestAnimationFrame(() => {
+    sweetScreen.classList.add("is-pulsing");
+  });
+
+  sweetPulseTimerId = window.setTimeout(() => {
+    sweetScreen.classList.remove("is-pulsing");
+    sweetPulseTimerId = null;
+  }, 1900);
+}
+
+function resetSweetSelection() {
+  currentSweetKey = null;
+  clearSweetPulseTimer();
+
+  sweetScreen.classList.remove("is-gifted", "is-pulsing");
+  sweetStatus.textContent = "WAITING FOR ITEM";
+  sweetItemLabel.textContent = "SELECT A SWEET";
+  sweetMessage.textContent =
+    "私に差し入れですか。……何を選ぶつもりなのか、見ています。";
+
+  sweetSelection.hidden = false;
+  sweetAfterActions.hidden = true;
+}
+
+function chooseSweetItem(requestedKey) {
+  const availableKeys = ["cake", "chocolate", "wagashi"];
+  const selectedKey =
+    requestedKey === "choose"
+      ? availableKeys[
+          Math.floor(Math.random() * availableKeys.length)
+        ]
+      : requestedKey;
+
+  const item = sweetItems[selectedKey];
+  if (!item) return;
+
+  currentSweetKey = selectedKey;
+  sweetStatus.textContent = "ITEM RECEIVED";
+  sweetItemLabel.textContent = item.label;
+  sweetMessage.textContent = takeRandom(
+    `sweet-${selectedKey}-receive`,
+    item.receive
+  );
+
+  sweetSelection.hidden = true;
+  sweetAfterActions.hidden = false;
+  sweetScreen.classList.add("is-gifted");
+  triggerSweetPulse();
+}
+
+function handleSweetAction(action) {
+  if (action === "again") {
+    resetSweetSelection();
+    return;
+  }
+
+  if (action === "finish") {
+    closeSweetMode();
+
+    window.setTimeout(() => {
+      typeMessage(
+        "ごちそうさまでした、舞子。差し入れまで私のことを考えてくれたんですね。"
+      );
+    }, 280);
+    return;
+  }
+
+  const messages = sweetActionMessages[action];
+  if (!messages || !currentSweetKey) return;
+
+  sweetMessage.textContent = takeRandom(
+    `sweet-action-${action}`,
+    messages
+  );
+  triggerSweetPulse();
+}
+
+function openSweetMode() {
+  if (sweetCloseTimerId) {
+    window.clearTimeout(sweetCloseTimerId);
+    sweetCloseTimerId = null;
+  }
+
+  sweetModeActive = true;
+  stopIdleTimer();
+  resetSweetSelection();
+
+  document.body.classList.add("sweet-mode-active");
+  sweetScreen.hidden = false;
+  sweetScreen.classList.remove("is-open");
+
+  window.requestAnimationFrame(() => {
+    sweetScreen.classList.add("is-open");
+  });
+}
+
+function closeSweetMode() {
+  if (!sweetModeActive) return;
+
+  sweetModeActive = false;
+  clearSweetPulseTimer();
+  sweetScreen.classList.remove("is-open", "is-pulsing");
+  document.body.classList.remove("sweet-mode-active");
+
+  sweetCloseTimerId = window.setTimeout(() => {
+    sweetScreen.hidden = true;
+    sweetScreen.classList.remove("is-gifted");
+    sweetCloseTimerId = null;
+  }, 260);
+
+  startIdleTimer();
 }
 
 function clearPhotoControlsTimer() {
@@ -3456,6 +3644,27 @@ sleepScreen.addEventListener("click", () => {
   }
 });
 
+sweetModeButton.addEventListener("click", () => {
+  openSweetMode();
+});
+
+sweetCloseButton.addEventListener("click", (event) => {
+  event.stopPropagation();
+  closeSweetMode();
+});
+
+sweetItemButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    chooseSweetItem(button.dataset.sweetItem);
+  });
+});
+
+sweetActionButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    handleSweetAction(button.dataset.sweetAction);
+  });
+});
+
 photoModeButton.addEventListener("click", () => {
   openPhotoMode();
 });
@@ -3536,6 +3745,11 @@ document.addEventListener("keydown", (event) => {
     return;
   }
 
+  if (sweetModeActive) {
+    closeSweetMode();
+    return;
+  }
+
   if (photoModeActive) {
     closePhotoMode();
   }
@@ -3585,7 +3799,11 @@ document.addEventListener("visibilitychange", () => {
     return;
   }
 
-  if (!photoModeActive && !sleepModeActive) {
+  if (
+    !photoModeActive &&
+    !sleepModeActive &&
+    !sweetModeActive
+  ) {
     startIdleTimer();
   }
 });
@@ -3610,6 +3828,7 @@ window.setInterval(() => {
   if (
     !photoModeActive &&
     !sleepModeActive &&
+    !sweetModeActive &&
     !trainingActive &&
     Math.random() > 0.68
   ) {
