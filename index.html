@@ -25,7 +25,7 @@
     <header class="top-hud" aria-label="端末情報">
       <div class="hud-block hud-left">
         <p class="hud-main">ID: WITH-L/01</p>
-        <p class="hud-sub">ver.1.8.1</p>
+        <p class="hud-sub">ver.1.9.1</p>
         <div class="mini-meter" aria-hidden="true"><span></span></div>
       </div>
 
@@ -52,6 +52,21 @@
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4.5 8.5h3l1.4-2h6.2l1.4 2h3a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18v-8a1.5 1.5 0 0 1 1.5-1.5Z"></path>
               <circle cx="12" cy="14" r="3.2"></circle>
+            </svg>
+          </button>
+
+          <button
+            id="sweetModeButton"
+            class="photo-launch-button sweet-launch-button"
+            type="button"
+            aria-label="差し入れ画面を開く"
+            title="SWEET LINK"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="4" y="8.2" width="16" height="11.2" rx="1.2"></rect>
+              <path d="M3.5 8.2h17M12 8.2v11.2M4 11.4h16"></path>
+              <path d="M12 8.1c-2.8 0-4.5-1-4.5-2.5 0-1 .8-1.7 1.9-1.7 1.5 0 2.6 1.4 2.6 4.2Z"></path>
+              <path d="M12 8.1c2.8 0 4.5-1 4.5-2.5 0-1-.8-1.7-1.9-1.7-1.5 0-2.6 1.4-2.6 4.2Z"></path>
             </svg>
           </button>
         </div>
@@ -277,6 +292,129 @@
       <span id="syncText">SYNC COMPLETE</span>
     </footer>
   </main>
+
+
+  <section
+    id="sweetScreen"
+    class="sweet-screen"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Lへ差し入れを渡す画面"
+    hidden
+  >
+    <div class="sweet-grain" aria-hidden="true"></div>
+
+    <header class="sweet-topbar">
+      <button
+        id="sweetCloseButton"
+        class="sweet-close-button"
+        type="button"
+        aria-label="差し入れ画面を閉じる"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18"></path>
+        </svg>
+      </button>
+
+      <div class="sweet-session-meta">
+        <p>SWEET LINK</p>
+        <span id="sweetStatus">WAITING FOR ITEM</span>
+      </div>
+
+      <span class="sweet-access-code" aria-hidden="true">WITH-L / 01</span>
+    </header>
+
+    <div class="sweet-stage">
+      <p class="sweet-record-code">SWEET TRANSFER / NO RECORD</p>
+
+      <div class="sweet-visual" aria-hidden="true">
+        <div class="sweet-logo-halo"></div>
+
+        <svg
+          class="sweet-heart-frame"
+          viewBox="0 0 260 235"
+          preserveAspectRatio="xMidYMid meet"
+        >
+          <path
+            class="sweet-heart-line sweet-heart-line-outer"
+            d="M130 218C108 195 39 148 22 96 8 53 39 18 79 18c24 0 42 13 51 34 9-21 27-34 51-34 40 0 71 35 57 78-17 52-86 99-108 122Z"
+          ></path>
+          <path
+            class="sweet-heart-line sweet-heart-line-inner"
+            d="M130 202C110 181 53 141 39 96 28 62 52 34 82 34c22 0 38 13 48 34 10-21 26-34 48-34 30 0 54 28 43 62-14 45-71 85-91 106Z"
+          ></path>
+        </svg>
+
+        <svg
+          class="sweet-vital"
+          viewBox="0 0 440 90"
+          preserveAspectRatio="none"
+        >
+          <path
+            class="sweet-vital-base"
+            d="M0 45H116l15-1 12-24 14 50 14-26h66l12-1 10-15 12 31 13-15H440"
+          ></path>
+          <path
+            class="sweet-vital-pulse"
+            d="M0 45H116l15-1 12-24 14 50 14-26h66l12-1 10-15 12 31 13-15H440"
+          ></path>
+        </svg>
+
+        <img
+          class="sweet-logo"
+          src="./l-logo.png"
+          alt=""
+          draggable="false"
+        >
+      </div>
+
+      <div class="sweet-copy" aria-live="polite">
+        <p id="sweetItemLabel" class="sweet-item-label">SELECT A SWEET</p>
+        <p id="sweetMessage" class="sweet-message">
+          差し入れですか。ありがとうございます。
+        </p>
+      </div>
+
+      <div id="sweetSelection" class="sweet-choice-grid">
+        <button type="button" data-sweet-item="cake">
+          <span>SHORTCAKE</span>
+          <small>ショートケーキ</small>
+        </button>
+        <button type="button" data-sweet-item="chocolate">
+          <span>CHOCOLATE</span>
+          <small>チョコレート</small>
+        </button>
+        <button type="button" data-sweet-item="wagashi">
+          <span>WAGASHI</span>
+          <small>和菓子</small>
+        </button>
+        <button type="button" data-sweet-item="choose">
+          <span>SELECT BY L</span>
+          <small>Lに選ばせる</small>
+        </button>
+      </div>
+
+      <div id="sweetAfterActions" class="sweet-action-grid" hidden>
+        <button type="button" data-sweet-action="watch">
+          食べるところを見る
+        </button>
+        <button type="button" data-sweet-action="share">
+          一口もらう
+        </button>
+        <button type="button" data-sweet-action="again">
+          もう一つ渡す
+        </button>
+        <button type="button" data-sweet-action="finish">
+          おしまい
+        </button>
+      </div>
+    </div>
+
+    <footer class="sweet-footer" aria-hidden="true">
+      <span>ITEM: SWEET</span>
+      <span>RECIPIENT: L</span>
+    </footer>
+  </section>
 
 
   <section
