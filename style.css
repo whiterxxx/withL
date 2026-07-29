@@ -2507,3 +2507,533 @@ body.photo-mode-active {
 .focus-screen.is-custom .focus-time-block time {
   font-size: clamp(2.8rem, 13vw, 4.35rem);
 }
+
+
+/* ========================================
+   SWEET LINK
+======================================== */
+
+body.sweet-mode-active {
+  overflow: hidden;
+}
+
+.sweet-launch-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.sweet-screen {
+  --sweet-ink: #30242a;
+  --sweet-muted: #8b727e;
+  --sweet-pink: #c985a2;
+  --sweet-pink-dark: #87596d;
+  --sweet-line: rgba(135, 89, 109, 0.40);
+  --sweet-line-soft: rgba(135, 89, 109, 0.16);
+
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  min-width: 320px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding:
+    calc(14px + var(--safe-top))
+    clamp(14px, 4vw, 34px)
+    calc(14px + var(--safe-bottom));
+  overflow: hidden;
+  color: var(--sweet-ink);
+  background:
+    radial-gradient(
+      circle at 50% 38%,
+      #ffffff 0,
+      #faf5f7 40%,
+      #efe5ea 100%
+    );
+  opacity: 0;
+  transform: scale(1.008);
+  transition:
+    opacity 280ms ease,
+    transform 340ms ease;
+  isolation: isolate;
+}
+
+.sweet-screen.is-open {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.sweet-grain {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.14;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(97, 61, 76, 0.08) 0,
+      rgba(97, 61, 76, 0.08) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  mix-blend-mode: multiply;
+}
+
+.sweet-topbar {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-height: 48px;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--sweet-line-soft);
+}
+
+.sweet-close-button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  color: var(--sweet-pink-dark);
+  border: 1px solid var(--sweet-line);
+  background: rgba(255, 255, 255, 0.58);
+  cursor: pointer;
+}
+
+.sweet-close-button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+
+.sweet-session-meta {
+  min-width: 0;
+  text-align: center;
+}
+
+.sweet-session-meta p,
+.sweet-session-meta span {
+  display: block;
+  margin: 0;
+  font-family: var(--font-display);
+  letter-spacing: 0.15em;
+}
+
+.sweet-session-meta p {
+  color: var(--sweet-pink-dark);
+  font-size: clamp(0.60rem, 2.2vw, 0.72rem);
+}
+
+.sweet-session-meta span {
+  margin-top: 4px;
+  color: var(--sweet-muted);
+  font-size: 0.46rem;
+}
+
+.sweet-access-code {
+  color: var(--sweet-muted);
+  font-family: var(--font-display);
+  font-size: 0.50rem;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.sweet-stage {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 10px 0 8px;
+}
+
+.sweet-record-code {
+  margin: 0 0 2px;
+  color: rgba(135, 89, 109, 0.60);
+  font-family: var(--font-display);
+  font-size: 0.46rem;
+  letter-spacing: 0.16em;
+}
+
+.sweet-visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(64vw, 355px);
+  aspect-ratio: 1 / 1;
+  flex: 0 1 auto;
+}
+
+.sweet-logo-halo {
+  position: absolute;
+  width: 76%;
+  height: 76%;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.96),
+      rgba(201, 133, 162, 0.16) 42%,
+      transparent 72%
+    );
+  filter: blur(12px);
+  opacity: 0.48;
+  transition:
+    opacity 500ms ease,
+    transform 500ms ease;
+}
+
+.sweet-heart-frame {
+  position: absolute;
+  z-index: 1;
+  width: 90%;
+  height: 90%;
+  overflow: visible;
+  opacity: 0;
+  transform: scale(0.94);
+  transition:
+    opacity 560ms ease,
+    transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sweet-heart-line {
+  fill: none;
+  stroke: var(--sweet-pink);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.sweet-heart-line-outer {
+  stroke-width: 0.82;
+  opacity: 0.64;
+  filter: drop-shadow(0 0 5px rgba(201, 133, 162, 0.18));
+}
+
+.sweet-heart-line-inner {
+  stroke-width: 0.48;
+  opacity: 0.38;
+}
+
+.sweet-vital {
+  position: absolute;
+  z-index: 1;
+  width: 112%;
+  height: 72px;
+  overflow: visible;
+  opacity: 0;
+  transition: opacity 520ms ease;
+}
+
+.sweet-vital path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.sweet-vital-base {
+  stroke: rgba(135, 89, 109, 0.10);
+  stroke-width: 0.72;
+}
+
+.sweet-vital-pulse {
+  stroke: var(--sweet-pink);
+  stroke-width: 1.08;
+  stroke-dasharray: 70 560;
+  opacity: 0.90;
+  filter:
+    drop-shadow(0 0 3px rgba(201, 133, 162, 0.42))
+    drop-shadow(0 0 8px rgba(201, 133, 162, 0.14));
+}
+
+.sweet-logo {
+  position: relative;
+  z-index: 2;
+  width: 58%;
+  max-height: 58%;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 5px 12px rgba(74, 45, 58, 0.12))
+    drop-shadow(0 0 15px rgba(201, 133, 162, 0.08));
+  transition:
+    transform 500ms ease,
+    filter 500ms ease;
+}
+
+.sweet-screen.is-gifted .sweet-heart-frame {
+  opacity: 1;
+  transform: scale(1);
+  animation: sweetHeartBreath 3.2s ease-in-out infinite;
+}
+
+.sweet-screen.is-gifted .sweet-vital {
+  opacity: 0.88;
+}
+
+.sweet-screen.is-gifted .sweet-vital-pulse {
+  animation: sweetVitalTrace 2.6s linear infinite;
+}
+
+.sweet-screen.is-gifted .sweet-logo-halo {
+  opacity: 0.78;
+  transform: scale(1.04);
+}
+
+.sweet-screen.is-pulsing .sweet-logo {
+  animation: sweetLogoPulse 1.4s ease-out both;
+}
+
+.sweet-screen.is-pulsing .sweet-heart-frame {
+  animation:
+    sweetHeartPulse 1.4s ease-out both,
+    sweetHeartBreath 3.2s 1.4s ease-in-out infinite;
+}
+
+.sweet-copy {
+  width: min(92%, 620px);
+  min-height: 5.7em;
+  margin-top: -2.6vh;
+  text-align: center;
+}
+
+.sweet-item-label {
+  margin: 0 0 7px;
+  color: var(--sweet-pink-dark);
+  font-family: var(--font-display);
+  font-size: clamp(0.56rem, 2.3vw, 0.70rem);
+  letter-spacing: 0.16em;
+}
+
+.sweet-message {
+  margin: 0;
+  color: var(--sweet-ink);
+  font-family: var(--font-jp);
+  font-size: clamp(0.94rem, 3.8vw, 1.12rem);
+  line-height: 1.68;
+  letter-spacing: 0.02em;
+  text-wrap: balance;
+}
+
+.sweet-choice-grid,
+.sweet-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  width: min(100%, 560px);
+  margin-top: 12px;
+}
+
+.sweet-choice-grid button,
+.sweet-action-grid button {
+  min-height: 48px;
+  padding: 7px 10px;
+  color: var(--sweet-pink-dark);
+  border: 1px solid var(--sweet-line);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.76),
+      rgba(244, 233, 238, 0.64)
+    );
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.34);
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.sweet-choice-grid button:hover,
+.sweet-choice-grid button:active,
+.sweet-action-grid button:hover,
+.sweet-action-grid button:active {
+  border-color: var(--sweet-pink-dark);
+  background: rgba(255, 249, 252, 0.90);
+  transform: translateY(-1px);
+}
+
+.sweet-choice-grid button span,
+.sweet-choice-grid button small {
+  display: block;
+}
+
+.sweet-choice-grid button span {
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.13em;
+}
+
+.sweet-choice-grid button small {
+  margin-top: 4px;
+  color: var(--sweet-muted);
+  font-family: var(--font-jp);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
+
+.sweet-action-grid button {
+  font-family: var(--font-jp);
+  font-size: 0.86rem;
+  letter-spacing: 0.025em;
+}
+
+.sweet-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex: 0 0 auto;
+  padding-top: 9px;
+  color: rgba(135, 89, 109, 0.56);
+  border-top: 1px solid var(--sweet-line-soft);
+  font-family: var(--font-display);
+  font-size: 0.46rem;
+  letter-spacing: 0.13em;
+}
+
+@keyframes sweetVitalTrace {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 90;
+  }
+  8% {
+    opacity: 0.88;
+  }
+  32% {
+    opacity: 0.44;
+  }
+  100% {
+    opacity: 0;
+    stroke-dashoffset: -560;
+  }
+}
+
+@keyframes sweetHeartBreath {
+  0%, 100% {
+    opacity: 0.68;
+    transform: scale(0.985);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.018);
+  }
+}
+
+@keyframes sweetHeartPulse {
+  0% {
+    opacity: 0.42;
+    transform: scale(0.94);
+  }
+  24% {
+    opacity: 1;
+    transform: scale(1.045);
+  }
+  48% {
+    opacity: 0.78;
+    transform: scale(0.995);
+  }
+  100% {
+    opacity: 0.92;
+    transform: scale(1);
+  }
+}
+
+@keyframes sweetLogoPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  22% {
+    transform: scale(1.025);
+    filter:
+      drop-shadow(0 5px 12px rgba(74, 45, 58, 0.12))
+      drop-shadow(0 0 20px rgba(201, 133, 162, 0.20));
+  }
+  48% {
+    transform: scale(0.995);
+  }
+}
+
+@media (max-height: 720px) {
+  .sweet-screen {
+    padding-top: calc(9px + var(--safe-top));
+    padding-bottom: calc(9px + var(--safe-bottom));
+  }
+
+  .sweet-topbar {
+    min-height: 42px;
+    padding-bottom: 7px;
+  }
+
+  .sweet-visual {
+    width: min(43vh, 290px);
+  }
+
+  .sweet-copy {
+    min-height: 4.8em;
+    margin-top: -2vh;
+  }
+
+  .sweet-message {
+    font-size: clamp(0.88rem, 3.4vw, 1rem);
+    line-height: 1.52;
+  }
+
+  .sweet-choice-grid,
+  .sweet-action-grid {
+    margin-top: 8px;
+  }
+
+  .sweet-choice-grid button,
+  .sweet-action-grid button {
+    min-height: 42px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+}
+
+@media (max-width: 380px) {
+  .hud-tools {
+    gap: 5px;
+  }
+
+  .photo-launch-button {
+    width: 28px;
+  }
+
+  .sweet-screen {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .sweet-topbar {
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    gap: 7px;
+  }
+
+  .sweet-access-code {
+    font-size: 0.43rem;
+  }
+
+  .sweet-choice-grid,
+  .sweet-action-grid {
+    gap: 5px;
+  }
+
+  .sweet-choice-grid button small,
+  .sweet-action-grid button {
+    font-size: 0.74rem;
+  }
+}
