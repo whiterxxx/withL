@@ -3487,6 +3487,11 @@ const authLevelLabel = document.getElementById("authLevelLabel");
 const authCode = document.getElementById("authCode");
 const authProgress = document.getElementById("authProgress");
 const authBootLog = document.getElementById("authBootLog");
+const authIntro = document.getElementById("authIntro");
+const authIntroContinue = document.getElementById("authIntroContinue");
+const authAgeForm = document.getElementById("authAgeForm");
+const authAge = document.getElementById("authAge");
+const authAgeError = document.getElementById("authAgeError");
 const authQuestion = document.getElementById("authQuestion");
 const authPasscodeForm = document.getElementById("authPasscodeForm");
 const authBirthYear = document.getElementById("authBirthYear");
@@ -3519,6 +3524,7 @@ const plusIcons = [
 
 const PLUS_REWRITE_DELAY = 1200;
 let plusRewriteComplete = false;
+let declaredAge = null;
 
 const PLUS_TARGETS = [
   {
@@ -3555,12 +3561,12 @@ function createAuthFragments() {
   }
 }
 
-function showAuthQuestion() {
+function showAuthIntro() {
   authCode.textContent = "IDENTITY MATCHED";
   authLevelLabel.textContent = "AGE CHECK";
   authProgress.hidden = true;
   authBootLog.hidden = true;
-  authQuestion.hidden = false;
+  authIntro.hidden = false;
 }
 
 function authGlitch() {
@@ -3570,6 +3576,8 @@ function authGlitch() {
 }
 
 function denyPlusAccess(message) {
+  authIntro.hidden = true;
+  authAgeForm.hidden = true;
   authQuestion.hidden = true;
   authPasscodeForm.hidden = true;
   authResult.hidden = false;
@@ -3644,23 +3652,77 @@ function closeAuthOverlay() {
 }
 
 function grantPlusAccess() {
+  authIntro.hidden = true;
+  authAgeForm.hidden = true;
+  authQuestion.hidden = true;
   authPasscodeForm.hidden = true;
   authResult.hidden = false;
   authResultCode.textContent = "ACCESS GRANTED";
-  authResultMessage.textContent = "認証しました。……接続を開始します。";
+  if (!authResultMessage.textContent) {
+    authResultMessage.textContent =
+      "申告内容を照合しました。……アクセスを許可します。";
+  }
   authLevelLabel.textContent = "VERIFIED";
   authGlitch();
   window.setTimeout(closeAuthOverlay, 900);
 }
 
-document.querySelectorAll("[data-auth-age]").forEach((button) => {
+authIntroContinue.addEventListener("click", () => {
+  authIntro.hidden = true;
+  authAgeForm.hidden = false;
+  authCode.textContent = "AGE DECLARATION";
+  authLevelLabel.textContent = "AGE INPUT";
+  window.setTimeout(() => authAge.focus(), 80);
+});
+
+authAge.addEventListener("input", () => {
+  authAge.value = authAge.value.replace(/\D/g, "").slice(0, 3);
+  authAgeError.textContent = "";
+});
+
+authAgeForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const age = Number(authAge.value);
+
+  if (!/^\d{1,3}$/.test(authAge.value)) {
+    authAgeError.textContent = "現在の年齢を数字で入力してください。";
+    return;
+  }
+
+  if (age < 0 || age > 120) {
+    authAgeError.textContent = "入力された年齢を確認できません。";
+    return;
+  }
+
+  declaredAge = age;
+  authGlitch();
+
+  if (age < 18) {
+    denyPlusAccess(
+      "認証条件を満たしていません。通常版のwith Lを起動します。"
+    );
+    return;
+  }
+
+  authAgeForm.hidden = true;
+  authQuestion.hidden = false;
+  authCode.textContent = "AGE CONFIRMATION";
+  authLevelLabel.textContent = "CONFIRM";
+});
+
+document.querySelectorAll("[data-auth-age-confirm]").forEach((button) => {
   button.addEventListener("click", () => {
-    if (button.dataset.authAge === "no") {
-      denyPlusAccess("確認条件を満たしていません。通常版のwith Lを起動します。");
+    if (button.dataset.authAgeConfirm === "no") {
+      denyPlusAccess(
+        "申告内容を確認できません。通常版のwith Lを起動します。"
+      );
       return;
     }
+
     authQuestion.hidden = true;
     authPasscodeForm.hidden = false;
+    authCode.textContent = "PASSCODE REQUIRED";
     authLevelLabel.textContent = "PASSCODE";
     window.setTimeout(() => authBirthYear.focus(), 80);
   });
@@ -3673,6 +3735,7 @@ authBirthYear.addEventListener("input", () => {
 
 authPasscodeForm.addEventListener("submit", (event) => {
   event.preventDefault();
+
   const year = Number(authBirthYear.value);
   const currentYear = new Date().getFullYear();
 
@@ -3680,19 +3743,44 @@ authPasscodeForm.addEventListener("submit", (event) => {
     authError.textContent = "4桁の生まれ年を入力してください。";
     return;
   }
+
   if (year < 1900 || year > currentYear) {
     authError.textContent = "入力されたパスコードを確認できません。";
     return;
   }
 
+  if (!Number.isInteger(declaredAge) || declaredAge < 18) {
+    denyPlusAccess(
+      "申告内容を確認できません。通常版のwith Lを起動します。"
+    );
+    return;
+  }
+
+  /*
+    誕生日を迎えている場合と、まだ迎えていない場合の両方を許容します。
+    例：2026年に25歳なら、生まれ年は2000年または2001年です。
+  */
+  const possibleBirthYears = [
+    currentYear - declaredAge,
+    currentYear - declaredAge - 1
+  ];
+
   authCode.textContent = "VERIFYING PASSCODE";
+  authLevelLabel.textContent = "VERIFYING";
   authGlitch();
 
   window.setTimeout(() => {
-    if (year <= currentYear - 19) grantPlusAccess();
-    else denyPlusAccess("年齢条件を確認できません。通常版のwith Lを起動します。");
+    if (possibleBirthYears.includes(year)) {
+      authResultMessage.textContent =
+        "申告内容を照合しました。……アクセスを許可します。";
+      grantPlusAccess();
+    } else {
+      denyPlusAccess(
+        "申告された年齢とパスコードが一致しません。通常版のwith Lを起動します。"
+      );
+    }
   }, 650);
 });
 
 createAuthFragments();
-window.setTimeout(showAuthQuestion, 2850);
+window.setTimeout(showAuthIntro, 2850);
