@@ -1,69 +1,100 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RCQJ80N404"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-RCQJ80N404');
-  </script>
 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-RCQJ80N404"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-RCQJ80N404');
+</script>
+  
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#08090c">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="with L+">
-  <title>with L+</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f7f8">
 
-  <link rel="icon" href="../icon.png">
-  <link rel="apple-touch-icon" href="../icon.png">
-  <link rel="stylesheet" href="style.css?v=1">
+  <title>with L</title>
+  <meta
+    name="description"
+    content="Lと一緒に出かけ、食事し、集中し、静かな時間を過ごすための非公式ファンメイドWebアプリです。"
+  >
+
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="../apple-touch-icon.png">
+  <link rel="stylesheet" href="./style.css">
 </head>
-<body class="auth-active">
-  <div class="screen-noise" aria-hidden="true"></div>
-  <div class="scanline" aria-hidden="true"></div>
 
-  <section id="authScreen" class="auth-screen" aria-live="polite">
-    <div class="auth-terminal">
-      <div class="auth-logo-wrap">
-        <img src="../logo.png" alt="L" class="auth-logo">
-        <span class="auth-logo-scan" aria-hidden="true"></span>
+<body class="auth-locked">
+
+  <section
+    id="authOverlay"
+    class="auth-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-label="with L plus アクセス認証"
+  >
+    <div class="auth-grid" aria-hidden="true"></div>
+    <div class="auth-scan-beam" aria-hidden="true"></div>
+    <div class="auth-fragments" id="authFragments" aria-hidden="true"></div>
+
+    <header class="auth-hud" aria-hidden="true">
+      <div>
+        <p>WITH-L / ACCESS TERMINAL</p>
+        <span>DEVICE NODE 01</span>
+      </div>
+      <div>
+        <p>AUTH LEVEL</p>
+        <span id="authLevelLabel">PENDING</span>
+      </div>
+    </header>
+
+    <div id="authPanel" class="auth-panel">
+      <div class="auth-logo-stage">
+        <div class="auth-logo-diamond" aria-hidden="true"></div>
+        <div class="auth-logo-halo" aria-hidden="true"></div>
+        <img
+          class="auth-logo"
+          src="../l-logo.png"
+          alt="Lのロゴ"
+          draggable="false"
+        >
+        <span class="auth-logo-reader" aria-hidden="true"></span>
       </div>
 
-      <p id="authSystem" class="auth-system">DEVICE CONNECTION</p>
+      <p id="authCode" class="auth-code">IDENTITY RECOGNITION</p>
 
-      <div id="authLoader" class="auth-loader">
-        <span class="auth-loader-fill"></span>
+      <div id="authProgress" class="auth-progress" aria-hidden="true">
+        <span></span>
       </div>
 
-      <div id="authLog" class="auth-log" aria-hidden="true">
-        <span>SECURE CHANNEL ........ ESTABLISHED</span>
-        <span>DEVICE SIGNATURE ....... MATCHED</span>
-        <span>USER PROFILE ........... DETECTED</span>
+      <div id="authBootLog" class="auth-boot-log" aria-hidden="true">
+        <p><span>01</span> DEVICE SIGNATURE</p>
+        <p><span>02</span> USER PATTERN</p>
+        <p><span>03</span> ACCESS PROFILE</p>
       </div>
 
-      <div id="ageQuestion" class="auth-step" hidden>
-        <p class="l-message">
+      <div id="authQuestion" class="auth-step" hidden>
+        <p class="auth-message">
           貴女のことを確認させてください。<br>
           ……18歳以上ですか？
         </p>
-        <div class="auth-actions">
-          <button type="button" class="terminal-button" data-age-answer="yes">YES</button>
-          <button type="button" class="terminal-button secondary" data-age-answer="no">NO</button>
+        <div class="auth-choice-grid">
+          <button class="auth-button" type="button" data-auth-age="yes">YES</button>
+          <button class="auth-button auth-button-muted" type="button" data-auth-age="no">NO</button>
         </div>
       </div>
 
-      <form id="passcodeForm" class="auth-step" hidden novalidate>
-        <label for="birthYear" class="l-message">
+      <form id="authPasscodeForm" class="auth-step" hidden novalidate>
+        <label for="authBirthYear" class="auth-message">
           パスコードは貴女の生まれ年です。
         </label>
-        <p class="auth-hint">4桁の数字を入力してください</p>
+        <p class="auth-input-note">ENTER 4 DIGITS</p>
         <input
-          id="birthYear"
-          class="passcode-input"
+          id="authBirthYear"
+          class="auth-passcode"
           type="text"
           inputmode="numeric"
           autocomplete="off"
@@ -72,133 +103,564 @@
           placeholder="••••"
           aria-label="生まれ年4桁"
         >
-        <button type="submit" class="terminal-button wide">VERIFY</button>
-        <p id="passcodeError" class="auth-error" role="alert"></p>
+        <button class="auth-button auth-button-wide" type="submit">VERIFY</button>
+        <p id="authError" class="auth-error" role="alert"></p>
       </form>
 
-      <div id="authResult" class="auth-result" hidden>
+      <div id="authResult" class="auth-step auth-result" hidden>
         <p id="authResultCode" class="auth-result-code"></p>
-        <p id="authResultMessage" class="l-message"></p>
+        <p id="authResultMessage" class="auth-message"></p>
       </div>
     </div>
+
+    <footer class="auth-footer" aria-hidden="true">
+      <span>ENCRYPTED PERSONAL DEVICE</span>
+      <span>WITH-L / SECURE ACCESS</span>
+    </footer>
   </section>
 
-  <main id="app" class="app-shell" aria-hidden="true">
-    <header class="app-header">
-      <div class="brand">
-        <img src="../logo.png" alt="" class="brand-logo">
-        <div>
-          <h1>with L</h1>
-          <p id="buildLabel">COMPANION DEVICE</p>
-        </div>
+  <div class="screen-noise" aria-hidden="true"></div>
+  <div class="scan-line" aria-hidden="true"></div>
+  <div class="glitch-particles" id="glitchParticles" aria-hidden="true"></div>
+
+  <main class="app-shell">
+    <header class="top-hud" aria-label="端末情報">
+      <div class="hud-block hud-left">
+        <p class="hud-main">ID: WITH-L/01</p>
+        <p class="hud-sub">ver.1.9.1</p>
+        <div class="mini-meter" aria-hidden="true"><span></span></div>
       </div>
+
       <div class="clock-block">
-        <time id="clock">00:00:00</time>
-        <span id="date">---</span>
+        <time id="clock" class="clock">--:--:--</time>
+        <p id="date" class="date">----</p>
+      </div>
+
+      <div class="hud-block hud-right">
+        <p class="hud-main status-online">ONLINE</p>
+        <p class="hud-sub">encrypted</p>
+        <div class="hud-tools">
+          <div class="signal-bars" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </div>
+
+          <button
+            id="photoModeButton"
+            class="photo-launch-button"
+            type="button"
+            aria-label="撮影用画面を開く"
+            title="PHOTO MODE"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4.5 8.5h3l1.4-2h6.2l1.4 2h3a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18v-8a1.5 1.5 0 0 1 1.5-1.5Z"></path>
+              <circle cx="12" cy="14" r="3.2"></circle>
+            </svg>
+          </button>
+
+          <button
+            id="sweetModeButton"
+            class="photo-launch-button sweet-launch-button"
+            type="button"
+            aria-label="差し入れ画面を開く"
+            title="SWEET LINK"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="4" y="8.2" width="16" height="11.2" rx="1.2"></rect>
+              <path d="M3.5 8.2h17M12 8.2v11.2M4 11.4h16"></path>
+              <path d="M12 8.1c-2.8 0-4.5-1-4.5-2.5 0-1 .8-1.7 1.9-1.7 1.5 0 2.6 1.4 2.6 4.2Z"></path>
+              <path d="M12 8.1c2.8 0 4.5-1 4.5-2.5 0-1-.8-1.7-1.9-1.7-1.5 0-2.6 1.4-2.6 4.2Z"></path>
+            </svg>
+          </button>
+        </div>
       </div>
     </header>
 
-    <section class="main-panel">
-      <div class="status-row">
-        <span class="status-dot"></span>
-        <span id="statusLabel">CONNECTED</span>
+    <section class="hero" aria-labelledby="appTitle">
+      <div class="side-data left-data" aria-hidden="true">
+        <p>case file</p>
+        <strong>WITH-L</strong>
+        <div class="data-grid"></div>
       </div>
 
-      <div class="message-panel">
-        <span class="message-label">MESSAGE FROM L</span>
-        <p id="messageText">接続しました。今日はどう過ごしますか。</p>
+      <div class="logo-stage">
+        <div class="logo-diamond" aria-hidden="true"></div>
+        <div class="logo-glow" aria-hidden="true"></div>
+
+        <img
+          id="lLogo"
+          class="l-logo"
+          src="../l-logo.png"
+          alt="Lのロゴ"
+          draggable="false"
+        >
+
+        <div class="logo-slice slice-one" aria-hidden="true"></div>
+        <div class="logo-slice slice-two" aria-hidden="true"></div>
       </div>
 
-      <section id="menuPanel" class="menu-panel">
-        <p class="section-code">SELECT SESSION</p>
+      <div class="side-data right-data" aria-hidden="true">
+        <p>connection</p>
+        <strong>stable</strong>
+        <div class="waveform">
+          <i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i>
+        </div>
+      </div>
 
-        <div id="normalMenu" class="menu-grid normal-menu">
-          <button class="menu-button" type="button" data-normal="together">
-            <span>二人で過ごす</span><small>TOGETHER</small>
+      <h1 id="appTitle">with L</h1>
+      <p class="tagline">PRIVATE COMPANION TERMINAL</p>
+
+      <div class="ornament" aria-hidden="true">
+        <span></span><b>✦</b><span></span>
+      </div>
+    </section>
+
+    <section id="menuPanel" class="menu-panel" aria-label="過ごし方を選ぶ">
+      <button class="mode-button" type="button" data-mode="outing">
+        <span class="mode-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="6" cy="17" r="2.2"></circle>
+            <path d="M8.2 17c4.8 0 3.2-9 8.2-9"></path>
+            <circle cx="18" cy="7" r="2.2"></circle>
+          </svg>
+        </span>
+        <span id="modeLabel1" class="mode-label">一緒に出かける</span>
+        <span class="mode-arrow" aria-hidden="true">▶</span>
+      </button>
+
+      <button class="mode-button" type="button" data-mode="meal">
+        <span class="mode-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M5 10h11v4.2A4.8 4.8 0 0 1 11.2 19H9.8A4.8 4.8 0 0 1 5 14.2Z"></path>
+            <path d="M16 11h1.2a2.3 2.3 0 0 1 0 4.6H16"></path>
+            <path d="M8 7c-1-1.1 1-1.8 0-3"></path>
+            <path d="M12 7c-1-1.1 1-1.8 0-3"></path>
+            <path d="M4 20h14"></path>
+          </svg>
+        </span>
+        <span id="modeLabel2" class="mode-label">一緒に食事する</span>
+        <span class="mode-arrow" aria-hidden="true">▶</span>
+      </button>
+
+      <button class="mode-button" type="button" data-mode="together">
+        <span class="mode-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="9" cy="12" r="4.5"></circle>
+            <circle cx="15" cy="12" r="4.5"></circle>
+            <path d="M11.5 8.3a4.5 4.5 0 0 1 0 7.4"></path>
+          </svg>
+        </span>
+        <span id="modeLabel3" class="mode-label">一緒に過ごす</span>
+        <span class="mode-arrow" aria-hidden="true">▶</span>
+      </button>
+
+      <button class="mode-button" type="button" data-mode="focus">
+        <span class="mode-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="7.2"></circle>
+            <path d="M12 8.2v4.1l2.8 1.7"></path>
+            <path d="M12 2.8v2M12 19.2v2"></path>
+          </svg>
+        </span>
+        <span id="modeLabel4" class="mode-label">一緒に集中</span>
+        <span class="mode-arrow" aria-hidden="true">▶</span>
+      </button>
+    </section>
+
+    <section id="modePanel" class="mode-panel" aria-live="polite" hidden>
+      <div class="mode-heading">
+        <button
+          id="backButton"
+          class="back-button"
+          type="button"
+          aria-label="最初の画面へ戻る"
+        >←</button>
+
+        <div>
+          <p id="modeCode" class="mode-code">SESSION</p>
+          <h2 id="modeTitle">一緒に過ごす</h2>
+        </div>
+
+        <div class="elapsed-wrap">
+          <span>ELAPSED</span>
+          <time id="elapsedTime">00:00</time>
+        </div>
+      </div>
+
+      <div id="actionButtons" class="action-grid"></div>
+
+      <section id="focusScreen" class="focus-screen" aria-label="集中タイマー" hidden>
+        <div class="focus-type-switch" role="group" aria-label="タイマーの種類">
+          <button
+            class="focus-type-button is-active"
+            type="button"
+            data-focus-timer-mode="pomodoro"
+            aria-pressed="true"
+          >POMODORO</button>
+          <button
+            class="focus-type-button"
+            type="button"
+            data-focus-timer-mode="custom"
+            aria-pressed="false"
+          >CUSTOM</button>
+        </div>
+
+        <div id="focusCustomSetup" class="focus-custom-setup" hidden>
+          <label>
+            <span>MIN</span>
+            <input
+              id="focusCustomMinutes"
+              type="number"
+              inputmode="numeric"
+              min="0"
+              max="180"
+              value="45"
+              aria-label="カスタムタイマーの分"
+            >
+          </label>
+          <b aria-hidden="true">:</b>
+          <label>
+            <span>SEC</span>
+            <input
+              id="focusCustomSeconds"
+              type="number"
+              inputmode="numeric"
+              min="0"
+              max="59"
+              value="00"
+              aria-label="カスタムタイマーの秒"
+            >
+          </label>
+        </div>
+
+        <div class="focus-status">
+          <span id="focusPhaseLabel">FOCUS SESSION</span>
+          <span id="focusCycleLabel">CYCLE 1 / 4</span>
+        </div>
+
+        <div class="focus-cycle-dots" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+        </div>
+
+        <div class="focus-time-block">
+          <time id="focusTime" datetime="PT25M">25:00</time>
+          <span id="focusIntervalLabel">WORK INTERVAL</span>
+        </div>
+
+        <div class="focus-progress" aria-hidden="true">
+          <span id="focusProgressBar"></span>
+        </div>
+
+        <div class="focus-controls">
+          <button id="focusStartButton" class="focus-control focus-control-primary" type="button">
+            START
           </button>
-          <button class="menu-button" type="button" data-normal="weather">
-            <span>一緒に天気</span><small>WEATHER</small>
-          </button>
-          <button class="menu-button" type="button" data-normal="training">
-            <span>一緒にトレーニング</span><small>TRAINING</small>
-          </button>
-          <button class="menu-button" type="button" data-normal="sleep">
-            <span>一緒に眠る</span><small>SLEEP</small>
+          <button id="focusResetButton" class="focus-control" type="button">
+            RESET
           </button>
         </div>
 
-        <div id="plusMenu" class="menu-grid plus-menu" aria-hidden="true">
-          <button class="menu-button" type="button" data-mode="private">
-            <span>二人きりになる</span><small>PRIVATE</small>
-          </button>
-          <button class="menu-button bath-button" type="button" data-mode="bath">
-            <span>一緒にお風呂</span><small>BATH</small>
-          </button>
-          <button class="menu-button" type="button" data-mode="training">
-            <span>一緒にトレーニング</span><small>TRAINING</small>
-          </button>
-          <button class="menu-button" type="button" data-mode="sleep">
-            <span>一緒に眠る</span><small>SLEEP</small>
-          </button>
-        </div>
+        <p id="focusNote" class="focus-note">25 MIN FOCUS / 5 MIN BREAK</p>
       </section>
 
-      <section id="simpleMode" class="mode-panel" hidden>
-        <div class="mode-heading">
-          <div>
-            <p id="simpleModeCode" class="section-code"></p>
-            <h2 id="simpleModeTitle"></h2>
-          </div>
-          <button id="simpleBackButton" class="text-button" type="button">戻る</button>
-        </div>
-        <div id="simpleActions" class="action-grid"></div>
-      </section>
 
-      <section id="bathMode" class="mode-panel bath-panel" hidden>
-        <div class="mode-heading">
-          <div>
-            <p class="section-code">BATH SESSION</p>
-            <h2>一緒にお風呂</h2>
-          </div>
-          <button id="bathBackButton" class="text-button" type="button">戻る</button>
+      <section id="bathScreen" class="bath-screen" aria-label="入浴タイマー" hidden>
+        <div class="bath-status">
+          <span>BATH SESSION</span>
+          <span id="bathTemperatureLabel">40°C</span>
         </div>
 
-        <div class="bath-dashboard">
-          <div class="bath-time-card">
-            <span>入浴時間</span>
-            <strong id="bathElapsed">00:00</strong>
-          </div>
-
-          <fieldset class="temperature-field">
-            <legend>湯温</legend>
-            <div class="temperature-options">
-              <label><input type="radio" name="temperature" value="38"><span>38℃</span></label>
-              <label><input type="radio" name="temperature" value="39"><span>39℃</span></label>
-              <label><input type="radio" name="temperature" value="40" checked><span>40℃</span></label>
-              <label><input type="radio" name="temperature" value="41"><span>41℃</span></label>
-              <label><input type="radio" name="temperature" value="42"><span>42℃</span></label>
-            </div>
-          </fieldset>
-
-          <div class="bath-controls">
-            <button id="bathStartButton" class="primary-button" type="button">入浴開始</button>
-            <button id="bathEndButton" class="secondary-button" type="button" disabled>入浴終了</button>
-          </div>
+        <div class="bath-time-block">
+          <time id="bathTime" datetime="PT0S">00:00</time>
+          <span>ELAPSED BATH TIME</span>
         </div>
+
+        <fieldset class="bath-temperature">
+          <legend>WATER TEMPERATURE</legend>
+          <div class="bath-temperature-grid">
+            <label><input type="radio" name="bathTemperature" value="38"><span>38℃</span></label>
+            <label><input type="radio" name="bathTemperature" value="39"><span>39℃</span></label>
+            <label><input type="radio" name="bathTemperature" value="40" checked><span>40℃</span></label>
+            <label><input type="radio" name="bathTemperature" value="41"><span>41℃</span></label>
+            <label><input type="radio" name="bathTemperature" value="42"><span>42℃</span></label>
+          </div>
+        </fieldset>
+
+        <div class="bath-controls">
+          <button id="bathStartButton" class="focus-control focus-control-primary" type="button">
+            START
+          </button>
+          <button id="bathEndButton" class="focus-control" type="button" disabled>
+            END
+          </button>
+        </div>
+
+        <p class="focus-note">TEMPERATURE / ELAPSED TIME / HYDRATION</p>
       </section>
     </section>
 
-    <footer class="app-footer">
-      <span id="accessLabel">STANDARD ACCESS</span>
-      <span>with L+</span>
+    <section id="dialogueWindow" class="dialogue-window" aria-live="polite">
+      <div class="speaker-tab">L</div>
+
+      <button
+        id="talkButton"
+        class="talk-button"
+        type="button"
+        aria-label="Lの次の話を聞く"
+      >
+        TALK / 次の話
+      </button>
+
+      <button
+        id="dialogueButton"
+        class="dialogue-content"
+        type="button"
+        aria-label="メッセージを進める"
+      >
+        <span id="messageText" class="message-text"></span>
+        <span id="typingCursor" class="typing-cursor" aria-hidden="true"></span>
+        <span class="tap-hint" aria-hidden="true">TAP TO CONTINUE</span>
+        <span class="next-indicator" aria-hidden="true">▼</span>
+      </button>
+    </section>
+
+    <footer class="footer-note">
+      <span>UNOFFICIAL FAN-MADE PROJECT by @uni_ikr</span>
+      <span id="syncText">SYNC COMPLETE</span>
     </footer>
   </main>
 
-  <div id="rewriteOverlay" class="rewrite-overlay" hidden aria-hidden="true">
-    <div class="rewrite-bars"></div>
-    <p>ACCESS PROFILE UPDATED</p>
-  </div>
 
-  <script src="script.js?v=1"></script>
+  <section
+    id="sweetScreen"
+    class="sweet-screen"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Lへ差し入れを渡す画面"
+    hidden
+  >
+    <div class="sweet-grain" aria-hidden="true"></div>
+
+    <header class="sweet-topbar">
+      <button
+        id="sweetCloseButton"
+        class="sweet-close-button"
+        type="button"
+        aria-label="差し入れ画面を閉じる"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18"></path>
+        </svg>
+      </button>
+
+      <div class="sweet-session-meta">
+        <p>SWEET LINK</p>
+        <span id="sweetStatus">WAITING FOR ITEM</span>
+      </div>
+
+      <span class="sweet-access-code" aria-hidden="true">WITH-L / 01</span>
+    </header>
+
+    <div class="sweet-stage">
+      <p class="sweet-record-code">SWEET TRANSFER / NO RECORD</p>
+
+      <div class="sweet-visual" aria-hidden="true">
+        <div class="sweet-logo-halo"></div>
+
+        <svg
+          class="sweet-heart-frame"
+          viewBox="0 0 260 235"
+          preserveAspectRatio="xMidYMid meet"
+        >
+          <path
+            class="sweet-heart-line sweet-heart-line-outer"
+            d="M130 218C108 195 39 148 22 96 8 53 39 18 79 18c24 0 42 13 51 34 9-21 27-34 51-34 40 0 71 35 57 78-17 52-86 99-108 122Z"
+          ></path>
+          <path
+            class="sweet-heart-line sweet-heart-line-inner"
+            d="M130 202C110 181 53 141 39 96 28 62 52 34 82 34c22 0 38 13 48 34 10-21 26-34 48-34 30 0 54 28 43 62-14 45-71 85-91 106Z"
+          ></path>
+        </svg>
+
+        <svg
+          class="sweet-vital"
+          viewBox="0 0 440 90"
+          preserveAspectRatio="none"
+        >
+          <path
+            class="sweet-vital-base"
+            d="M0 45H116l15-1 12-24 14 50 14-26h66l12-1 10-15 12 31 13-15H440"
+          ></path>
+          <path
+            class="sweet-vital-pulse"
+            d="M0 45H116l15-1 12-24 14 50 14-26h66l12-1 10-15 12 31 13-15H440"
+          ></path>
+        </svg>
+
+        <img
+          class="sweet-logo"
+          src="../l-logo.png"
+          alt=""
+          draggable="false"
+        >
+      </div>
+
+      <div class="sweet-copy" aria-live="polite">
+        <p id="sweetItemLabel" class="sweet-item-label">SELECT A SWEET</p>
+        <p id="sweetMessage" class="sweet-message">
+          差し入れですか。ありがとうございます。
+        </p>
+      </div>
+
+      <div id="sweetSelection" class="sweet-choice-grid">
+        <button type="button" data-sweet-item="cake">
+          <span>SHORTCAKE</span>
+          <small>ショートケーキ</small>
+        </button>
+        <button type="button" data-sweet-item="chocolate">
+          <span>CHOCOLATE</span>
+          <small>チョコレート</small>
+        </button>
+        <button type="button" data-sweet-item="wagashi">
+          <span>WAGASHI</span>
+          <small>和菓子</small>
+        </button>
+        <button type="button" data-sweet-item="choose">
+          <span>SELECT BY L</span>
+          <small>Lに選ばせる</small>
+        </button>
+      </div>
+
+      <div id="sweetAfterActions" class="sweet-action-grid" hidden>
+        <button type="button" data-sweet-action="watch">
+          食べるところを見る
+        </button>
+        <button type="button" data-sweet-action="share">
+          一口もらう
+        </button>
+        <button type="button" data-sweet-action="again">
+          もう一つ渡す
+        </button>
+        <button type="button" data-sweet-action="finish">
+          おしまい
+        </button>
+      </div>
+    </div>
+
+    <footer class="sweet-footer" aria-hidden="true">
+      <span>ITEM: SWEET</span>
+      <span>RECIPIENT: L</span>
+    </footer>
+  </section>
+
+
+  <section
+    id="photoScreen"
+    class="photo-screen"
+    role="dialog"
+    aria-modal="true"
+    aria-label="撮影用画面"
+    hidden
+  >
+    <div class="photo-grain" aria-hidden="true"></div>
+
+    <header class="photo-topbar photo-ui">
+      <button
+        id="photoCloseButton"
+        class="photo-icon-button"
+        type="button"
+        aria-label="撮影用画面を閉じる"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18"></path>
+        </svg>
+      </button>
+
+      <div class="photo-session-meta">
+        <p>PHOTO SESSION</p>
+      </div>
+
+      <button
+        id="photoThemeButton"
+        class="photo-theme-button"
+        type="button"
+        aria-pressed="false"
+      >
+        <span id="photoThemeLabel">DARK</span>
+      </button>
+    </header>
+
+    <div id="photoStage" class="photo-stage">
+      <span class="photo-corner photo-corner-tl" aria-hidden="true"></span>
+      <span class="photo-corner photo-corner-tr" aria-hidden="true"></span>
+      <span class="photo-corner photo-corner-bl" aria-hidden="true"></span>
+      <span class="photo-corner photo-corner-br" aria-hidden="true"></span>
+
+      <p class="photo-record-code">WITH-L / VISUAL RECORD</p>
+
+      <div id="photoDateStamp" class="photo-date-stamp" hidden>
+        <time id="photoStampDate" class="photo-stamp-date">----</time>
+        <time id="photoStampTime" class="photo-stamp-time">--:--:--</time>
+      </div>
+
+      <div class="photo-logo-stage">
+        <div class="photo-logo-halo" aria-hidden="true"></div>
+        <div class="photo-logo-diamond" aria-hidden="true"></div>
+
+        <img
+          class="photo-logo"
+          src="../l-logo.png"
+          alt="Lのロゴ"
+          draggable="false"
+        >
+      </div>
+
+      <h2 class="photo-title">with L</h2>
+      <p class="photo-subtitle">PRIVATE COMPANION TERMINAL</p>
+
+      <p id="photoMessage" class="photo-message" hidden></p>
+
+      <div class="photo-record-footer" aria-hidden="true">
+        <span>SUBJECT: L</span>
+        <span>CONNECTION: STABLE</span>
+      </div>
+    </div>
+
+    <div id="photoControls" class="photo-controls photo-ui">
+      <div class="photo-view-switch" aria-label="撮影表示を切り替える">
+        <button
+          class="photo-view-button is-active"
+          type="button"
+          data-photo-view="logo"
+          aria-pressed="true"
+        >
+          LOGO
+        </button>
+
+        <button
+          class="photo-view-button"
+          type="button"
+          data-photo-view="message"
+          aria-pressed="false"
+        >
+          MESSAGE
+        </button>
+
+        <button
+          id="photoDateToggleButton"
+          class="photo-view-button"
+          type="button"
+          aria-pressed="false"
+          aria-label="撮影画面の日時表示を切り替える"
+        >
+          DATE
+        </button>
+      </div>
+
+      <p>画面をタップすると操作表示を切り替えます</p>
+    </div>
+  </section>
+
+  <script src="./script.js"></script>
 </body>
 </html>
