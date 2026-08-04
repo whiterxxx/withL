@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RCQJ80N404"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-RCQJ80N404');
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#08090c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="with L+">
+  <title>with L+</title>
+
+  <link rel="icon" href="../icon.png">
+  <link rel="apple-touch-icon" href="../icon.png">
+  <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body class="auth-active">
+  <div class="screen-noise" aria-hidden="true"></div>
+  <div class="scanline" aria-hidden="true"></div>
+
+  <section id="authScreen" class="auth-screen" aria-live="polite">
+    <div class="auth-terminal">
+      <div class="auth-logo-wrap">
+        <img src="../logo.png" alt="L" class="auth-logo">
+        <span class="auth-logo-scan" aria-hidden="true"></span>
+      </div>
+
+      <p id="authSystem" class="auth-system">DEVICE CONNECTION</p>
+
+      <div id="authLoader" class="auth-loader">
+        <span class="auth-loader-fill"></span>
+      </div>
+
+      <div id="authLog" class="auth-log" aria-hidden="true">
+        <span>SECURE CHANNEL ........ ESTABLISHED</span>
+        <span>DEVICE SIGNATURE ....... MATCHED</span>
+        <span>USER PROFILE ........... DETECTED</span>
+      </div>
+
+      <div id="ageQuestion" class="auth-step" hidden>
+        <p class="l-message">
+          貴女のことを確認させてください。<br>
+          ……18歳以上ですか？
+        </p>
+        <div class="auth-actions">
+          <button type="button" class="terminal-button" data-age-answer="yes">YES</button>
+          <button type="button" class="terminal-button secondary" data-age-answer="no">NO</button>
+        </div>
+      </div>
+
+      <form id="passcodeForm" class="auth-step" hidden novalidate>
+        <label for="birthYear" class="l-message">
+          パスコードは貴女の生まれ年です。
+        </label>
+        <p class="auth-hint">4桁の数字を入力してください</p>
+        <input
+          id="birthYear"
+          class="passcode-input"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          maxlength="4"
+          pattern="[0-9]{4}"
+          placeholder="••••"
+          aria-label="生まれ年4桁"
+        >
+        <button type="submit" class="terminal-button wide">VERIFY</button>
+        <p id="passcodeError" class="auth-error" role="alert"></p>
+      </form>
+
+      <div id="authResult" class="auth-result" hidden>
+        <p id="authResultCode" class="auth-result-code"></p>
+        <p id="authResultMessage" class="l-message"></p>
+      </div>
+    </div>
+  </section>
+
+  <main id="app" class="app-shell" aria-hidden="true">
+    <header class="app-header">
+      <div class="brand">
+        <img src="../logo.png" alt="" class="brand-logo">
+        <div>
+          <h1>with L</h1>
+          <p id="buildLabel">COMPANION DEVICE</p>
+        </div>
+      </div>
+      <div class="clock-block">
+        <time id="clock">00:00:00</time>
+        <span id="date">---</span>
+      </div>
+    </header>
+
+    <section class="main-panel">
+      <div class="status-row">
+        <span class="status-dot"></span>
+        <span id="statusLabel">CONNECTED</span>
+      </div>
+
+      <div class="message-panel">
+        <span class="message-label">MESSAGE FROM L</span>
+        <p id="messageText">接続しました。今日はどう過ごしますか。</p>
+      </div>
+
+      <section id="menuPanel" class="menu-panel">
+        <p class="section-code">SELECT SESSION</p>
+
+        <div id="normalMenu" class="menu-grid normal-menu">
+          <button class="menu-button" type="button" data-normal="together">
+            <span>二人で過ごす</span><small>TOGETHER</small>
+          </button>
+          <button class="menu-button" type="button" data-normal="weather">
+            <span>一緒に天気</span><small>WEATHER</small>
+          </button>
+          <button class="menu-button" type="button" data-normal="training">
+            <span>一緒にトレーニング</span><small>TRAINING</small>
+          </button>
+          <button class="menu-button" type="button" data-normal="sleep">
+            <span>一緒に眠る</span><small>SLEEP</small>
+          </button>
+        </div>
+
+        <div id="plusMenu" class="menu-grid plus-menu" aria-hidden="true">
+          <button class="menu-button" type="button" data-mode="private">
+            <span>二人きりになる</span><small>PRIVATE</small>
+          </button>
+          <button class="menu-button bath-button" type="button" data-mode="bath">
+            <span>一緒にお風呂</span><small>BATH</small>
+          </button>
+          <button class="menu-button" type="button" data-mode="training">
+            <span>一緒にトレーニング</span><small>TRAINING</small>
+          </button>
+          <button class="menu-button" type="button" data-mode="sleep">
+            <span>一緒に眠る</span><small>SLEEP</small>
+          </button>
+        </div>
+      </section>
+
+      <section id="simpleMode" class="mode-panel" hidden>
+        <div class="mode-heading">
+          <div>
+            <p id="simpleModeCode" class="section-code"></p>
+            <h2 id="simpleModeTitle"></h2>
+          </div>
+          <button id="simpleBackButton" class="text-button" type="button">戻る</button>
+        </div>
+        <div id="simpleActions" class="action-grid"></div>
+      </section>
+
+      <section id="bathMode" class="mode-panel bath-panel" hidden>
+        <div class="mode-heading">
+          <div>
+            <p class="section-code">BATH SESSION</p>
+            <h2>一緒にお風呂</h2>
+          </div>
+          <button id="bathBackButton" class="text-button" type="button">戻る</button>
+        </div>
+
+        <div class="bath-dashboard">
+          <div class="bath-time-card">
+            <span>入浴時間</span>
+            <strong id="bathElapsed">00:00</strong>
+          </div>
+
+          <fieldset class="temperature-field">
+            <legend>湯温</legend>
+            <div class="temperature-options">
+              <label><input type="radio" name="temperature" value="38"><span>38℃</span></label>
+              <label><input type="radio" name="temperature" value="39"><span>39℃</span></label>
+              <label><input type="radio" name="temperature" value="40" checked><span>40℃</span></label>
+              <label><input type="radio" name="temperature" value="41"><span>41℃</span></label>
+              <label><input type="radio" name="temperature" value="42"><span>42℃</span></label>
+            </div>
+          </fieldset>
+
+          <div class="bath-controls">
+            <button id="bathStartButton" class="primary-button" type="button">入浴開始</button>
+            <button id="bathEndButton" class="secondary-button" type="button" disabled>入浴終了</button>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <footer class="app-footer">
+      <span id="accessLabel">STANDARD ACCESS</span>
+      <span>with L+</span>
+    </footer>
+  </main>
+
+  <div id="rewriteOverlay" class="rewrite-overlay" hidden aria-hidden="true">
+    <div class="rewrite-bars"></div>
+    <p>ACCESS PROFILE UPDATED</p>
+  </div>
+
+  <script src="script.js?v=1"></script>
+</body>
+</html>
