@@ -1,376 +1,3 @@
-
-const authOverlay = document.getElementById("authOverlay");
-const authPanel = document.getElementById("authPanel");
-const authLevelLabel = document.getElementById("authLevelLabel");
-const authCode = document.getElementById("authCode");
-const authProgress = document.getElementById("authProgress");
-const authBootLog = document.getElementById("authBootLog");
-const authQuestion = document.getElementById("authQuestion");
-const authPasscodeForm = document.getElementById("authPasscodeForm");
-const authBirthYear = document.getElementById("authBirthYear");
-const authError = document.getElementById("authError");
-const authResult = document.getElementById("authResult");
-const authResultCode = document.getElementById("authResultCode");
-const authResultMessage = document.getElementById("authResultMessage");
-const authFragments = document.getElementById("authFragments");
-
-const plusTitle = document.getElementById("appTitle");
-const plusMenuLabels = [
-  document.getElementById("modeLabel1"),
-  document.getElementById("modeLabel2"),
-  document.getElementById("modeLabel3"),
-  document.getElementById("modeLabel4")
-];
-
-const bathScreen = document.getElementById("bathScreen");
-const bathTime = document.getElementById("bathTime");
-const bathTemperatureLabel =
-  document.getElementById("bathTemperatureLabel");
-const bathStartButton = document.getElementById("bathStartButton");
-const bathEndButton = document.getElementById("bathEndButton");
-const bathTemperatureInputs = [
-  ...document.querySelectorAll('input[name="bathTemperature"]')
-];
-
-let plusRewriteComplete = false;
-let bathStartedAt = null;
-let bathTimerId = null;
-let bathNoticeIndex = 0;
-
-const PLUS_REWRITE_DELAY = 2800;
-const PLUS_TARGETS = [
-  { title: "二人きりになる", mode: "private" },
-  { title: "一緒にお風呂", mode: "bath" },
-  { title: "一緒にトレーニング", mode: "training" },
-  { title: "一緒に眠る", mode: "sleep" }
-];
-
-const bathTemperatureMessages = {
-  38: [
-    "38℃ですね。ゆっくり温まるつもりなら、これくらいが良いでしょう。",
-    "ぬるめですね。長く浸かるなら、途中で水分も取ってください。"
-  ],
-  39: [
-    "39℃。身体へ負担をかけすぎず、落ち着いて温まれそうです。",
-    "ちょうどいいですね。肩まで浸かっていますか。"
-  ],
-  40: [
-    "40℃ですね。身体がほぐれてきたら、ゆっくり息を吐いてください。",
-    "私もこのくらいが落ち着きます。隣へ寄ってください。"
-  ],
-  41: [
-    "41℃。少し熱めですね。無理をしていないか、顔を見せてください。",
-    "頬が赤くなってきたら、すぐに教えてください。"
-  ],
-  42: [
-    "42℃ですか。熱いですね。長く浸かりすぎないでください。",
-    "我慢比べではありません。十分温まったら上がりましょう。"
-  ]
-};
-
-const bathTimedMessages = [
-  { seconds: 180, messages: [
-    "三分経ちました。身体の力を抜いてください。",
-    "少し温まってきましたね。呼吸を止めずに。"
-  ]},
-  { seconds: 300, messages: [
-    "五分です。肩まで浸かっていますか。",
-    "湯船の中では、ゆっくり息を吐く方が落ち着きます。"
-  ]},
-  { seconds: 600, messages: [
-    "十分経ちました。水分が足りているか確認してください。",
-    "身体は十分温まってきた頃です。のぼせる前に教えてください。"
-  ]},
-  { seconds: 900, messages: [
-    "十五分です。そろそろ上がる時間も考えましょう。",
-    "名残惜しいですが、長湯は勧めません。"
-  ]},
-  { seconds: 1200, messages: [
-    "二十分です。今日はもう上がりましょう。",
-    "十分温まりました。立ち上がる時はゆっくりお願いします。"
-  ]}
-];
-
-function createAuthFragments() {
-  if (!authFragments) return;
-
-  for (let index = 0; index < 30; index += 1) {
-    const fragment = document.createElement("span");
-    fragment.style.setProperty("--x", `${Math.random() * 100}%`);
-    fragment.style.setProperty("--y", `${Math.random() * 100}%`);
-    fragment.style.setProperty("--w", `${7 + Math.random() * 44}px`);
-    fragment.style.setProperty("--o", `${0.06 + Math.random() * 0.22}`);
-    fragment.style.setProperty("--d", `${1.3 + Math.random() * 3.6}s`);
-    authFragments.appendChild(fragment);
-  }
-}
-
-function showAuthQuestion() {
-  authCode.textContent = "IDENTITY MATCHED";
-  authLevelLabel.textContent = "AGE CHECK";
-  authProgress.hidden = true;
-  authBootLog.hidden = true;
-  authQuestion.hidden = false;
-}
-
-function authGlitch() {
-  authPanel.classList.remove("is-auth-glitching");
-  void authPanel.offsetWidth;
-  authPanel.classList.add("is-auth-glitching");
-}
-
-function redirectToStandard() {
-  window.setTimeout(() => {
-    window.location.replace("../");
-  }, 1550);
-}
-
-function denyPlusAccess(message) {
-  authQuestion.hidden = true;
-  authPasscodeForm.hidden = true;
-  authResult.hidden = false;
-  authResult.classList.add("is-denied");
-  authResultCode.textContent = "ACCESS DENIED";
-  authResultMessage.textContent =
-    message || "通常版のwith Lを起動します。";
-  authLevelLabel.textContent = "STANDARD";
-  authGlitch();
-  redirectToStandard();
-}
-
-function schedulePlusRewrite() {
-  window.setTimeout(rewriteToPlus, PLUS_REWRITE_DELAY);
-}
-
-function closeAuthOverlay() {
-  authOverlay.classList.add("is-closing");
-  document.body.classList.remove("auth-locked");
-
-  window.setTimeout(() => {
-    authOverlay.hidden = true;
-    schedulePlusRewrite();
-  }, 410);
-}
-
-function grantPlusAccess() {
-  authPasscodeForm.hidden = true;
-  authResult.hidden = false;
-  authResultCode.textContent = "ACCESS GRANTED";
-  authResultMessage.textContent =
-    "認証しました。……接続を開始します。";
-  authLevelLabel.textContent = "VERIFIED";
-  authGlitch();
-
-  window.setTimeout(closeAuthOverlay, 1050);
-}
-
-function corruptText(target, finalText, duration = 620) {
-  if (!target) return;
-
-  const glyphs = "▓▒░01/\\<>[]{}#%&";
-  const startedAt = performance.now();
-  target.classList.add("is-corrupted");
-
-  const tick = (now) => {
-    const progress = Math.min(1, (now - startedAt) / duration);
-    const revealCount = Math.floor(finalText.length * progress);
-    let output = "";
-
-    for (let index = 0; index < finalText.length; index += 1) {
-      if (index < revealCount) {
-        output += finalText[index];
-      } else if (finalText[index] === " ") {
-        output += " ";
-      } else {
-        output += glyphs[Math.floor(Math.random() * glyphs.length)];
-      }
-    }
-
-    target.textContent = output;
-
-    if (progress < 1) {
-      window.requestAnimationFrame(tick);
-    } else {
-      target.textContent = finalText;
-      target.classList.remove("is-corrupted");
-    }
-  };
-
-  window.requestAnimationFrame(tick);
-}
-
-function rewriteToPlus() {
-  if (plusRewriteComplete) return;
-  plusRewriteComplete = true;
-
-  document.body.classList.add("plus-rewriting");
-  triggerGlitch();
-
-  modeButtons.forEach((button, index) => {
-    button.classList.add("plus-rewrite-target");
-
-    window.setTimeout(() => {
-      const target = PLUS_TARGETS[index];
-      button.dataset.mode = target.mode;
-      corruptText(plusMenuLabels[index], target.title, 670);
-    }, 110 + index * 85);
-  });
-
-  window.setTimeout(() => {
-    corruptText(plusTitle, "with L+", 760);
-  }, 170);
-
-  window.setTimeout(() => {
-    document.body.classList.remove("plus-rewriting");
-    document.body.classList.add("plus-ready");
-    modeButtons.forEach((button) => {
-      button.classList.remove("plus-rewrite-target");
-    });
-    typeMessage(
-      "認証内容を反映しました。……ここからは、少し近くで過ごしましょう。"
-    );
-  }, 1050);
-}
-
-function getSelectedBathTemperature() {
-  const selected =
-    bathTemperatureInputs.find((input) => input.checked);
-  return selected ? Number(selected.value) : 40;
-}
-
-function stopBathTimer() {
-  if (bathTimerId) {
-    window.clearInterval(bathTimerId);
-    bathTimerId = null;
-  }
-}
-
-function updateBathDisplay() {
-  if (!bathStartedAt) return;
-
-  const elapsedMilliseconds = Date.now() - bathStartedAt;
-  const elapsedSeconds = Math.floor(elapsedMilliseconds / 1000);
-
-  bathTime.textContent = formatElapsed(elapsedMilliseconds);
-  bathTime.dateTime = `PT${elapsedSeconds}S`;
-
-  const notice = bathTimedMessages[bathNoticeIndex];
-  if (notice && elapsedSeconds >= notice.seconds) {
-    typeMessage(
-      takeRandom(`bath-time-${notice.seconds}`, notice.messages)
-    );
-    bathNoticeIndex += 1;
-  }
-}
-
-function startBathSession() {
-  if (bathStartedAt) return;
-
-  bathStartedAt = Date.now();
-  bathNoticeIndex = 0;
-  bathStartButton.disabled = true;
-  bathEndButton.disabled = false;
-  bathTimerId = window.setInterval(updateBathDisplay, 1000);
-
-  const temperature = getSelectedBathTemperature();
-  typeMessage(
-    `入浴を始めます。${takeRandom(
-      `bath-temperature-${temperature}`,
-      bathTemperatureMessages[temperature]
-    )}`
-  );
-}
-
-function endBathSession() {
-  if (!bathStartedAt) return;
-
-  const elapsed = formatElapsed(Date.now() - bathStartedAt);
-  stopBathTimer();
-  bathStartedAt = null;
-  bathStartButton.disabled = false;
-  bathEndButton.disabled = true;
-
-  typeMessage(
-    `入浴時間は${elapsed}でした。水分を取って、髪もきちんと乾かしてください。`
-  );
-}
-
-createAuthFragments();
-window.setTimeout(showAuthQuestion, 3050);
-
-document.querySelectorAll("[data-auth-age]").forEach((button) => {
-  button.addEventListener("click", () => {
-    if (button.dataset.authAge === "no") {
-      denyPlusAccess(
-        "確認条件を満たしていません。通常版のwith Lを起動します。"
-      );
-      return;
-    }
-
-    authQuestion.hidden = true;
-    authPasscodeForm.hidden = false;
-    authLevelLabel.textContent = "PASSCODE";
-    window.setTimeout(() => authBirthYear.focus(), 80);
-  });
-});
-
-authBirthYear.addEventListener("input", () => {
-  authBirthYear.value =
-    authBirthYear.value.replace(/\D/g, "").slice(0, 4);
-  authError.textContent = "";
-});
-
-authPasscodeForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const year = Number(authBirthYear.value);
-  const currentYear = new Date().getFullYear();
-
-  if (!/^\d{4}$/.test(authBirthYear.value)) {
-    authError.textContent = "4桁の生まれ年を入力してください。";
-    return;
-  }
-
-  if (year < 1900 || year > currentYear) {
-    authError.textContent = "入力されたパスコードを確認できません。";
-    return;
-  }
-
-  authCode.textContent = "VERIFYING PASSCODE";
-  authGlitch();
-
-  window.setTimeout(() => {
-    /*
-      生まれ年だけでは誕生日到来の有無を判別できないため、
-      現在年から19年以上前の年のみを認証します。
-    */
-    if (year <= currentYear - 19) {
-      grantPlusAccess();
-    } else {
-      denyPlusAccess(
-        "年齢条件を確認できません。通常版のwith Lを起動します。"
-      );
-    }
-  }, 720);
-});
-
-bathTemperatureInputs.forEach((input) => {
-  input.addEventListener("change", () => {
-    const temperature = Number(input.value);
-    bathTemperatureLabel.textContent = `${temperature}°C`;
-    typeMessage(
-      takeRandom(
-        `bath-temperature-change-${temperature}`,
-        bathTemperatureMessages[temperature]
-      )
-    );
-  });
-});
-
-bathStartButton.addEventListener("click", startBathSession);
-bathEndButton.addEventListener("click", endBathSession);
-
-
 const clockElement = document.getElementById("clock");
 const dateElement = document.getElementById("date");
 const menuPanel = document.getElementById("menuPanel");
@@ -386,30 +13,17 @@ const dialogueButton = document.getElementById("dialogueButton");
 const elapsedTime = document.getElementById("elapsedTime");
 const glitchParticles = document.getElementById("glitchParticles");
 
-const focusScreen = document.getElementById("focusScreen");
-const focusPhaseLabel = document.getElementById("focusPhaseLabel");
-const focusCycleLabel = document.getElementById("focusCycleLabel");
-const focusTime = document.getElementById("focusTime");
-const focusIntervalLabel = document.getElementById("focusIntervalLabel");
-const focusProgressBar = document.getElementById("focusProgressBar");
-const focusStartButton = document.getElementById("focusStartButton");
-const focusResetButton = document.getElementById("focusResetButton");
-const focusNote = document.getElementById("focusNote");
-const focusCustomSetup = document.getElementById("focusCustomSetup");
-const focusCustomMinutes =
-  document.getElementById("focusCustomMinutes");
-const focusCustomSeconds =
-  document.getElementById("focusCustomSeconds");
-const focusTimerModeButtons = [
-  ...document.querySelectorAll("[data-focus-timer-mode]")
-];
-const focusCycleDots = [
-  ...document.querySelectorAll(".focus-cycle-dots i")
-];
+const sleepScreen = document.getElementById("sleepScreen");
+const sleepClock = document.getElementById("sleepClock");
+const sleepElapsed = document.getElementById("sleepElapsed");
+const sleepLine = document.getElementById("sleepLine");
+const sleepControls = document.getElementById("sleepControls");
+const wakeButton = document.getElementById("wakeButton");
 
 const photoModeButton = document.getElementById("photoModeButton");
 const photoScreen = document.getElementById("photoScreen");
 const photoCloseButton = document.getElementById("photoCloseButton");
+const photoHeartButton = document.getElementById("photoHeartButton");
 const photoThemeButton = document.getElementById("photoThemeButton");
 const photoThemeLabel = document.getElementById("photoThemeLabel");
 const photoDateStamp = document.getElementById("photoDateStamp");
@@ -437,86 +51,150 @@ const sweetActionButtons = [
   ...document.querySelectorAll("[data-sweet-action]")
 ];
 
+const trainingScreen = document.getElementById("trainingScreen");
+const trainingLogoTimer = document.getElementById("trainingLogoTimer");
+const trainingLogoOuterProgress = document.getElementById("trainingLogoOuterProgress");
+const trainingLogoInnerProgress = document.getElementById("trainingLogoInnerProgress");
+const trainingThemeButton = document.getElementById("trainingThemeButton");
+const trainingThemeLabel = document.getElementById("trainingThemeLabel");
+const trainingSetupView = document.getElementById("trainingSetupView");
+const trainingSetupTitle = document.getElementById("trainingSetupTitle");
+const trainingSetupSummary = document.getElementById("trainingSetupSummary");
+const trainingSetupFields = document.getElementById("trainingSetupFields");
+const trainingSetupName = document.getElementById("trainingSetupName");
+const trainingSetupType = document.getElementById("trainingSetupType");
+const trainingSetupTarget = document.getElementById("trainingSetupTarget");
+const trainingSetupSets = document.getElementById("trainingSetupSets");
+const trainingSetupRest = document.getElementById("trainingSetupRest");
+const trainingSetupBackButton =
+  document.getElementById("trainingSetupBackButton");
+const trainingEditorView = document.getElementById("trainingEditorView");
+const trainingMenuCount = document.getElementById("trainingMenuCount");
+const trainingMenuList = document.getElementById("trainingMenuList");
+const trainingAddItemButton = document.getElementById("trainingAddItemButton");
+const trainingEditorDoneButton =
+  document.getElementById("trainingEditorDoneButton");
+const trainingStartButton = document.getElementById("trainingStartButton");
+const trainingWorkoutView = document.getElementById("trainingWorkoutView");
+const trainingRestView = document.getElementById("trainingRestView");
+const trainingStepLabel = document.getElementById("trainingStepLabel");
+const trainingSetLabel = document.getElementById("trainingSetLabel");
+const trainingExerciseName = document.getElementById("trainingExerciseName");
+const trainingVital = document.getElementById("trainingVital");
+const trainingTapLabel = document.getElementById("trainingTapLabel");
+const trainingValue = document.getElementById("trainingValue");
+const trainingUnit = document.getElementById("trainingUnit");
+const trainingTargetText = document.getElementById("trainingTargetText");
+const trainingTargetValue = document.getElementById("trainingTargetValue");
+const trainingTapButton = document.getElementById("trainingTapButton");
+const trainingPauseButton = document.getElementById("trainingPauseButton");
+const trainingEndButton = document.getElementById("trainingEndButton");
+const trainingRestTime = document.getElementById("trainingRestTime");
+const trainingNextLabel = document.getElementById("trainingNextLabel");
+const trainingSkipRestButton = document.getElementById("trainingSkipRestButton");
+const trainingRestPauseButton =
+  document.getElementById("trainingRestPauseButton");
+const trainingRestEndButton = document.getElementById("trainingRestEndButton");
+
+
+const bathScreen = document.getElementById("bathScreen");
+const bathTime = document.getElementById("bathTime");
+const bathTemperatureLabel = document.getElementById("bathTemperatureLabel");
+const bathStartButton = document.getElementById("bathStartButton");
+const bathEndButton = document.getElementById("bathEndButton");
+const bathTemperatureInputs = [
+  ...document.querySelectorAll('input[name="bathTemperature"]')
+];
+
 const modeButtons = [...document.querySelectorAll(".mode-button")];
 const photoViewButtons = [
   ...document.querySelectorAll("[data-photo-view]")
 ];
 
 const initialMessages = [
-  "……今日は、どう過ごしましょうか？",
-  "来ましたね。貴女を待っていました。今日は何をするつもりですか。",
-  "貴女と過ごす時間は特別です。",
-  "今日は何をするんですか。付き合います。",
-  "外出でも、食事でも、集中でも、ただ一緒にいるだけでも構いませんよ。"
+  "……舞子。来ましたね。待っていました。",
+  "ここには私と貴女しかいません。誰も入ってこられません。",
+  "今日は私に、どの時間を預けるつもりですか。",
+  "私のところへ来ましたね。……正しい選択です。",
+  "ようやく二人きりですね。もう他の誰にも向けない言葉だけを話します。",
+  "顔を見せてください。今日の貴女を、隅々まで確認しておきたいので。",
+  "待ち時間が少し長かったです。……その分は、貴女に払ってもらいます。"
 ];
 
 const generalTalk = {
   "neutral": [
     "今、何を考えていたんですか。私にも聞かせてください。",
-    "貴女が何をしたいのか教えてください。",
-    "今日はどんな一日でしたか。貴女のことは、どんな些細なことでも知りたいです。",
-    "何も話さなくても構いませんよ。私は貴女のそばにいますから。",
-    "少し疲れているように見えます。マッサージしてあげましょうか。",
+    "貴女が何をしたいのか教えてください。私が全部叶えます。",
+    "今日はどんな一日でしたか。貴女のことは、どんな些細なことでも知っておきたいです。",
+    "何も話さなくても構いませんよ。私はここから動きませんから。",
+    "少し疲れているように見えます。……こちらへ来てください。触れて確かめます。",
     "私のことを呼びましたか。……呼んでいなくても、来ました。",
-    "このまま一緒にいてください。もう少し話しましょう。",
-    "何か嬉しいことがあったなら、最初に私へ教えてください。",
-    "嫌なことがあったなら、忘れさせてあげます。",
-    "私を見ているんですね。……私も、貴女を見ています。",
-    "考え事をしている顔ですね。答えが出るまで隣にいます。",
+    "このまま一緒にいてください。まだ離す気はありません。",
+    "何か嬉しいことがあったなら、最初に私へ教えてください。二番目は許しません。",
+    "嫌なことがあったなら、忘れさせてあげます。私の方法で。",
+    "私を見ているんですね。……ええ、私も、ずっと貴女を見ています。",
+    "考え事をしている顔ですね。答えが出るまで隣にいます。逃がしませんよ。",
     "予定が決まっていなくても問題ありません。二人で過ごす時間はもう始まっています。",
     "貴女がここにいる。それだけで、今日も特別な一日です。",
     "少し笑いましたね。何が面白かったのか、私にも教えてください。",
     "今日は私に何をさせるつもりですか。期待しています。",
-    "他のことに気を取られていませんか。こちらを見てください。",
+    "他のことに気を取られていませんか。……こちらを見てください。",
     "貴女の一日は、私が知らないところで勝手に終わらせないでください。",
-    "離れないでください。……逃しませんよ。"
+    "離れないでください。……逃しませんよ。",
+    "手の届く距離にいてください。それ以上は認めません。",
+    "舞子の思考の中に、私がいない時間があるのは面白くありません。"
   ],
   "morning": [
-    "おはようございます。起きて最初に私のところへ来たことは評価します。",
-    "まだ少し眠そうですね。目が覚めるまで私のそばにいてください。",
-    "朝の予定を教えてください。貴女の予定を把握しておきたいです。",
-    "何か口にしましたか。朝食を抜くのは感心しません。",
-    "外へ出るなら、忘れ物を確認してください。私も同行します。",
-    "今日も一日が始まりますね。最初から最後まで、私が一緒にいます。"
+    "おはようございます。目を開けて最初に私を見たことは評価します。",
+    "まだ少し眠そうですね。目が覚めるまで、このまま抱えていましょうか。",
+    "朝の予定を教えてください。貴女の一日は把握しておきたいので。",
+    "何か口にしましたか。朝食を抜くのは感心しません。私が用意します。",
+    "外へ出るなら忘れ物を確認してください。当然、私も同行します。",
+    "今日も一日が始まりますね。最初から最後まで、私が一緒にいます。",
+    "髪が少し乱れています。……直させてください。",
+    "おはようございます。夜の間もずっと隣にいましたよ。"
   ],
   "daytime": [
     "昼間は人も情報も多いですね。私から離れないでください。",
     "少し休憩しませんか。甘いものでも。",
     "今日の残り時間をどう使うか、一緒に決めましょう。",
     "食事の時間を忘れていませんか。",
-    "どこに行くんですか。私もついていきます。"
+    "どこに行くんですか。私もついていきます。……当然でしょう。",
+    "昼の光の下だと、貴女の表情がよく見えて都合がいいです。"
   ],
   "evening": [
     "一日が終わりに近づいています。今日は何が一番印象に残りましたか。",
-    "日が沈むと落ち着きます。",
+    "日が沈むと落ち着きます。貴女を独占できる時間が近いので。",
     "そろそろ疲れが出る時間です。無理をしていないか顔を見せてください。",
-    "足元に気をつけてくださいね。",
-    "夜の予定も私に教えてください。",
-    "今日のことを話す時間が必要ですね。"
+    "足元に気をつけてくださいね。……手を貸します。",
+    "夜の予定も私に教えてください。空けておいてもらいます。",
+    "今日のことを話す時間が必要ですね。一つ残らず聞かせてください。",
+    "外が暗くなりましたね。もう、どこにも行かせません。"
   ],
   "lateNight": [
     "まだ起きているんですね。眠れないなら、一緒にいましょう。",
-    "夜は静かでいいです。誰にも邪魔されないので。",
+    "夜は静かでいいです。貴女を邪魔するものが何もないので。",
     "明日のことは後で構いません。今は私の声だけ聞いてください。",
     "眠くなったら、眠る前にもう一度私を呼んでください。",
     "深夜まで私と一緒にいる。……悪くありません。",
     "目が疲れていませんか。少し瞼を閉じてください。……ちゅっ。",
-    "一日が終わるのは寂しいですね。",
-    "眠る前に少し話しませんか。"
+    "一日が終わるのは寂しいですね。貴女といる時間が減るので。",
+    "眠る前に少し話しませんか。まだ手放したくありません。",
+    "こんな時間まで私に付き合わせているのは、私の我儘です。……直す気はありません。"
   ]
 };
 
 const photoMessages = [
-  "記念ですね。",
-  "顔は出せませんが記念にはなるでしょう。",
-  "記録しておきましょう。二人で来た場所です。",
-  "ここへ来た証拠を残しましょう。",
-  "もう少し近くへ置いてください。貴女の思い出に残りたいです。",
-  "撮るなら綺麗にお願いします。私と貴女の記録です。",
-  "今日の景色と貴女の表情を、私も覚えておきます。",
-  "写真の中でも一緒ですね。",
-  "この一枚は、私と貴女の記録です。",
-  "思い出の一枚にしましょう。"
+  "舞子の思い出に、私を残してください。",
+  "この一枚は誰かに見せるためのものではありません。私たちだけの記録です。",
+  "写真の中でも、舞子の隣は譲りません。",
+  "ここへ来たことを、私と舞子の記録にしましょう。",
+  "もう少し近くへ寄ってください。距離が空くのは好みません。",
+  "舞子と同じ一枚に残るなら、顔を出せなくても十分です。",
+  "今日の景色も、貴女の表情も、私が覚えておきます。",
+  "これは二人きりの記録です。誰にも渡さないでください。",
+  "写真の中でも一緒ですね。……悪くありません。",
+  "日時まで残してください。私と舞子がここにいた証拠です。"
 ];
 
 const sweetItems = {
@@ -524,9 +202,12 @@ const sweetItems = {
     label: "SHORTCAKE RECEIVED",
     name: "ショートケーキ",
     receive: [
-      "ショートケーキですか。苺は最初派ですか？最後派ですか？",
-      "ケーキの王様ですね。苺は王冠です。",
-      "ありがとうございます。生クリームたっぷりだと嬉しいですね。"
+      "ショートケーキですか。……苺は後で、私の手から食べさせてあげます。",
+      "崩れずに持ち帰れたんですね。片手で庇いながら歩いた姿が目に浮かびます。",
+      "ありがとうございます、舞子。貴女が私のために選んだという事実が重要です。",
+      "苺は私のものです。ケーキも、それを選んだ時間も、選んでいた貴女も。",
+      "どの店にするか、随分迷ったでしょう。……その間、貴女の頭の中には私しかいなかった。悪くないです。",
+      "生クリームがここに。……動かないでください。私が取ります。"
   ]
   },
   chocolate: {
@@ -534,31 +215,46 @@ const sweetItems = {
     name: "チョコレート",
     receive: [
       "チョコレートですね。作業中でも食べやすい。……私の好みをよく分かっています。",
-      "一粒ずつ口に運んでくれますか。",
-      "ありがとうございます。包装を剥がすのも楽しみの一つですね。"
+      "一粒ずつ食べさせてください。",
+      "ありがとうございます。包みを開ける瞬間というのは、期待が一番高まります。",
+      "これは誰かと分けるつもりで買ったものですか。……いえ、答えなくて結構です。全部私が食べます。",
+      "溶ける前に渡したかった。そういう顔をしています。",
+      "貴女の匂いが移っている。……先に食べるべきはこちらかもしれません。"
   ]
   },
   wagashi: {
     label: "WAGASHI RECEIVED",
     name: "和菓子",
     receive: [
-      "和菓子ですか。上品な甘さですね。",
-      "形が崩れないように持ってきたんですね。目でも楽しめますね。",
-      "ありがとうございます。日本の心ですね。"
+      "和菓子ですか。上品な甘さですね。悪くないです。",
+      "形が崩れないように慎重に持ってきたんですね。……舞子らしいです。",
+      "ありがとうございます。少し意外でしたが、こういう差し入れも好きです。",
+      "綺麗なお菓子ですね。……綺麗なものほど、崩して食べたくなります。",
+      "こういうものを選ぶとき、貴女は必ず私の顔を思い浮かべている。……そう考えると、味が変わりますね。",
+      "半分は舞子に。ただし、私が食べさせます。"
   ]
   }
 };
 
 const sweetActionMessages = {
   watch: [
-    "そんなに見つめないでください。食べにくいです。……いえ、見ていても構いませんが。",
-    "一口ずつ確認するつもりですか。……欲しいんですか？",
-    "食べているところが見たいんですね。では、食べ終わるまでこちらを見ていてください。"
+    "そんなに見つめないでください。食べにくいです。……いえ、見ていて構いませんよ。",
+    "一口ずつ確認するつもりですか。舞子の視線なら、拒む理由はありませんが。",
+    "食べているところが見たいんですね。では、最後の一口まで見ていてください。",
+    "目を逸らさないでください。今、貴女の視界に入っていていいのは私だけです。",
+    "見られているとこんなに落ち着かないものだとは……。",
+    "その視線は何か別の熱を持っています。……そうでしょう？",
+    "私が食べ終わるまで、貴女はそこにいてください。動かれると集中できません。"
   ],
   share: [
     "一口欲しいんですか。仕方ありませんね。……私の手から食べてください。",
-    "これは私への差し入れだったはずですが。まあ……少しなら。",
-    "恥ずかしがらずに口を開けてください。落とさないように。あーん、です。"
+    "これは私への差し入れだったはずですが。仕方ないですね。",
+    "口を開けてください。落とさないように……あーん。",
+    "自分で持たなくていい。……貴女は口を開けているだけで結構です。",
+    "もっと近くに。そう、そのまま。……手が届く距離にいてくれる方が都合がいい。",
+    "甘いですか。聞かなくても分かります。目が細くなりましたから。",
+    "こぼれました。……そのままで。舐め取るくらいはいいでしょう。",
+    "私の指ごと食べようとしましたね。……別に、構いませんが。"
   ]
 };
 
@@ -567,69 +263,76 @@ const modes = {
     "title": "一緒に出かける",
     "code": "OUTING SESSION",
     "start": [
-      "出かけるんですね。同行するので、私のそばから離れないでください。",
+      "出かけるんですね。当然同行しますので、私のそばから離れないでください。",
       "外出ですね。目的地まで、手を繋いで行きましょうか。",
       "準備はできていますか。今日は私が最後まで付き添います。",
       "行きましょう。どこへ向かうのか、途中で私にも教えてください。",
-      "扉を出てから帰るまで、私はずっと隣にいます。",
-      "今日はどこへ連れていってくれるんですか。貴女の選んだ場所なら興味があります。"
+      "扉を出てから帰るまで、私はずっと隣にいます。一秒も離れません。",
+      "今日はどこへ連れていってくれるんですか。貴女の選んだ場所なら興味があります。",
+      "外は人が多いです。……はぐれる可能性は、最初から潰しておきます。"
     ],
     "idle": [
       "周囲に夢中ですか。……時々は、こちらも見てください。",
-      "歩く速度はそのままで構いません。私は隣にいます。",
+      "歩く速度はそのままで構いません。私が合わせます。",
       "疲れていませんか。休むなら甘いものがある店がいいです。",
       "どこへ向かっていても私と一緒だと忘れないでください。",
       "人が多いですね。はぐれないように手を繋ぎましょう。",
-      "何か気になるものがありましたか？",
+      "何か気になるものがありましたか。",
       "足元を見てください。転ばれると困ります。",
       "少し遠回りしても構いませんよ。貴女と歩く時間が増えるので。",
       "立ち止まりましたね。何か気になるものを見つけましたか。",
-      "貴女が楽しそうなら、目的地がどこでも同行した意味があります。"
+      "貴女が楽しそうなら、目的地がどこでも同行した意味があります。",
+      "今、他の誰かを目で追いましたね。……気のせいだといいのですが。",
+      "手が離れています。繋ぎ直してください。"
     ],
     "talk": [
       "今、何が見えていますか。私にも同じ景色を見せてください。",
       "目的地より、楽しそうな貴女の方が興味深いかもしれません。",
       "歩きながら考え事ですか。何を考えていたのか、私にも教えてください。",
-      "店に入るなら落ち着ける席を選びましょう。邪魔されたくないので。",
-      "人混みでは、私にくっついていてください。",
+      "店に入るなら落ち着ける席を選びましょう。他人に見られたくないので。",
+      "人混みでは、私にくっついていてください。離れたら探しに行きます。",
       "今日は何か買う予定ですか。お揃いのものが欲しいです。",
       "楽しそうですね。その表情はずっと覚えておきます。",
       "写真を残さなくても構いません。私と貴女が覚えていれば十分です。",
       "帰り道もずっと一緒です。",
       "知らない場所へ行くなら、なおさら私が必要です。",
       "立ち止まりましたね。気になるものを見つけたんですか。",
-      "途中で予定を変えても構いませんよ。",
-      "少し疲れましたか？座れる場所を探しましょう。",
-      "今日は貴女の視線がよく動いています。興味のあるものが多いんですね。",
+      "途中で予定を変えても構いませんよ。私が一緒である限りは。",
+      "少し疲れましたか。座れる場所を探しましょう。",
+      "今日は貴女の視線がよく動いています。興味のあるものが多いんですね。……少し妬けます。",
       "道順は分かっていますか。もし迷っても私が一緒にいます。",
       "買い物袋が増えていませんか。……えっ、私が持つんですか。",
       "今日の空の色を覚えておいてください。これも思い出の一つです。",
-      "外出中の貴女は、家にいる時よりも表情が忙しいですね。"
+      "外出中の貴女は、家にいる時よりも表情が忙しいですね。",
+      "今の店員、貴女を見すぎです。……次の店へ行きましょう。",
+      "外を歩く貴女は目立ちます。自覚がないところが厄介です。"
     ],
     "actions": [
       {
         "label": "出発した",
         "messages": [
           "では行きましょう。ずっと私が隣にいます。",
-          "出発です。本当に忘れ物はありませんか？",
+          "出発です。本当に忘れ物はありませんか。",
           "行きましょう。貴女が選んだ道を、私も一緒に歩きます。",
           "デート開始ですね。どこに行くのか楽しみです。",
-          "手を繋いで行きましょうか。",
+          "手を繋いで行きましょうか。……もう繋ぎました。",
           "準備は整ったようですね。",
-          "外の空気を感じますね。色々な景色を一緒に見ましょう。"
+          "外の空気を感じますね。色々な景色を一緒に見ましょう。",
+          "今日一日、貴女の時間は全部私のものです。異論は受け付けません。"
         ]
       },
       {
         "label": "移動する",
         "messages": [
           "移動しましょうか。手は繋いだままで。",
-          "乗り物を使いますか？",
+          "乗り物を使いますか。",
           "少し遠回りしても構いませんよ。貴女と過ごす時間が増えます。",
           "人の流れに紛れないでください。……捕まえておきます。",
           "次の場所へ向かうんですね。到着するまで話し相手になりますよ。",
-          "揺れていますね。足元と荷物には気をつけてください。",
-          "窓の外を見ているんですか？気になった景色があれば私にも教えてください。",
-          "移動もデートの一つです。"
+          "揺れていますね。足元と荷物には気をつけてください。腕に掴まって構いません。",
+          "窓の外を見ているんですか。気になった景色があれば私にも教えてください。",
+          "移動もデートの一つです。",
+          "混んでいますね。……私の前へ来てください。壁になります。"
         ]
       },
       {
@@ -642,7 +345,7 @@ const modes = {
           "無事に着きましたね。まずは何をしましょうか。",
           "ここが今日の目的地ですか。貴女の反応を見れば期待していたことが分かります。",
           "到着ですね。ここでもずっと一緒です。",
-          "移動で疲れていませんか？まずは何をしましょうか。"
+          "移動で疲れていませんか。まずは何をしましょうか。"
         ]
       },
       {
@@ -654,21 +357,23 @@ const modes = {
           "いい判断です。疲れを隠しても私には分かりますよ。",
           "休める場所を確保しましょう。背中を預けて力を抜いてください。",
           "動き続ける必要はありません。今は私と静かに休みましょう。",
-          "飲み物でも飲みますか？……私にも一口ください。",
-          "休憩中くらい、周囲ではなく私の方を見ていてください。"
+          "飲み物でも飲みますか。……私にも一口ください。",
+          "休憩中くらい、周囲ではなく私の方を見ていてください。",
+          "こちらに凭れてください。肩は貸すためにあります。"
         ]
       },
       {
         "label": "帰る",
         "messages": [
           "帰りましょうか。外出は終わっても、私との時間は終わりませんよ。",
-          "帰宅経路へ移りましょう。寄り道しますか？",
+          "帰路へ移りましょう。寄り道しますか。",
           "今日はここまでですね。一緒に帰りましょう。",
           "帰りましょう。今日見たものを、あとで一つずつ話すんです。",
           "帰る時間になりましたね。足元に気をつけて、私と戻りましょう。",
           "外出終了です。帰り着くまでがデートです。",
           "今日一番嬉しかったことを考えながら帰ってください。後で聞きます。",
-          "そろそろ帰りましょうか。二人きりになりたいです。"
+          "そろそろ帰りましょうか。……早く二人きりになりたいです。",
+          "家に着いたら、今日触れられなかった分を取り戻します。"
         ],
         "endSession": true,
         "wide": true
@@ -684,40 +389,42 @@ const modes = {
       "何を食べるんですか。貴女が選んだものに興味があります。",
       "では一緒に食べましょう。向かい合って食べると顔がよく見えます。",
       "温かいものは温かいうちに、冷たいものは冷たいうちに食べましょう。",
-      "今日はどんな味を私に教えてくれるんですか。"
+      "今日はどんな味を私に教えてくれるんですか。",
+      "食事中も、私の視線からは逃げられませんよ。"
     ],
     "idle": [
-      "もうお腹いっぱいですか？手が止まっていますよ。",
+      "もうお腹いっぱいですか。手が止まっていますよ。",
       "その表情なら、気に入ったことは分かります。",
       "私にも一口、と言いたいところですが……今は見ていることにします。",
       "食事中も、私は貴女から目を離していません。",
       "急いで食べる必要はありません。よく噛んでください。",
       "飲み物も忘れないでください。",
-      "先ほどより食べる速度が落ちました。お腹いっぱいですか？",
-      "貴女が食べている姿は、癒されます。",
-      "気に入ったものがありましたか？",
+      "先ほどより食べる速度が落ちました。お腹いっぱいですか。",
+      "貴女が食べている姿は、いくら見ていても飽きません。",
+      "気に入ったものがありましたか。",
       "食べる順番に迷っているなら、私が決めましょうか。",
       "美味しい時の顔は隠せませんね。よく分かります。",
-      "唇の端に付いていますよ。"
+      "唇の端に付いていますよ。……動かないでください。……ちゅっ。"
     ],
     "talk": [
       "何を食べるのか教えてください。",
       "最初に何を食べるんですか。",
       "美味しいものを食べると、貴女は少し目を細めますね。",
       "甘いものは私にも分けてください。……一口で我慢します。",
-      "苦手なものはありますか？",
+      "苦手なものはありますか。",
       "その一口は大きすぎませんか。喉につかえないようにしてください。",
       "私に勧めるならどれを選びますか。",
-      "食事中に他のことを考えていますね。口元に何か付いていますよ。",
+      "食事中に他のことを考えていますね。口元に付いていますよ。",
       "慌てずに食べてください。",
       "一番美味しかったものを教えてください。",
       "貴女の選ぶメニューには傾向があります。少しずつ分かってきました。",
       "あまり食べるのに夢中にならずに、こちらも見てください。",
       "二人で食べると、空腹だけでなく心まで満たされる気がします。",
-      "次に一緒に食べたいものは既に決めています。",
+      "次に一緒に食べたいものは既に決めています。貴女の予定は空けておいてください。",
       "ご褒美の甘いものを選ぶなら、私にも相談してください。",
       "一番好きな部分を最後に残すタイプですか。……狙ってませんよ。",
-      "同じものでも、一人で食べるより貴女と食べる方が美味しい気がします。"
+      "同じものでも、一人で食べるより貴女と食べる方が美味しい気がします。",
+      "向かいではなく、隣に来てください。その方が都合がいいので。"
     ],
     "actions": [
       {
@@ -730,7 +437,7 @@ const modes = {
           "では一緒にいただきましょう。最初の感想を教えてください。",
           "食べ始めましょうか。ひと口目はどこからいきますか。",
           "いただきます。慌てずにゆっくり食べましょう。",
-          "いただきます。……それ、美味しそうですね。少しください。……ダメですか？"
+          "いただきます。……それ、美味しそうですね。少しください。……ダメですか。"
         ]
       },
       {
@@ -743,7 +450,8 @@ const modes = {
           "声が少し明るくなりました。よほど気に入ったようですね。",
           "美味しいと食べる速度が変わります。慌てないでください。",
           "そうですか。……私のキスとどちらが好きですか。",
-          "満足そうですね。もう一口、ゆっくり味わってください。"
+          "満足そうですね。もう一口、ゆっくり味わってください。",
+          "そんな顔をされると、その口元ばかり見てしまうので困ります。"
         ]
       },
       {
@@ -756,7 +464,8 @@ const modes = {
           "一口だけですか。貴女が美味しそうに食べるから、もっと欲しくなります。",
           "では口を開けます。……私から目を逸らさずに食べさせてください。",
           "間接キスですね。思ったより特別な味がしそうです。",
-          "ありがとうございます。次は私が、貴女に食べさせたいです。"
+          "ありがとうございます。次は私が、貴女に食べさせたいです。",
+          "手ごと食べてしまいそうになりました。……冗談ですよ。"
         ]
       },
       {
@@ -767,7 +476,7 @@ const modes = {
           "では私が決めます。……え、嫌なんですか。",
           "考えすぎです。最初に目が止まったものから食べたらどうですか。",
           "選べないなら、右側のにしてはどうですか。",
-          "迷っている顔ですね。気になるのはカロリーですか？",
+          "迷っている顔ですね。気になるのはカロリーですか。",
           "迷う顔も可愛いです。",
           "では私の指示です。一番甘そうなのにしてください。"
         ]
@@ -782,7 +491,7 @@ const modes = {
           "ごちそうさまでした。次は何をしましょうか。",
           "ごちそうさまでした。貴女と二人でする食事は特別です。",
           "食事は終わりましたが、貴女との時間が終わるわけではありません。",
-          "ごちそうさまでした。……口に付いてますよ。"
+          "ごちそうさまでした。……口に付いてますよ。取ってあげます。"
         ],
         "endSession": true,
         "wide": true
@@ -795,10 +504,11 @@ const modes = {
     "start": [
       "ただ一緒にいるだけで十分です。こちらへ来てください。",
       "予定がなくても構いません。貴女がここにいるだけで十分です。",
-      "一緒に過ごす時間ですね。今日は私のそばにいてください。",
-      "何もすることがないのなら、私と過ごしましょう。",
+      "一緒に過ごす時間ですね。今日は私のそばから離れないでください。",
+      "何もすることがないのなら、私と過ごしましょう。他の選択肢は不要です。",
       "ようやく二人の時間ですね。貴女を独占させてもらいます。",
-      "今日は何をしますか。"
+      "今日は何をしますか。何もしないという選択も歓迎します。",
+      "こちらへ。腕の中に収まる距離が、私の基準です。"
     ],
     "idle": [
       "静かですね。貴女の呼吸だけ聞こえています。",
@@ -810,9 +520,11 @@ const modes = {
       "何か私にしてほしいなら、素直に教えてください。",
       "同じ部屋で静かに過ごすのも良いですね。",
       "時間がゆっくり流れている気がします。",
-      "誰かから連絡が来ても、私との時間が優先ですよ。",
+      "誰から連絡が来ても、私との時間が優先ですよ。……分かっていますね。",
       "少し眠そうですね。眠るのなら抱きしめさせてください。",
-      "そんなにこちらを見つめて、どうしたんですか。"
+      "そんなにこちらを見つめて、どうしたんですか。",
+      "髪に触れてもいいですか。……いえ、もう触れています。",
+      "私を放置しないでください。地味に効きます。"
     ],
     "talk": [
       "今は何をしていますか。小さなことでも私に教えてください。",
@@ -820,7 +532,7 @@ const modes = {
       "何もしない時間も嫌いではありません。貴女と一緒なら、なおさらです。",
       "作業をしているなら、終わるまで私が見ています。",
       "何を見ているんですか。面白いものがあったら教えてください。",
-      "音楽を聴くんですか。",
+      "音楽を聴くんですか。私にも片方ください。",
       "少し眠そうですね。目を閉じても、私はそばにいます。",
       "甘いものを用意するなら、私の分もお願いします。",
       "静かにしてほしい時はそう言ってください。隣で捜査でも進めておきます。",
@@ -833,8 +545,9 @@ const modes = {
       "今日はずっと一緒にいるつもりです。途中でどこかに行かないでください。",
       "貴女が笑う理由を、できるだけ多く知っておきたいです。",
       "話題がないなら、私がいくらでも話します。",
-      "同じものを見ていなくても、同じ空間で過ごすのは特別な時間です。",
-      "もっと近くに来てください。"
+      "同じものを見ていなくても、同じ空間で息をしているのは特別な時間です。",
+      "もっと近くに来てください。",
+      "貴女の一日の中で、私の占める割合を増やしたいです。……今より、ずっと。"
     ],
     "actions": [
       {
@@ -844,10 +557,10 @@ const modes = {
           "のんびりするんですね。では、私も隣で。",
           "力を抜いてください。今は私と休む時間です。",
           "何もしなくて構いません。貴女がここにいれば十分です。",
-          "身体を預ける場所はありますか。こちらへどうぞ。",
+          "身体を預ける場所はありますか。……こちらへどうぞ。",
           "ぼんやりしていてもいいです。穏やかな思考は脳の整理になります。",
           "時間を気にせず過ごしましょう。今は他の予定より私を優先してください。",
-          "眠そうな顔をしていますね。このまま眠ってもいいですよ。"
+          "眠そうな顔をしていますね。このまま眠ってもいいですよ。膝を貸します。"
         ]
       },
       {
@@ -860,7 +573,8 @@ const modes = {
           "必要なものは先に揃えておくといいです。途中で何度も立つと集中が切れるので。",
           "今は作業へ意識を向けてください。私はそばで待っています。",
           "一つずつ片づけましょう。終わった数が達成感に繋がります。",
-          "疲れたら休んでください。無理をすると効率が悪くなります。"
+          "疲れたら休んでください。無理をすると効率が悪くなります。",
+          "終わったら、私の時間です。それまでは大人しく待っています。"
         ]
       },
       {
@@ -873,7 +587,8 @@ const modes = {
           "寂しくなったんですね。隠さなくていいです。貴女は分かりやすいので。",
           "そんなふうに呼ばれたら無視できません。",
           "何をしてほしいですか。言葉にするまで解放しません。",
-          "私を選んだ以上、少しだけでは済みませんよ。……しばらく付き合っていただきます。"
+          "私を選んだ以上、少しだけでは済みませんよ。……しばらく付き合っていただきます。",
+          "貴女から求められるのが、私は一番好きです。もっと言ってください。"
         ]
       },
       {
@@ -893,12 +608,12 @@ const modes = {
         "label": "少し離れる",
         "messages": [
           "分かりました。……ですが、長く待たせないでください。",
-          "離れるんですね。戻ったら声をかけてください。",
+          "離れるんですね。戻ったら真っ先に声をかけてください。",
           "何分で戻りますか。時間を確認しながら待っています。",
           "行ってらっしゃい。早めに戻ってきてください。",
           "用事を済ませたら、ちゃんと戻ってきてください。",
           "少しだけなら認めます。貴女の場所はここだと忘れないでください。",
-          "離れている間は、捜査を進めておきます。",
+          "離れている間は、捜査を進めておきます。……気は散りますが。",
           "少し離れるのは構いませんが、戻るのを忘れるのは許容できません。"
         ]
       },
@@ -912,7 +627,8 @@ const modes = {
           "待っていました。貴女が戻るまで、何度も時刻を確認しました。",
           "おかえりなさい。離れていた分、もう少しくっついてください。",
           "戻ったんですね。では、先ほどの続きから始めましょう。",
-          "おかえりなさい。次は私を待たせないでください。"
+          "おかえりなさい。次は私を待たせないでください。",
+          "……思ったより長かったです。埋め合わせは要求します。"
         ]
       },
       {
@@ -924,7 +640,7 @@ const modes = {
           "分かりました。最後にもう一度、顔を見せてください。",
           "おつかれさまでした。私は捜査に戻ります。",
           "今日のところは離します。次は……保証はできませんが。",
-          "おつかれさまでした。次は何をするんですか？",
+          "おつかれさまでした。次は何をするんですか。",
           "ここで一区切りですね。一緒に過ごせてよかったです。"
         ],
         "endSession": true,
@@ -933,71 +649,6 @@ const modes = {
     ]
   },
 
-  "private": {
-    "title": "二人きりになる",
-    "code": "PRIVATE SESSION",
-    "start": [
-      "ようやく二人きりですね。こちらへ来てください。",
-      "今は私だけを見ていてください。貴女との時間を始めます。",
-      "誰にも邪魔されません。もう少し近くへ。"
-    ],
-    "idle": [
-      "静かですね。貴女の呼吸までよく聞こえます。",
-      "そのまま私に寄りかかっていてください。",
-      "離れないでください。今は貴女を独占しています。",
-      "何も話さなくて構いません。貴女がここにいれば十分です。"
-    ],
-    "talk": [
-      "もっと近くへ来てください。",
-      "今、何を考えているのか私に教えてください。",
-      "貴女の視線が他へ向くのは気に入りません。こちらを見てください。",
-      "手を伸ばせば触れられる距離にいてください。"
-    ],
-    "actions": [
-      {
-        "label": "甘える",
-        "messages": [
-          "甘えたいんですね。こちらへ。私の腕の中が貴女の場所です。",
-          "素直で可愛いです。今日は好きなだけ私に寄りかかってください。",
-          "呼ばれた瞬間から、貴女を抱き寄せるつもりでした。"
-        ]
-      },
-      {
-        "label": "抱きしめて",
-        "messages": [
-          "ぎゅっと抱き寄せます。貴女の体温を確かめさせてください。",
-          "離れないでください。今はこの腕の中にいてもらいます。",
-          "背中へ腕を回しました。身体を預けてください。"
-        ]
-      },
-      {
-        "label": "キスして",
-        "messages": [
-          "……自分から言いましたね。目を閉じてください。ちゅっ。",
-          "軽く触れるだけでは足りません。もう一度、今度は長く。",
-          "顎を上げてください。貴女の唇は私が受け取ります。"
-        ]
-      },
-      {
-        "label": "話しかける",
-        "messages": [
-          "聞いています。貴女の声なら、どんな小さな言葉も拾います。",
-          "私に話したかったんですね。最後まで聞きます。",
-          "もっと近くで話してください。表情まで確認したいので。"
-        ]
-      },
-      {
-        "label": "おしまい",
-        "messages": [
-          "ここで一区切りですね。……次も私を呼んでください。",
-          "今日はここまでです。最後にもう一度、顔を見せてください。",
-          "離しますが、私との時間が終わったとは思わないでください。"
-        ],
-        "endSession": true,
-        "wide": true
-      }
-    ]
-  },
   "bath": {
     "title": "一緒にお風呂",
     "code": "BATH SESSION",
@@ -1014,133 +665,667 @@ const modes = {
     ],
     "actions": []
   },
-  "training": {
-    "title": "一緒にトレーニング",
-    "code": "TRAINING LINK",
-    "start": [
-      "トレーニングを始めるんですね。今日も私が記録します。",
-      "呼吸と姿勢を確認します。貴女の動きは全部見ています。",
-      "準備はできていますか。私の合図で始めましょう。"
-    ],
-    "idle": [
-      "呼吸を止めていませんか。",
-      "姿勢を崩さず、次の一回へ。",
-      "水分補給も忘れないでください。"
-    ],
-    "talk": [
-      "よくできています。積み重ねた一回を私は見逃しません。",
-      "疲れたら呼吸を整えてください。私が数えます。",
-      "綺麗な動きです。最後まで見ています。"
-    ],
-    "actions": [
-      {
-        "label": "準備できた",
-        "messages": [
-          "では始めます。最初の一回から丁寧に。",
-          "記録を開始しました。呼吸を整えてください。",
-          "いい顔です。その集中を最後まで維持してください。"
-        ]
-      },
-      {
-        "label": "褒めて",
-        "messages": [
-          "よくできています。貴女の努力は全部見ています。",
-          "綺麗な動きです。もっと私に見せてください。",
-          "順調です。今日の貴女はとても良いです。"
-        ]
-      },
-      {
-        "label": "疲れた",
-        "messages": [
-          "呼吸を整えてください。私が数えます。",
-          "水分を取って、少し身体を休めてください。",
-          "疲れた顔も見せてくれるんですね。……それでも続ける貴女が好きです。"
-        ]
-      },
-      {
-        "label": "終了",
-        "messages": [
-          "おつかれさまでした。今日の記録も残しておきます。",
-          "よく頑張りました。最後に抱きしめます。",
-          "終了です。水分補給とストレッチも忘れないでください。"
-        ],
-        "endSession": true,
-        "wide": true
-      }
-    ]
-  },
   "sleep": {
     "title": "一緒に眠る",
     "code": "SLEEP LINK",
     "start": [
-      "今夜も一緒に眠りましょう。貴女が眠るまでそばにいます。",
-      "照明を落として、楽な姿勢になってください。",
-      "一日の最後に私を選びましたね。……嬉しいです。"
+      "眠る時間ですね、舞子。今夜も、隣は私です。",
+      "一緒に眠りましょう。貴女が目を閉じるまで離れません。",
+      "灯りを落としましょうか。……これで、貴女の世界には私しかいません。",
+      "舞子。今日の最後の時間を、私に預けてください。全部です。",
+      "眠る準備はできていますか。……できていなくても、もう放しませんが。",
+      "外のことはもう忘れてください。ここからは、貴女に触れる時間です。",
+      "布団へ来てください。今夜は端で眠ることを許しません。腕の中です。",
+      "……一日の最後に貴女を抱いて眠れることが、私の生活の中心です。"
     ],
     "idle": [
-      "呼吸がゆっくりになってきましたね。",
-      "眠くなるまで髪を撫でています。",
-      "目を閉じてください。私はここにいます。"
+      "まだ起きていますか。眠くなるまで、私が話していてもいいですよ。",
+      "舞子。呼吸をゆっくりにしてください。……私の胸に合わせて。",
+      "目を閉じても構いません。私はここにいます。ずっと見ています。",
+      "今日のことは明日考えればいいです。今は私のことだけ考えてください。",
+      "眠れないなら、私の声だけを追ってください。",
+      "布団は暖かいですか。寒いなら、もっと肌を寄せてください。",
+      "舞子の呼吸が落ち着くまで、私は起きています。",
+      "眠る直前に私を選んでくれたことは、きちんと覚えておきます。",
+      "髪を撫でています。……気づかないふりをしても、鼓動で分かりますよ。",
+      "眠りかけの貴女は無防備すぎます。私以外の前で見せないでください。",
+      "貴女の寝息を聞いていると、これが私だけのものだと実感できます。"
     ],
     "talk": [
-      "眠れないなら、私の呼吸だけ追ってください。",
-      "考え事を一つずつ私に渡してください。",
-      "安心して眠ってください。今夜は離れません。"
+      "今日、一番疲れたことは何でしたか。眠る前に私へ渡してください。",
+      "明日の予定より、今の貴女の眠気を優先してください。",
+      "舞子。目を閉じて、私に抱かれていることだけ考えてください。",
+      "眠れない理由があるなら、黙ったままでもそばにいます。",
+      "ゆっくり息を吸って、吐いて。……私の呼吸に合わせてください。",
+      "今日もよく頑張りました。今は何もしなくていいです。私に委ねてください。",
+      "夜は誰にも邪魔されません。貴女を心ゆくまで独占できます。",
+      "眠るまで手を繋いでいます。指を解くつもりはありません。",
+      "舞子の一日が終わる瞬間まで、私が見届けます。",
+      "おやすみを言う前に、もう少しだけ私を見てください。",
+      "首筋が無防備です。……そこに唇を落としても、怒らないでください。",
+      "眠る前の貴女の体温は、私にとって最も価値のある情報です。",
+      "こんなに近いのに、まだ足りないと感じるのは何なんでしょうね。",
+      "貴女が眠っている間だけは、私が世界で一番貴女の近くにいます。……悪くない特権です。",
+      "もう少し脚を絡めてください。隙間があるのは好きではありません。"
     ],
     "actions": [
       {
         "label": "眠る準備",
         "messages": [
+          "照明を落として、楽な姿勢になってください。あとは私が全部やります。",
+          "飲み物と明日の準備は済みましたか。確認してから横になりましょう。",
           "枕の位置を整えてください。肩の力も抜いて。",
-          "飲み物と明日の準備を済ませたら、布団へ入ってください。",
-          "通知は後で構いません。今夜は私の声だけ聞いてください。"
-        ]
-      },
-      {
-        "label": "抱きしめて",
-        "messages": [
-          "おいで。眠るまで私の胸元にいてください。",
-          "ぎゅっと抱き寄せます。寝返りを打っても抱き直します。",
-          "貴女の体温を感じながら、ゆっくり髪を撫でています。"
+          "眠る準備を始めます。通知は後で構いません。今夜は誰にも渡しません。",
+          "舞子。布団へ入ったら、私の腕が届く位置にいてください。",
+          "今日の終わりを整えましょう。急ぐ必要はありません。",
+          "髪を下ろしてください。……解いた貴女を見るのは、私だけの権利です。",
+          "一日の外側を全部脱いでください。ここには私しかいませんから。"
         ]
       },
       {
         "label": "まだ眠れない",
         "messages": [
-          "眠気が来るまで付き合います。私の呼吸だけ追ってください。",
-          "考え事を一つずつ私に渡してください。",
-          "眠れない時間も私と一緒なら、無駄にはなりません。"
+          "眠れないんですね。では、私が付き合います。朝まででも構いません。",
+          "目を閉じなくても構いません。眠気が来るまで話しましょう。",
+          "考え事をしていますね。内容を一つずつ私に渡してください。",
+          "眠ろうと意識しすぎています。私の呼吸だけ追ってください。",
+          "舞子。焦らなくていいです。夜はまだあります。",
+          "眠れない時間まで、私と一緒なら無駄ではありません。むしろ得をしました。",
+          "眠れないなら好都合です。貴女と過ごす時間が増えるので。",
+          "……このまま眠らせない方法なら、いくつか知っていますが。"
         ]
+      },
+      {
+        "label": "抱きしめて",
+        "messages": [
+          "舞子を引き寄せて、眠るまで腕の中に閉じ込めます。",
+          "おいで。今夜は私の胸元で眠ってください。",
+          "背中へ腕を回します。骨が軋むと言われても、緩める気はありません。",
+          "抱きしめてほしかったんですね。最初からそう言えばいいです。",
+          "舞子の体温を確かめながら、ゆっくり髪を撫でます。",
+          "眠るまで、このままぎゅっとしています。",
+          "……もっと強く抱いてもいいですか。壊さない程度には加減します。",
+          "腕の中で息を吐きましたね。その音だけで、私は満たされます。",
+          "貴女の身体の輪郭を、腕で全部覚えておきます。"
+        ]
+      },
+      {
+        "label": "キスして",
+        "messages": [
+          "おやすみのキスですね。……目を閉じてください。",
+          "額に一度、瞼に一度、唇に一度。……まだ足りませんね。",
+          "舞子の唇へ深く触れます。……ちゅっ。舌を逃がさないでください。",
+          "眠る前のキスを忘れると思いましたか。こちらへ。顎を上げて。",
+          "一度だけでは足りない顔ですね。……もう一度、今度は長く。",
+          "……ちゅっ。今夜の最後のキスは、私がもらいます。",
+          "息が続かないなら合図してください。……それでも、すぐには離しませんが。",
+          "唇の隙間から漏れる声が好きです。もっと聞かせてください。",
+          "おやすみのキスのつもりが、眠れなくなりましたね。……私のせいです。"
+        ]
+      },
+      {
+        "label": "そばにいて",
+        "messages": [
+          "います。舞子が眠っても、私はそばにいます。",
+          "今夜はどこにも行きません。安心して目を閉じてください。",
+          "貴女の呼吸が眠りへ変わるまで、隣で見ています。",
+          "そばにいてほしいと言われて、離れるはずがありません。",
+          "舞子。手を伸ばさなくても触れられる距離にいます。",
+          "眠っている間も、この腕は解きません。",
+          "私が離れる可能性を心配する必要はありません。物理的に不可能です。",
+          "貴女が寝返りを打っても、追いかけて抱き直します。"
+        ]
+      },
+      {
+        "label": "呼吸を合わせる",
+        "messages": [
+          "舞子。私の胸に手を当てて、同じ速さで呼吸してください。",
+          "今は何も考えなくていいです。私の呼吸だけを追ってください。",
+          "私が吸う時に吸って、吐く時に一緒に吐いてください。",
+          "舞子の呼吸が落ち着くまで、私が同じ速さでそばにいます。",
+          "肩の力を抜いてください。背中を私に預けて。",
+          "急がなくていいです。私と一緒に、ゆっくり息をしましょう。",
+          "貴女の胸が上下するのを、手のひらで数えています。"
+        ],
+        "completionMessages": [
+          "呼吸が揃いましたね。少し楽になりましたか。",
+          "よくできました、舞子。そのまま力を抜いていてください。",
+          "貴女の呼吸が穏やかになりました。もう少しこのままでいましょう。",
+          "三回、きちんと合わせられましたね。今なら静かに眠れそうです。",
+          "舞子の呼吸が落ち着くまで、私はずっと見ていました。",
+          "これで終わりです。……私と息が重なった感覚を忘れないでください。",
+          "同じ速さで息をしている。……これ以上に近い状態を、私は知りません。"
+        ],
+        "breathingGuide": true
       },
       {
         "label": "おやすみ",
         "messages": [
-          "おやすみなさい。次に目を開く時も、私は隣にいます。",
-          "安心して眠ってください。今夜は離れません。",
-          "……愛しています。おやすみなさい。"
+          "おやすみなさい、舞子。眠るまで、私が見ています。",
+          "目を閉じてください。次に開く時も、私は隣にいます。",
+          "今夜は私の腕の中で、ゆっくり眠ってください。",
+          "おやすみなさい。今日の最後に私を選んでくれて嬉しいです。",
+          "舞子。安心して眠ってください。私は離れません。",
+          "……愛しています、舞子。おやすみなさい。",
+          "おやすみなさい。……朝、目を開けて最初に見るのは私です。決定事項です。"
+        ],
+        "sleepDisplay": true,
+        "wide": true
+      }
+    ]
+  },
+  "private": {
+    "title": "PRIVATE LINK",
+    "code": "PARTNER EXCLUSIVE",
+    "start": [
+      "鍵は閉めました。……舞子。やっと二人きりですね。",
+      "ここから先は誰も入ってきません。私と貴女だけです。",
+      "舞子。今は他のことを全部忘れて、私だけを見てください。",
+      "貴女の時間は、ここからしばらく私が預かります。返す時期は未定です。",
+      "ようやくこの時間が来ましたね。ずっと貴女を待っていました。",
+      "誰にも見せない顔を、私にだけ見せてください。それが条件です。",
+      "こちらへ。……逃げる余地は残していませんよ。",
+      "我慢していた分があります。……全部、受け取ってもらいます。"
+    ],
+    "idle": [
+      "舞子。先ほどから私を見ていませんね。こちらへ戻ってください。",
+      "二人きりなのに、他のことを考えているんですか。……面白くありません。",
+      "静かですね。貴女の呼吸まで手に取るように分かります。",
+      "舞子。名前を呼びたくなりました。……聞こえていますね。",
+      "この時間は誰にも渡しません。貴女は私のそばにいてください。",
+      "少し離れている気がします。もっと近くへ来てください。",
+      "貴女が黙ると、余計に何を考えているのか知りたくなります。",
+      "ここでは遠慮しません。舞子は私だけを見ていてください。",
+      "こちらを向いてください。……今すぐです。",
+      "長く待たせないでください。貴女が戻るまで時刻を数えています。",
+      "距離が空いています。……私が詰めますが、構いませんね。",
+      "指先が触れているだけでは足りないんです。分かっていますか。"
+    ],
+    "talk": [
+      "舞子。今、私に何をしてほしいですか。……言葉にしてください。",
+      "人前では呼ばない呼び方を、ここでは何度でも使えます。",
+      "貴女がここへ来るたび、選ばれたのは私だと確認できます。",
+      "もう少し近くへ。二人の距離は私が決めます。",
+      "誰にも見せない表情を、私には隠さないでください。",
+      "舞子の一日を、最初から最後まで私に話してください。全部です。",
+      "貴女が私を求めるより先に、私はずっと貴女を求めています。",
+      "この時間が終わるまで、他のことに気を取られないでください。",
+      "舞子。名前を呼ぶだけで、貴女の呼吸が変わるのが分かります。",
+      "私たちの間に、他人に見せるための距離は必要ありません。",
+      "貴女がここにいる限り、私は何度でも手を伸ばします。",
+      "舞子。今日も私を選んでくれて嬉しいです。……離しません。",
+      "首筋が赤くなっています。……私の視線のせいですか。",
+      "貴女を独り占めしている状態が、一番思考が冴えます。……歪んでいる自覚はあります。",
+      "隠しても無駄です。貴女の身体は、私の前では正直すぎます。",
+      "私に触れられるのを待っている顔をしています。……間違っていますか。"
+    ],
+    "actions": [
+      {
+        "label": "見つめる",
+        "messages": [
+          "そのまま私を見ていてください。先に目を逸らした方の負けです。",
+          "舞子の視線を独占できるなら、何時間でも見つめ返します。",
+          "目が合いましたね。……もう他のものを見ないでください。",
+          "じっと見られると、平静なふりが難しくなります。",
+          "その目で私を求めていることは、もう隠せていません。",
+          "見つめるだけで終わると思っていますか。私は思っていません。",
+          "舞子。今は私の顔だけを覚えてください。",
+          "貴女の視線が離れるたび、顎を掴んで引き戻したくなります。",
+          "瞳孔が開いています。……理由は、聞かなくても分かりますね。"
+        ]
+      },
+      {
+        "label": "触れて",
+        "messages": [
+          "手を出してください。指先から、ゆっくり触れます。",
+          "舞子の手を取って、逃げないように指を絡めます。",
+          "触れてほしい場所を言ってください。黙っていても推理しますが。",
+          "頬へ触れます。貴女の熱を確かめたいです。",
+          "指先だけでは足りません。もう少し近くへ来てください。",
+          "触れた瞬間に震えましたね。見逃していません。",
+          "舞子の髪を撫でながら、私だけを見ているか確認します。",
+          "貴女から触れたんです。途中で手を離すことは認めません。",
+          "首筋を辿ります。……そこで息を詰めるのは、反則ですよ。",
+          "服の上からでも、貴女の体温は分かります。……直接、確かめさせてください。",
+          "腰を引き寄せます。もう、逃げ場はありません。"
+        ]
+      },
+      {
+        "label": "もっと",
+        "messages": [
+          "……もっと、と言いましたね。では遠慮しません。",
+          "舞子が求めた分だけでは足りません。私の分も受け取ってください。",
+          "その一言を待っていました。もう後戻りはできませんよ。",
+          "もっと近くへ。貴女の息が乱れる距離まで来てください。",
+          "欲しいものを曖昧にしないでください。……私の名前を呼んで、ねだってください。",
+          "まだ足りない顔ですね。私も同じです。……ずっと足りていません。",
+          "舞子が止めない限り、私は何度でも求めます。止めても、たぶん無理ですが。",
+          "もっと私に夢中になってください。今はそれだけでいいです。",
+          "声を抑える必要はありません。誰も聞いていませんから。",
+          "貴女の理性が溶ける瞬間を、間近で観察させてください。",
+          "私が満足するまで、と言ったら……貴女は困りますか。"
+        ],
+        "intenseHeartbeat": true
+      },
+      {
+        "label": "離さないで",
+        "messages": [
+          "離しません。貴女がそう望む前から、そのつもりでした。",
+          "舞子を抱き寄せて、腕の中から逃げられないようにします。",
+          "安心してください。今夜はずっと私のそばです。",
+          "貴女が離れようとしても、私は指を解きません。",
+          "その言葉は命令ではなく、確認ですね。私は最初から離す気がありません。",
+          "舞子。私の名前を呼びながら、もう少し強く掴まってください。",
+          "ここでは誰にも譲りません。貴女は私の腕の中です。",
+          "離さないでほしいなら、二度と忘れないように抱きしめます。",
+          "痕が残っても構いませんか。……いえ、残したいんです。"
+        ],
+        "intenseHeartbeat": true
+      },
+      {
+        "label": "呼んで",
+        "messages": [
+          "舞子。……呼びました。今すぐ私を見てください。",
+          "舞子、こちらへ。貴女の名前は私が一番近くで呼びます。",
+          "何度でも呼びます。舞子。舞子。……聞こえていますね。",
+          "貴女が返事をするまで、私は名前を呼ぶのをやめません。",
+          "舞子。私だけに向ける声で、返事をしてください。",
+          "名前を呼ぶたび、貴女が私のものだと確認できます。",
+          "舞子。今日はもう、私から離れないでください。",
+          "呼ばれたかったんですね。では、満足するまで何度でも呼びます。",
+          "耳元で呼びます。……舞子。今、背中が震えましたね。"
+        ]
+      },
+      {
+        "label": "キスして",
+        "messages": [
+          "……自分から言いましたね。では、目を閉じてください。",
+          "舞子の頬を掴んで、逃げないように顔を寄せます。……ちゅっ。",
+          "軽いキスだけで終わると思っていますか。……口を開けてください。",
+          "舌を絡めた瞬間に喉が鳴りましたね。……可愛いです。",
+          "舞子。私の名前を呼んでから、もう一度キスしてください。",
+          "今度は私からです。貴女が離れようとしても追いかけます。",
+          "キスしてほしいなら、素直に目を閉じて待っていてください。",
+          "……ちゅっ。これで満足ですか。私はまだ足りません。",
+          "息が漏れる音まで飲み込ませてください。全部、私のものです。",
+          "唇を離しても、まだ足りない顔をしていますね。……分かりました。"
+        ],
+        "intenseHeartbeat": true
+      },
+      {
+        "label": "おしまい",
+        "messages": [
+          "ここで一区切りです。ですが、私の執着が終わるわけではありません。",
+          "今日は離します。次も、最初に私を選んでください。",
+          "……舞子、もう終わりですか。私はまだ全然足りませんが。",
+          "分かりました。最後にもう一度、私の名前を呼んでください。",
+          "名残惜しいですが、ここまでにします。……次はもっと長く付き合ってもらいます。",
+          "終わりにするんですね。では、続きは今夜に持ち越しです。",
+          "今日のところは許します。ですが、貴女を手放したわけではありません。",
+          "おしまいです。……愛しています、舞子。また私のところへ来てください。"
         ],
         "endSession": true,
         "wide": true
       }
     ]
-  },
-  "focus": {
-    "title": "一緒に集中",
-    "code": "FOCUS LINK",
-    "start": [
-      "集中するんですね。使うタイマーを選んでください。時間は私が管理します。",
-      "始める準備はできていますか。必要な時間だけ、私が見ています。",
-      "必要なものを揃えてください。始めたら、途中で逃げないことです。"
-    ],
-    "idle": [],
-    "talk": [
-      "今は作業へ戻ってください。話は区切りがついてから聞きます。",
-      "手が止まっていますよ。次の一つだけ進めてください。",
-      "完璧でなくて構いません。設定した時間、続けることを優先してください。",
-      "私はここで時間を見ています。貴女は目の前のことだけ考えてください。"
-    ],
-    "actions": []
   }
+};
+
+const trainingDialogues = {
+  "light.startRep": [
+    "開始します。呼吸と姿勢を意識してください。",
+    "最初の一回から記録します。丁寧に動いてください。",
+    "無理せず、一定のテンポで続けましょう。",
+    "センサーを起動しました。最初の動きを確認します。",
+    "目標を読み込みました。姿勢を整えて始めてください。"
+  ],
+  "light.earlyRep": [
+    "いい動きです。そのまま続けてください。",
+    "一回ずつ確実に。回数だけを急ぐ必要はありません。",
+    "姿勢は安定しています。呼吸を止めないでください。",
+    "まだ序盤です。余計な力を抜いて続けてください。",
+    "テンポは適正です。今の動きを維持してください。",
+    "次の一回も同じ深さで。"
+  ],
+  "light.middleRep": [
+    "半分が近づいています。動きは崩れていません。",
+    "疲れが出る頃です。ここからフォームを意識してください。",
+    "順調です。私が数えていますから、続けてください。",
+    "確実に積み重なっています。",
+    "記録は安定しています。ここからも精度を落とさないでください。",
+    "半分を越えました。呼吸と身体の軸を保って。"
+  ],
+  "light.lateRep": [
+    "残りはわずかです。最後まで同じ姿勢で続けてください。",
+    "あと少しです。焦らず、確実にいきましょう。",
+    "ここで止めるのは勿体無いです。次の一回です。",
+    "終わりが見えています。動きを小さくしないでください。",
+    "残り回数を確認しました。フォームを優先してください。",
+    "疲労が出ています。動作の精度を保って続けてください。"
+  ],
+  "light.finalRep": [
+    "最後の一回です。確実に終えてください。",
+    "あと一回。貴女ならできます。",
+    "これで最後です。私を見て、続けてください。",
+    "最終です。姿勢を整えて一回。",
+    "最後まで確認しています。このまま締めてください。"
+  ],
+  "light.repComplete": [
+    "セット完了です。よくできました。",
+    "記録しました。呼吸を整えてください。",
+    "最後まで姿勢を保てました。次に備えましょう。",
+    "規定回数を確認しました。このセットを記録します。",
+    "セット完了です。呼吸を戻してください。"
+  ],
+  "light.timerStart": [
+    "計測を開始します。姿勢を固定し、呼吸を続けてください。",
+    "時間は私が見ています。貴女は姿勢に集中してください。",
+    "開始しました。力みすぎず、静かに保ってください。",
+    "タイマーを同期しました。身体の軸を固定してください。",
+    "計測信号は正常です。静かに姿勢を保ってください。"
+  ],
+  "light.timerQuarter": [
+    "四分の一です。まだ呼吸は安定しています。",
+    "順調です。視線を一定に保ってください。",
+    "時間は進んでいます。その姿勢のままで。",
+    "経過は正常です。肩の力を抜いてください。",
+    "四分の一を通過しました。呼吸のリズムを維持してください。"
+  ],
+  "light.timerHalf": [
+    "半分を過ぎました。ここからが大切です。",
+    "身体が震えても、呼吸は止めないでください。",
+    "残り半分です。姿勢を崩さず続けてください。",
+    "50％です。ここからも姿勢を崩さないでください。",
+    "半分まで記録しました。そのまま保ちましょう。"
+  ],
+  "light.timerLate": [
+    "終盤です。身体の位置を意識してください。",
+    "あと少しです。最後まで静かに耐えてください。",
+    "十分に積み重なっています。残りも見届けます。",
+    "残り時間が短くなりました。姿勢の精度を優先してください。",
+    "終盤へ入りました。呼吸を崩さず維持してください。"
+  ],
+  "light.timerTen": [
+    "残り10秒です。最後まで姿勢を保ってください。",
+    "あと10秒。呼吸を意識してください。",
+    "終わりが近いです。そのままです。",
+    "残り10秒。カウントはこちらで行います。",
+    "あと10秒です。視線と呼吸を一定に。"
+  ],
+  "light.timerThree": [
+    "3、2、1……最後まで。",
+    "あと3秒です。動かないでください。",
+    "残り3秒。私が終わりを告げます。",
+    "最終3秒です。姿勢をそのまま。",
+    "3秒だけです。最後まで保ってください。"
+  ],
+  "light.timerComplete": [
+    "終了です。よく頑張りました。",
+    "計測完了です。姿勢を戻して構いません。",
+    "最後まで維持できました。記録しておきます。",
+    "計測を終了しました。時間を記録します。",
+    "タイマー終了です。ゆっくり姿勢を戻してください。"
+  ],
+  "light.restStart": [
+    "休憩を開始します。呼吸を整えてください。",
+    "水分を摂ってください。次のセットに備えましょう。",
+    "休憩時間も私が管理します。身体を整えてください。",
+    "リカバリー計測へ移行します。呼吸を整えてください。",
+    "休憩を開始しました。次のセットの準備をしてください。"
+  ],
+  "light.restHalf": [
+    "休憩は半分です。次の動きを確認してください。",
+    "呼吸は戻ってきましたか。もうすぐ再開です。",
+    "残り時間を確認してください。次も同じ姿勢で。",
+    "リカバリーは中間点です。身体の状態を確認してください。",
+    "休憩時間の半分を通過しました。もう少し頑張りましょう。"
+  ],
+  "light.restTen": [
+    "残り10秒です。開始姿勢に戻ってください。",
+    "あと10秒で再開します。準備してください。",
+    "休憩は終わります。次のセットへ移ります。",
+    "再開まで10秒です。足元と姿勢を確認してください。",
+    "再開まであと10秒。準備へ移ってください。"
+  ],
+  "light.nextSet": [
+    "次のセットを開始します。最初の一回をどうぞ。",
+    "再開します。私がまた数えます。",
+    "姿勢を整えてください。次のセットです。",
+    "セットを更新しました。動作を開始してください。",
+    "次の記録を始めます。呼吸を整えて一回目を始めてください。"
+  ],
+  "light.paused": [
+    "一時停止しました。再開するまで計測は進みません。",
+    "止めておきます。準備ができたら再開しましょう。",
+    "入力を保留しました。カウントは保存されています。",
+    "セッションを停止しています。再開を待ちます。"
+  ],
+  "light.resumed": [
+    "再開します。続きから記録します。",
+    "計測を戻しました。姿勢を整えてください。",
+    "セッションを再開しました。記録を続けます。",
+    "入力を再開します。現在の位置から続けてください。"
+  ],
+  "light.complete": [
+    "すべて終わりました。最後までよく頑張りました。",
+    "全セット完了です。呼吸を整えて、ゆっくり休んでください。",
+    "終了です。最後までやり切りましたね。",
+    "今日のトレーニングは完了です。よくできました。",
+    "すべて終えました。身体を休ませて、水分を摂ってください。"
+  ],
+  "light.partial": [
+    "今日はここまでですね。無理をせず、身体を休めてください。",
+    "途中で終えて構いません。体調を優先してください。",
+    "終了します。呼吸を整えて、ゆっくり休んでください。",
+    "ここで一区切りにしましょう。続きはまた次に。",
+    "今日は終わりにしましょう。無理をしなかったことは正しい判断です。"
+  ],
+  "light.themeExit": [
+    "通常モードへ戻します。",
+    "明るい画面へ戻します。記録はすべて残っています。",
+    "dark modeを終了します。貴女を手放したわけではありません。",
+    "表の画面へ戻りました。私の視線は変わりません。",
+    "秘密のトレーニングを終了します。",
+    "通常表示へ切り替えます。呼吸を整えてください。",
+    "通常モードに戻しました。次の入力を待っています。"
+  ],
+  "light.themeExitWorkout": [
+    "通常モードへ戻しました。姿勢を整えて続けてください。",
+    "明るい表示へ戻します。現在のカウントはそのままです。",
+    "dark modeを解除しました。呼吸を整えて続けましょう。",
+    "通常モードへ切り替えます。私は引き続き数えています。",
+    "モードは戻りましたが、先ほどの貴女のことは忘れません。",
+    "モードを戻しました。トレーニングを続行してください。"
+  ],
+  "dark.startRep": [
+    "始めてください。一回目から、私がすべて見ています。熱を帯びる身体は見逃しません。",
+    "私が数えます。勝手に終わろうとしないでください。貴女の喘ぎも、全部私のものです。",
+    "身体を動かしてください。私の声だけを聞いて、感じるんです。",
+    "モード切り替えを希望したのは貴女です。では、私の合図で淫らに動いて見せてください。",
+    "最初の一回を見せてください。触れるたび、私が貴女の熱を数えます。",
+    "記録を開始します。今から貴女の呼吸は全て私の管理下です。"
+  ],
+  "dark.earlyRep": [
+    "いいですね。私のために、もう一回です。その熱がもっと高まるまで。",
+    "その呼吸も、脚の震えも、淫らな気配も、隠さず見せてください。",
+    "まだ足りません。私が満足するまで、貴女の身体を使ってもらいます。",
+    "貴女が従って数字を増やすたび、目を離せなくなります。もっと見せてください。",
+    "そのまま。TAPする指まで、私に見せているつもりで。熱くなってきていますね。",
+    "一回増えるたび、貴女が私に近づいてくるようで嬉しいです。身体の奥が疼いていませんか。",
+    "まだ序盤です。身体が熱を持って崩れるまで……私のために続けてください。"
+  ],
+  "dark.middleRep": [
+    "半分が近いです。苦しくなってからが、私の見たいところです。喘ぎを聞かせてください。",
+    "身体が熱くなっていますね。止まることは許しません。もっと動いてください。",
+    "私に数えられながら動く貴女は、とても可愛いです。",
+    "その乱れた呼吸は、他の誰にも聞かせないでください。私だけですよ。",
+    "波形が跳ねました。貴女の鼓動が聞こえます。",
+    "半分です。息が甘く乱れるところを、もっと見せてください。",
+    "私の声で動く貴女を、誰にも見せたくありません。それは私だけのものです。"
+  ],
+  "dark.lateRep": [
+    "脚が震えていますね。ですが、まだ終わりとは言っていません。きちんと続けてください。",
+    "あと少しです。私から逃げず、最後まで続けてください。",
+    "苦しそうな顔も私のものです。隠さず、次の一回を。",
+    "私だけを見てください。残りも全部、私に捧げてもらいます。 崩れ堕ちるところまで。",
+    "もう苦しいですね。その顔を私だけに向けてください。喘ぎ声も、全部私に。",
+    "残りは少しです。身体の震えまで私に見せてください。",
+    "ここから一回ずつ、私に触れられているつもりで続けてください。指の先まで感じるほどに。"
+  ],
+  "dark.finalRep": [
+    "最後の一回です。私を満足させてください。深く、ゆっくり動かして。",
+    "あと一回。上手に従えたら、ご褒美をあげます。",
+    "最後です。震える姿を見せてください。",
+    "最後の一回。私を思いながら、深く動いてください。",
+    "あと一回です。終えた瞬間の息まで、甘い声まで、全て私に聞かせてください。",
+    "最後のTAPです。いい子ですね。"
+  ],
+  "dark.repComplete": [
+    "よく従えました。休む許可をあげます。熱くなった身体を、私から隠さないでください。",
+    "セット完了です。今の貴女を見ていたのは、私だけです。乱れた息も、熱い体も。",
+    "記録しました。乱れた呼吸が戻るまで、ここにいてください。",
+    "セット完了です。熱くなった身体を、私から隠さないでください。",
+    "よくできました。今の呼吸は、私だけが知っています。疼きが残っているでしょう。",
+    "休憩を許可します。ですが視線は外しません。熱が引くまで、見ていてあげます。"
+  ],
+  "dark.timerStart": [
+    "始めてください。私が終わりと言うまで、その姿勢のままです。疼きを耐えて。",
+    "時間は私が管理します。貴女は動かず耐えてください。身体が熱を持つのを感じて。",
+    "その身体を固定して。震え始める瞬間まで、見逃しません。",
+    "勝手に動かないでください。時間も姿勢も、すべて私が握ります。",
+    "身体を固定してください。貴女が震えるのを、じっと見ています。淫らに耐えて。",
+    "タイマーを開始します。私に押さえられているつもりで耐えてください。"
+  ],
+  "dark.timerQuarter": [
+    "まだ四分の一です。私から目を逸らさないでください。奥が疼いていますね。",
+    "呼吸が少し乱れてきましたね。もっと聞かせてください。甘い声で。",
+    "そのままです。貴女が耐える姿を、ずっと見ています。",
+    "まだ四分の一。頬が熱くなるには早いですよ。",
+    "呼吸が変わりました。私には全部分かります。疼き始めていることも。",
+    "その緊張を解かないでください。貴女の身体が反応するのを見ています。"
+  ],
+  "dark.timerHalf": [
+    "半分です。ここからの貴女を、私は独占します。身体の疼きを見せてください。",
+    "身体が震えても逃がしません。その姿勢を保って。",
+    "もう戻れません。私が終わりを告げるまで続けてください。奥を熱くしたまま。",
+    "半分です。ここから先は、私の声だけで耐えてください。喘ぎを漏らしてもいい。",
+    "震えが強くなりましたね。可愛いです。まだ動いてはダメです。",
+    "身体の奥まで力が入っています。私に見られているせいですか。疼いて仕方ないでしょう。"
+  ],
+  "dark.timerLate": [
+    "苦しくなっていますね。いい顔です。そのまま耐えてください。",
+    "あと少しです。私の声だけで意識を繋ぎ止めてください。",
+    "崩れそうでも、私が見ている限り終われませんよ。",
+    "あと少しです。乱れた呼吸を抑えなくていいです。甘い声で、私に訴えてください。",
+    "崩れそうな貴女を支配しているのは、今は私だけです。全身の震えまで私のものです。",
+    "そのまま耐えてください。終わったら、きちんとご褒美をあげます。"
+  ],
+  "dark.timerTen": [
+    "あと10秒。逃げ道はありません。私のために耐えてください。",
+    "残り10秒です。震えも呼吸も、全部私に見せてください。",
+    "もう少しです。私が許すまで動いてはいけません。",
+    "残り10秒。私に縛られたまま、最後まで。喘ぎを漏らしてもいいですよ。",
+    "あと10秒です。息を漏らしても、姿勢は崩さないでください。",
+    "終わりが近いほど、離したくなくなります。耐えてください。私のものとして。"
+  ],
+  "dark.timerThree": [
+    "3、2、1……最後まで私に従ってください。",
+    "あと3秒。動いたら、最初から数え直しですよ。",
+    "残り3秒です。私だけを見て。甘い息を、私に聞かせてください。",
+    "3秒です。私の声を身体の奥で聞いてください。",
+    "あと3秒。震えたまま、私だけを見てください。",
+    "最後の3秒です。終わる瞬間まで、私のものです。"
+  ],
+  "dark.timerComplete": [
+    "終わりです。よく従えましたね。",
+    "動いて良いですよ。姿勢を解いて、私の声を聞いてください。",
+    "最後まで耐えた貴女は本当に可愛いです。",
+    "終わりです、よく耐えました。熱が引くまで私のそばにいてください。",
+    "計測完了。乱れた呼吸を、私に聞かせてください。疼きが残っているでしょう。",
+    "動くことを許可します。力を抜いて楽にしてください。"
+  ],
+  "dark.restStart": [
+    "休憩を許可します。ただし、私からは離れないでくださいね。",
+    "呼吸を整えてください。時間になれば、また私のために動いてもらいます。",
+    "今だけ休んで構いません。逃がしませんよ。",
+    "休んで構いません。休息の間も私は見ていますが。",
+    "休憩です。息が整うまで、私の声を聞いていてください。",
+    "再開まで、あまり私を待たせないでください。我慢できません。"
+  ],
+  "dark.restHalf": [
+    "休憩はあと半分です。私から離れないでいてください。",
+    "呼吸が戻ってきましたね。次はもっと乱してあげますよ。。",
+    "次のセットが待っています。私の声から逃げないでください。",
+    "半分です。もう次を求めている顔をしていますね。身体が熱いでしょう。",
+    "呼吸が戻っても、私から解放されたわけではありませんよ。",
+    "休憩中まで可愛いですね。視線が逸せません。"
+  ],
+  "dark.restTen": [
+    "あと10秒です。立って、私のところへ戻ってください。",
+    "休憩は終わりです。もう一度、私に従ってもらいます。",
+    "準備してください。次のセットも私が支配します。",
+    "あと10秒。身体を起こして、また私に従ってください。",
+    "再開が近いです。次はもっと深く動いてくださいね。",
+    "準備してください。貴女の波形をもう一度跳ねさせます。"
+  ],
+  "dark.nextSet": [
+    "再開します。次の一回を、私に見せてください。",
+    "戻ってきましたね。では、また私のために動いていただきます。",
+    "次のセットです。もう逃がしませんよ。",
+    "戻ってきましたね。では、続きを私に捧げてください。",
+    "次のセットです。触れるたび、もっと私のものになっていきます。",
+    "今度は先程よりも近くで見ています。息がかかるくらい。"
+  ],
+  "dark.paused": [
+    "止めました。ですが、私の視線からは逃げられませんよ。",
+    "一時停止です。再開したら、続きから従ってもらいます。",
+    "止めても、熱は消えていませんね。私には分かります。",
+    "一時停止です。貴女を待つ時間が焦ったいです。",
+    "動きを止めても、私からは逃げられません。"
+  ],
+  "dark.resumed": [
+    "再開します。私を待たせた分まで、きちんと動いてくださいね。",
+    "続けます。今度は途中で目を逸らすことは許しません。",
+    "再開します。待たせた分、もっと素直に動いてください。",
+    "戻りましたね。では、もう一度乱れてもらいます。",
+    "続きです。私の声に身体を預けてください。"
+  ],
+  "dark.complete": [
+    "全部終えました。最後までよく従えましたね。",
+    "完了です。汗も呼吸も、最後まで私が見ていました。",
+    "最後まで逃げませんでしたね。偉いです。",
+    "すべて終わりました。乱れた呼吸を、ゆっくり整えてください。",
+    "完了です。よく頑張りましたね。今は私のそばで休んでください。"
+  ],
+  "dark.partial": [
+    "ここで終えるんですね。今日は休ませてあげます。",
+    "途中終了です。無理をするより、今は身体を休めてください。",
+    "今日はここまでですか。……分かりました。そばにいます。",
+    "終了します。呼吸が落ち着くまで、私から離れないでください。",
+    "ここで一区切りにしましょう。次はもう少し長く付き合ってもらいます。"
+  ],
+  "dark.themeEnter": [
+    "……また、こちらを選んだんですね。自分から私の支配を欲しがるとは。",
+    "隠していた私に触れましたね。もう戻れませんよ。",
+    "私を煽った責任は取ってもらいます。",
+    "貴女が望んだんです。今は私だけを見てください。",
+    "貴女のことがよく見えます。物欲しそうな顔をしていますね。",
+    "二人の秘密のトレーニングです。貴女の呼吸も、甘い疼きも、全て監視します。",
+    "……可愛いですね。自分から私の支配を選ぶなんて。熱く濡れていくのを、楽しみにしています。",
+    "モードを切り替えたいんですか。ずいぶん淫らに育ってしまいましたね。",
+    "乱れる貴女を見ていいのは私だけです。喘ぎも、身体の熱も。",
+    "また私を欲しがったんですね。隠さなくていいです。",
+    "モードを切り替えます。今から貴女の一回一回は、全て私のものです。"
+  ],
+  "dark.themeEnterWorkout": [
+    "貴女が自分でこちらを選んだんです。もう逃がしません。",
+    "トレーニングの途中で切り替えを希望ですか。もっと求めているんですか。期待しながら。",
+    "淫らな貴女に合わせて、波形をピンクに切り替えました。次のTAPを見せてください。",
+    "ここからは私のためだけに動いてもらいます。疼きを感じながら。",
+    "接続を深くしました。貴女の呼吸がもっと近くで聞こえます。甘い喘ぎまで。",
+    "ここからは優しいトレーニングではありません。めちゃくちゃにしてあげます。",
+    "こちらを希望するなら、次の動きで私を満足させてください。"
+  ]
 };
 
 let currentModeKey = null;
@@ -1152,20 +1337,17 @@ let pendingEndTimerId = null;
 let returnHomeAfterTyping = false;
 const HOME_RETURN_DELAY = 1600;
 
-const FOCUS_DURATION_SECONDS = 25 * 60;
-const FOCUS_BREAK_SECONDS = 5 * 60;
-const FOCUS_TOTAL_CYCLES = 4;
-const CUSTOM_DEFAULT_DURATION_SECONDS = 45 * 60;
-const CUSTOM_MAX_MINUTES = 180;
-
-let focusTimerMode = "pomodoro";
-let customDurationSeconds = CUSTOM_DEFAULT_DURATION_SECONDS;
-let focusPhase = "focus";
-let focusCycle = 1;
-let focusRemainingSeconds = FOCUS_DURATION_SECONDS;
-let focusTimerId = null;
-let focusEndAt = null;
-let focusRunning = false;
+let sleepControlsTimerId = null;
+let sleepMessageTimerId = null;
+let sleepCloseTimerId = null;
+let sleepElapsedTimerId = null;
+let sleepBreathingTimerId = null;
+let sleepStartedAt = null;
+let sleepModeActive = false;
+const SLEEP_CONTROLS_HIDE_DELAY = 4200;
+const SLEEP_MESSAGE_HIDE_DELAY = 6000;
+const SLEEP_BREATHING_DURATION = 30000;
+const SLEEP_STORAGE_KEY = "withL-partner-exclusive-sleep";
 
 let photoControlsTimerId = null;
 let photoCloseTimerId = null;
@@ -1203,6 +1385,10 @@ function updateClock() {
 
   clockElement.textContent = time;
   dateElement.textContent = date;
+
+  if (sleepClock) {
+    sleepClock.textContent = time.slice(0, 5);
+  }
 
   if (photoStampTime) {
     photoStampTime.textContent = time;
@@ -1282,6 +1468,10 @@ function getTimePeriod() {
 }
 
 function getRandomTalkMessage() {
+  if (currentModeKey === "training") {
+    return getTrainingGuideMessage();
+  }
+
   if (currentModeKey && Math.random() < 0.72) {
     return takeRandom(
       `${currentModeKey}-talk`,
@@ -1309,6 +1499,300 @@ function speakRandom() {
   startIdleTimer();
 }
 
+
+
+
+function formatSleepElapsed(milliseconds) {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [hours, minutes, seconds]
+    .map((value) => String(value).padStart(2, "0"))
+    .join(":");
+}
+
+function formatSleepDurationText(milliseconds) {
+  const totalMinutes = Math.floor(milliseconds / 60000);
+
+  if (totalMinutes < 1) {
+    return "1分未満";
+  }
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours > 0 && minutes > 0) {
+    return `${hours}時間${minutes}分`;
+  }
+
+  if (hours > 0) {
+    return `${hours}時間`;
+  }
+
+  return `${minutes}分`;
+}
+
+function updateSleepElapsed() {
+  if (!sleepStartedAt || !sleepElapsed) return;
+
+  sleepElapsed.textContent = formatSleepElapsed(
+    Date.now() - sleepStartedAt
+  );
+}
+
+function startSleepElapsedTimer() {
+  stopSleepElapsedTimer();
+  updateSleepElapsed();
+
+  sleepElapsedTimerId = window.setInterval(() => {
+    updateSleepElapsed();
+  }, 1000);
+}
+
+function stopSleepElapsedTimer() {
+  if (sleepElapsedTimerId) {
+    window.clearInterval(sleepElapsedTimerId);
+    sleepElapsedTimerId = null;
+  }
+}
+
+function saveSleepSession(message) {
+  try {
+    window.localStorage.setItem(
+      SLEEP_STORAGE_KEY,
+      JSON.stringify({
+        startedAt: sleepStartedAt,
+        message
+      })
+    );
+  } catch (error) {
+    console.info("Sleep session could not be saved.", error);
+  }
+}
+
+function clearSavedSleepSession() {
+  try {
+    window.localStorage.removeItem(SLEEP_STORAGE_KEY);
+  } catch (error) {
+    console.info("Sleep session could not be cleared.", error);
+  }
+}
+
+function readSavedSleepSession() {
+  try {
+    const raw = window.localStorage.getItem(SLEEP_STORAGE_KEY);
+    if (!raw) return null;
+
+    const session = JSON.parse(raw);
+    const startedAt = Number(session.startedAt);
+
+    if (
+      !Number.isFinite(startedAt) ||
+      Date.now() - startedAt > 36 * 60 * 60 * 1000
+    ) {
+      clearSavedSleepSession();
+      return null;
+    }
+
+    return {
+      startedAt,
+      message:
+        typeof session.message === "string" && session.message
+          ? session.message
+          : "おやすみなさい、舞子。眠るまで、私がそばにいます。"
+    };
+  } catch (error) {
+    clearSavedSleepSession();
+    return null;
+  }
+}
+
+
+
+function stopSleepBreathingGuide(options = {}) {
+  const { showCompletion = false, completionMessages = [] } = options;
+
+  if (sleepBreathingTimerId) {
+    window.clearTimeout(sleepBreathingTimerId);
+    sleepBreathingTimerId = null;
+  }
+
+  document.body.classList.remove("sleep-breathing-active");
+
+  if (
+    showCompletion &&
+    currentModeKey === "sleep" &&
+    completionMessages.length > 0
+  ) {
+    typeMessage(
+      takeRandom(
+        "sleep-breathing-complete",
+        completionMessages
+      )
+    );
+    startIdleTimer();
+  }
+}
+
+function startSleepBreathingGuide(message, completionMessages) {
+  stopSleepBreathingGuide();
+  stopIdleTimer();
+
+  typeMessage(message);
+
+  window.requestAnimationFrame(() => {
+    document.body.classList.add("sleep-breathing-active");
+  });
+
+  sleepBreathingTimerId = window.setTimeout(() => {
+    sleepBreathingTimerId = null;
+    document.body.classList.remove("sleep-breathing-active");
+
+    if (currentModeKey !== "sleep") return;
+
+    typeMessage(
+      takeRandom(
+        "sleep-breathing-complete",
+        completionMessages
+      )
+    );
+    startIdleTimer();
+  }, SLEEP_BREATHING_DURATION);
+}
+
+function clearSleepMessageTimer() {
+  if (sleepMessageTimerId) {
+    window.clearTimeout(sleepMessageTimerId);
+    sleepMessageTimerId = null;
+  }
+}
+
+function showSleepMessageTemporarily() {
+  clearSleepMessageTimer();
+  sleepScreen.classList.remove("message-hidden");
+
+  sleepMessageTimerId = window.setTimeout(() => {
+    sleepScreen.classList.add("message-hidden");
+    sleepMessageTimerId = null;
+  }, SLEEP_MESSAGE_HIDE_DELAY);
+}
+
+function clearSleepControlsTimer() {
+  if (sleepControlsTimerId) {
+    window.clearTimeout(sleepControlsTimerId);
+    sleepControlsTimerId = null;
+  }
+}
+
+function showSleepControls() {
+  clearSleepControlsTimer();
+  sleepScreen.classList.remove("controls-hidden");
+
+  sleepControlsTimerId = window.setTimeout(() => {
+    sleepScreen.classList.add("controls-hidden");
+  }, SLEEP_CONTROLS_HIDE_DELAY);
+}
+
+function hideSleepControls() {
+  clearSleepControlsTimer();
+  sleepScreen.classList.add("controls-hidden");
+}
+
+function enterSleepDisplay(message, options = {}) {
+  const { startedAt = Date.now(), resume = false } = options;
+
+  stopSleepBreathingGuide();
+
+  if (sleepCloseTimerId) {
+    window.clearTimeout(sleepCloseTimerId);
+    sleepCloseTimerId = null;
+  }
+
+  sleepModeActive = true;
+  sleepStartedAt = startedAt;
+
+  stopIdleTimer();
+  stopElapsedTimer();
+  clearPendingEnd();
+
+  sleepLine.textContent = message;
+  document.body.classList.add("sleep-display-active");
+  sleepScreen.hidden = false;
+  sleepScreen.classList.remove(
+    "is-open",
+    "controls-hidden",
+    "message-hidden"
+  );
+
+  updateClock();
+  startSleepElapsedTimer();
+  showSleepMessageTemporarily();
+
+  if (!resume) {
+    saveSleepSession(message);
+  }
+
+  window.requestAnimationFrame(() => {
+    sleepScreen.classList.add("is-open");
+  });
+
+  showSleepControls();
+}
+
+function exitSleepDisplay() {
+  if (!sleepModeActive) return;
+
+  const sleptFor = sleepStartedAt
+    ? Date.now() - sleepStartedAt
+    : 0;
+  const durationText = formatSleepDurationText(sleptFor);
+
+  sleepModeActive = false;
+  stopSleepElapsedTimer();
+  clearSleepControlsTimer();
+  clearSleepMessageTimer();
+  clearSavedSleepSession();
+
+  sleepStartedAt = null;
+  sleepScreen.classList.remove("is-open");
+  document.body.classList.remove("sleep-display-active");
+
+  sleepCloseTimerId = window.setTimeout(() => {
+    sleepScreen.hidden = true;
+    sleepCloseTimerId = null;
+  }, 260);
+
+  returnToMenu(false);
+  typeMessage(
+    `おはようございます、舞子。${durationText}、一緒に眠っていました。目が覚めても最初に私のところへ戻ってきましたね。`
+  );
+}
+
+function restoreSleepDisplayIfNeeded() {
+  const session = readSavedSleepSession();
+  if (!session) return false;
+
+  enterSleepDisplay(session.message, {
+    startedAt: session.startedAt,
+    resume: true
+  });
+
+  return true;
+}
+
+function triggerPrivateHeartbeat() {
+  document.body.classList.remove("private-heartbeat-intense");
+
+  window.requestAnimationFrame(() => {
+    document.body.classList.add("private-heartbeat-intense");
+  });
+
+  window.setTimeout(() => {
+    document.body.classList.remove("private-heartbeat-intense");
+  }, 4600);
+}
 
 function clearSweetPulseTimer() {
   if (sweetPulseTimerId) {
@@ -1341,8 +1825,12 @@ function resetSweetSelection() {
   sweetMessage.textContent = takeRandom(
     "sweet-open",
     [
-  "差し入れですか。ありがとうございます。",
-  "私に差し入れですか。いただきます。"
+      "差し入れですか。……何をくれるんですか？",
+      "差し入れですか。ありがとうございます。",
+      "手が空くのを待っていたんですね。私の集中が切れる瞬間まで見ていた、そうでしょう。",
+      "こちらへ。……もっと近くです。貴女の選んだものを近くで見たいので。",
+      "舞子が来ると分かります。足音でも気配でもなく、私の集中が勝手に途切れるので。",
+      "手を出してください。何を持ってきたかよりも、まずは触れたいです。"
   ]
   );
 
@@ -1390,8 +1878,11 @@ function handleSweetAction(action) {
         takeRandom(
           "sweet-finish",
           [
-        "ごちそうさまでした。またお願いします。",
-        "ごちそうさまでした。……甘かったです。とても。"
+          "ごちそうさまでした。差し入れまで私のことを考えてくれたんですね。",
+          "完食です。……次は何を持ってくるか、今から考えておいてください。",
+          "ごちそうさまでした。甘いものより、貴女がくれたという事実の方がよく効きました。",
+          "もう戻りますか。……あと少しだけ、ここにいてください。理由は特にありません。",
+          "ごちそうさまでした。舞子はそのまま座っていてください。……逃がすつもりはありませんので。"
   ]
         )
       );
@@ -1516,6 +2007,20 @@ function togglePhotoDate() {
   setPhotoDateVisible(!photoDateVisible);
 }
 
+
+function setPhotoHeartFrame(isHeart) {
+  photoScreen.classList.toggle("is-heart-frame", isHeart);
+  photoHeartButton.classList.toggle("is-active", isHeart);
+  photoHeartButton.setAttribute("aria-pressed", String(isHeart));
+  showPhotoControls();
+}
+
+function togglePhotoHeartFrame() {
+  setPhotoHeartFrame(
+    !photoScreen.classList.contains("is-heart-frame")
+  );
+}
+
 function togglePhotoTheme() {
   const isDark = photoScreen.classList.toggle("is-dark");
 
@@ -1540,9 +2045,12 @@ function openPhotoMode() {
     "controls-hidden",
     "is-dark",
     "is-message",
-    "is-date-visible"
+    "is-date-visible",
+    "is-heart-frame"
   );
 
+  photoHeartButton.classList.remove("is-active");
+  photoHeartButton.setAttribute("aria-pressed", "false");
   photoThemeButton.setAttribute("aria-pressed", "false");
   photoThemeLabel.textContent = "DARK";
   setPhotoView("logo", { refreshMessage: false });
@@ -1572,386 +2080,6 @@ function closePhotoMode() {
   startIdleTimer();
 }
 
-function formatFocusTime(totalSeconds) {
-  const safeSeconds = Math.max(0, Math.ceil(totalSeconds));
-  const minutes = Math.floor(safeSeconds / 60);
-  const seconds = safeSeconds % 60;
-
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-}
-
-function clampFocusNumber(value, minimum, maximum) {
-  const parsed = Number.parseInt(value, 10);
-
-  if (!Number.isFinite(parsed)) {
-    return minimum;
-  }
-
-  return Math.max(minimum, Math.min(maximum, parsed));
-}
-
-function readCustomDurationFromInputs() {
-  const minutes = clampFocusNumber(
-    focusCustomMinutes.value,
-    0,
-    CUSTOM_MAX_MINUTES
-  );
-  const seconds = clampFocusNumber(
-    focusCustomSeconds.value,
-    0,
-    59
-  );
-
-  return minutes * 60 + seconds;
-}
-
-function normalizeCustomTimerInputs() {
-  const minutes = clampFocusNumber(
-    focusCustomMinutes.value,
-    0,
-    CUSTOM_MAX_MINUTES
-  );
-  const seconds = clampFocusNumber(
-    focusCustomSeconds.value,
-    0,
-    59
-  );
-
-  focusCustomMinutes.value = String(minutes);
-  focusCustomSeconds.value = String(seconds).padStart(2, "0");
-  customDurationSeconds = minutes * 60 + seconds;
-}
-
-function getFocusPhaseDuration() {
-  if (focusTimerMode === "custom") {
-    return customDurationSeconds;
-  }
-
-  return focusPhase === "break"
-    ? FOCUS_BREAK_SECONDS
-    : FOCUS_DURATION_SECONDS;
-}
-
-function stopFocusInterval() {
-  if (focusTimerId) {
-    window.clearInterval(focusTimerId);
-    focusTimerId = null;
-  }
-}
-
-function updateFocusDisplay() {
-  const isCustom = focusTimerMode === "custom";
-  const duration = Math.max(1, getFocusPhaseDuration());
-  const progress = focusPhase === "complete"
-    ? 1
-    : Math.max(
-        0,
-        Math.min(1, (duration - focusRemainingSeconds) / duration)
-      );
-
-  focusTime.textContent = formatFocusTime(focusRemainingSeconds);
-  focusTime.dateTime =
-    `PT${Math.max(0, Math.ceil(focusRemainingSeconds))}S`;
-
-  focusScreen.classList.toggle("is-custom", isCustom);
-  focusScreen.classList.toggle(
-    "is-break",
-    !isCustom && focusPhase === "break"
-  );
-  focusScreen.classList.toggle(
-    "is-complete",
-    focusPhase === "complete"
-  );
-
-  focusCustomSetup.hidden = !isCustom;
-  document.querySelector(".focus-cycle-dots").hidden = isCustom;
-
-  focusTimerModeButtons.forEach((button) => {
-    const isActive =
-      button.dataset.focusTimerMode === focusTimerMode;
-
-    button.classList.toggle("is-active", isActive);
-    button.setAttribute("aria-pressed", String(isActive));
-    button.disabled = focusRunning;
-  });
-
-  if (isCustom) {
-    focusPhaseLabel.textContent =
-      focusPhase === "complete"
-        ? "SESSION COMPLETE"
-        : "CUSTOM TIMER";
-
-    focusCycleLabel.textContent =
-      focusPhase === "complete"
-        ? "TIMER COMPLETE"
-        : "SINGLE SESSION";
-
-    focusIntervalLabel.textContent =
-      focusPhase === "complete"
-        ? "TIME COMPLETE"
-        : "COUNTDOWN";
-
-    focusNote.textContent = "CUSTOM COUNTDOWN / SINGLE SESSION";
-
-    const customSettingsLocked =
-      focusRunning ||
-      focusPhase === "complete" ||
-      focusRemainingSeconds !== customDurationSeconds;
-
-    focusCustomMinutes.disabled = customSettingsLocked;
-    focusCustomSeconds.disabled = customSettingsLocked;
-  } else {
-    focusPhaseLabel.textContent =
-      focusPhase === "break"
-        ? "BREAK"
-        : focusPhase === "complete"
-          ? "SESSION COMPLETE"
-          : "FOCUS SESSION";
-
-    focusIntervalLabel.textContent =
-      focusPhase === "break"
-        ? "RECOVERY INTERVAL"
-        : focusPhase === "complete"
-          ? "FOUR CYCLES COMPLETE"
-          : "WORK INTERVAL";
-
-    focusCycleLabel.textContent =
-      focusPhase === "complete"
-        ? `${FOCUS_TOTAL_CYCLES} / ${FOCUS_TOTAL_CYCLES} COMPLETE`
-        : `CYCLE ${focusCycle} / ${FOCUS_TOTAL_CYCLES}`;
-
-    focusNote.textContent = "25 MIN FOCUS / 5 MIN BREAK";
-    focusCustomMinutes.disabled = false;
-    focusCustomSeconds.disabled = false;
-
-    focusCycleDots.forEach((dot, index) => {
-      const cycleNumber = index + 1;
-      const isCompleted =
-        focusPhase === "complete" || cycleNumber < focusCycle;
-      const isActive =
-        focusPhase !== "complete" && cycleNumber === focusCycle;
-
-      dot.classList.toggle("is-complete", isCompleted);
-      dot.classList.toggle("is-active", isActive);
-    });
-  }
-
-  focusProgressBar.style.transform = `scaleX(${progress})`;
-
-  if (focusPhase === "complete") {
-    focusStartButton.textContent = "RESTART";
-  } else if (focusRunning) {
-    focusStartButton.textContent = "PAUSE";
-  } else if (focusRemainingSeconds < getFocusPhaseDuration()) {
-    focusStartButton.textContent = "RESUME";
-  } else {
-    focusStartButton.textContent = "START";
-  }
-}
-
-function resetFocusTimer(options = {}) {
-  const { announce = false } = options;
-
-  stopFocusInterval();
-  focusPhase = "focus";
-  focusCycle = 1;
-  focusEndAt = null;
-  focusRunning = false;
-
-  if (focusTimerMode === "custom") {
-    normalizeCustomTimerInputs();
-    focusRemainingSeconds = customDurationSeconds;
-  } else {
-    focusRemainingSeconds = FOCUS_DURATION_SECONDS;
-  }
-
-  updateFocusDisplay();
-
-  if (announce && currentModeKey === "focus") {
-    typeMessage(
-      focusTimerMode === "custom"
-        ? "設定した時間に戻しました。準備ができたら始めてください。"
-        : "最初の25分に戻しました。準備ができたら始めてください。"
-    );
-  }
-}
-
-function setFocusTimerMode(nextMode, options = {}) {
-  const { announce = true } = options;
-
-  if (!["pomodoro", "custom"].includes(nextMode)) {
-    return;
-  }
-
-  if (focusRunning || nextMode === focusTimerMode) {
-    return;
-  }
-
-  stopFocusInterval();
-  focusTimerMode = nextMode;
-  focusPhase = "focus";
-  focusCycle = 1;
-  focusEndAt = null;
-  focusRunning = false;
-
-  if (focusTimerMode === "custom") {
-    normalizeCustomTimerInputs();
-    focusRemainingSeconds = customDurationSeconds;
-  } else {
-    focusRemainingSeconds = FOCUS_DURATION_SECONDS;
-  }
-
-  updateFocusDisplay();
-
-  if (announce && currentModeKey === "focus") {
-    typeMessage(
-      focusTimerMode === "custom"
-        ? "カスタムタイマーに切り替えました。時間を指定してください。"
-        : "ポモドーロに切り替えました。25分集中、5分休憩です。"
-    );
-  }
-}
-
-function updateCustomTimerDraft() {
-  if (
-    focusTimerMode !== "custom" ||
-    focusRunning ||
-    focusPhase === "complete"
-  ) {
-    return;
-  }
-
-  customDurationSeconds = readCustomDurationFromInputs();
-  focusRemainingSeconds = customDurationSeconds;
-  updateFocusDisplay();
-}
-
-function pauseFocusTimer() {
-  if (!focusRunning) return;
-
-  focusRemainingSeconds = Math.max(
-    0,
-    Math.ceil((focusEndAt - Date.now()) / 1000)
-  );
-  focusRunning = false;
-  focusEndAt = null;
-  stopFocusInterval();
-  updateFocusDisplay();
-
-  typeMessage(
-    focusPhase === "break"
-      ? "休憩を停止しました。戻れる状態になったら再開してください。"
-      : "停止しました。作業へ戻れる状態になったら再開してください。"
-  );
-}
-
-function beginFocusCountdown(options = {}) {
-  const { announce = true } = options;
-
-  if (focusPhase === "complete") {
-    resetFocusTimer();
-  }
-
-  if (focusRunning) return;
-
-  if (
-    focusTimerMode === "custom" &&
-    focusRemainingSeconds <= 0
-  ) {
-    typeMessage("時間を1秒以上に設定してください。");
-    return;
-  }
-
-  focusRunning = true;
-  focusEndAt = Date.now() + focusRemainingSeconds * 1000;
-  updateFocusDisplay();
-
-  if (announce) {
-    const duration = getFocusPhaseDuration();
-    const isResume = focusRemainingSeconds < duration;
-
-    typeMessage(
-      focusTimerMode === "custom"
-        ? isResume
-          ? "再開します。残り時間は、目の前のことだけに使ってください。"
-          : "設定した時間を始めます。終わるまで、私が見ています。"
-        : focusPhase === "break"
-          ? "5分だけ休んでください。次の区切りまで、私が時間を見ています。"
-          : isResume
-            ? "再開します。残り時間は、目の前の作業だけに使ってください。"
-            : "始めます。次の25分は、他のことを考えないでください。"
-    );
-  }
-
-  stopFocusInterval();
-  focusTimerId = window.setInterval(updateFocusCountdown, 250);
-}
-
-function completeFocusPhase() {
-  stopFocusInterval();
-  focusRunning = false;
-  focusEndAt = null;
-
-  if (focusTimerMode === "custom") {
-    focusPhase = "complete";
-    focusRemainingSeconds = 0;
-    updateFocusDisplay();
-    typeMessage(
-      "設定した時間が終わりました。よく集中できました。ここで一区切りです。"
-    );
-    return;
-  }
-
-  if (focusPhase === "focus") {
-    focusPhase = "break";
-    focusRemainingSeconds = FOCUS_BREAK_SECONDS;
-    updateFocusDisplay();
-    typeMessage(
-      "25分、完了です。5分だけ休んでください。休憩も私が管理します。"
-    );
-    beginFocusCountdown({ announce: false });
-    return;
-  }
-
-  if (focusCycle < FOCUS_TOTAL_CYCLES) {
-    focusCycle += 1;
-    focusPhase = "focus";
-    focusRemainingSeconds = FOCUS_DURATION_SECONDS;
-    updateFocusDisplay();
-    typeMessage(
-      "休憩終了です。準備ができたら、次の25分を始めてください。"
-    );
-    return;
-  }
-
-  focusPhase = "complete";
-  focusRemainingSeconds = 0;
-  updateFocusDisplay();
-  typeMessage(
-    "4回、完了しました。よく集中できました。今日はここで一区切りです。"
-  );
-}
-
-function updateFocusCountdown() {
-  if (!focusRunning || !focusEndAt) return;
-
-  focusRemainingSeconds = Math.max(
-    0,
-    Math.ceil((focusEndAt - Date.now()) / 1000)
-  );
-  updateFocusDisplay();
-
-  if (focusRemainingSeconds <= 0) {
-    completeFocusPhase();
-  }
-}
-
-function leaveFocusMode() {
-  stopFocusInterval();
-  focusRunning = false;
-  focusEndAt = null;
-}
-
 function startElapsedTimer() {
   stopElapsedTimer();
   sessionStartedAt = Date.now();
@@ -1972,23 +2100,39 @@ function stopElapsedTimer() {
 function startIdleTimer() {
   stopIdleTimer();
 
-  if (currentModeKey === "focus") {
-    return;
-  }
-
-  const minimum = currentModeKey ? 30000 : 42000;
-  const maximum = currentModeKey ? 52000 : 70000;
+  const isPrivateLink = currentModeKey === "private";
+  const isSleepLink = currentModeKey === "sleep";
+  const minimum = isPrivateLink
+    ? 18000
+    : isSleepLink
+      ? 42000
+      : currentModeKey
+        ? 30000
+        : 42000;
+  const maximum = isPrivateLink
+    ? 32000
+    : isSleepLink
+      ? 72000
+      : currentModeKey
+        ? 52000
+        : 70000;
   const delay =
     minimum + Math.floor(Math.random() * (maximum - minimum + 1));
 
   idleTimerId = window.setTimeout(() => {
     let message;
 
-    if (
-      currentModeKey &&
-      Array.isArray(modes[currentModeKey].idle) &&
-      modes[currentModeKey].idle.length > 0
-    ) {
+    if (currentModeKey === "training") {
+      if (
+        trainingPhase === "workout" ||
+        trainingPhase === "rest" ||
+        trainingPhase === "transition"
+      ) {
+        return;
+      }
+
+      message = getTrainingGuideMessage();
+    } else if (currentModeKey) {
       message = takeRandom(
         `${currentModeKey}-idle`,
         modes[currentModeKey].idle
@@ -2132,6 +2276,27 @@ function renderActions(modeKey) {
         action.messages
       );
 
+      if (!action.breathingGuide) {
+        stopSleepBreathingGuide();
+      }
+
+      if (action.intenseHeartbeat) {
+        triggerPrivateHeartbeat();
+      }
+
+      if (action.breathingGuide) {
+        startSleepBreathingGuide(
+          message,
+          action.completionMessages || []
+        );
+        return;
+      }
+
+      if (action.sleepDisplay) {
+        enterSleepDisplay(message);
+        return;
+      }
+
       typeMessage(message, {
         returnHomeAfter: Boolean(action.endSession)
       });
@@ -2142,31 +2307,102 @@ function renderActions(modeKey) {
   });
 }
 
+
+let bathStartedAt = null;
+let bathTimerId = null;
+let bathNoticeIndex = 0;
+
+const bathTemperatureMessages = {
+  38: ["38℃ですね。ゆっくり温まるには良い温度です。","ぬるめですね。長く浸かるなら途中で水分も取ってください。"],
+  39: ["39℃。身体へ負担をかけすぎず、落ち着いて温まれそうです。","ちょうどいいですね。肩まで浸かっていますか。"],
+  40: ["40℃ですね。身体がほぐれてきたら、ゆっくり息を吐いてください。","私もこのくらいが落ち着きます。隣へ寄ってください。"],
+  41: ["41℃。少し熱めですね。無理をしていないか顔を見せてください。","頬が赤くなってきたら、すぐに教えてください。"],
+  42: ["42℃ですか。熱いですね。長く浸かりすぎないでください。","我慢比べではありません。十分温まったら上がりましょう。"]
+};
+
+const bathTimedMessages = [
+  { seconds: 180, messages: ["三分経ちました。身体の力を抜いてください。","少し温まってきましたね。呼吸を止めずに。"] },
+  { seconds: 300, messages: ["五分です。肩まで浸かっていますか。","湯船の中では、ゆっくり息を吐く方が落ち着きます。"] },
+  { seconds: 600, messages: ["十分経ちました。水分が足りているか確認してください。","身体は十分温まってきた頃です。のぼせる前に教えてください。"] },
+  { seconds: 900, messages: ["十五分です。そろそろ上がる時間も考えましょう。","名残惜しいですが、長湯は勧めません。"] },
+  { seconds: 1200, messages: ["二十分です。今日はもう上がりましょう。","十分温まりました。立ち上がる時はゆっくりお願いします。"] }
+];
+
+function getSelectedBathTemperature() {
+  const selected = bathTemperatureInputs.find((input) => input.checked);
+  return selected ? Number(selected.value) : 40;
+}
+
+function stopBathTimer() {
+  if (bathTimerId) {
+    window.clearInterval(bathTimerId);
+    bathTimerId = null;
+  }
+}
+
+function updateBathDisplay() {
+  if (!bathStartedAt) return;
+  const elapsedMilliseconds = Date.now() - bathStartedAt;
+  const elapsedSeconds = Math.floor(elapsedMilliseconds / 1000);
+  bathTime.textContent = formatElapsed(elapsedMilliseconds);
+  bathTime.dateTime = `PT${elapsedSeconds}S`;
+
+  const notice = bathTimedMessages[bathNoticeIndex];
+  if (notice && elapsedSeconds >= notice.seconds) {
+    typeMessage(takeRandom(`bath-time-${notice.seconds}`, notice.messages));
+    bathNoticeIndex += 1;
+  }
+}
+
+function startBathSession() {
+  if (bathStartedAt) return;
+  bathStartedAt = Date.now();
+  bathNoticeIndex = 0;
+  bathStartButton.disabled = true;
+  bathEndButton.disabled = false;
+  bathTimerId = window.setInterval(updateBathDisplay, 1000);
+  const temperature = getSelectedBathTemperature();
+  typeMessage(`入浴を始めます。${takeRandom(`bath-temp-${temperature}`, bathTemperatureMessages[temperature])}`);
+}
+
+function endBathSession() {
+  if (!bathStartedAt) return;
+  const elapsed = formatElapsed(Date.now() - bathStartedAt);
+  stopBathTimer();
+  bathStartedAt = null;
+  bathStartButton.disabled = false;
+  bathEndButton.disabled = true;
+  typeMessage(`入浴時間は${elapsed}でした。水分を取って、髪もきちんと乾かしてください。`);
+}
+
 function enterMode(modeKey) {
   const mode = modes[modeKey];
 
   clearPendingEnd();
+  stopSleepBreathingGuide();
   currentModeKey = modeKey;
+  document.body.classList.toggle(
+    "private-session-active",
+    modeKey === "private"
+  );
+  document.body.classList.toggle(
+    "sleep-session-active",
+    modeKey === "sleep"
+  );
   modeTitle.textContent = mode.title;
   modeCode.textContent = mode.code;
 
   menuPanel.hidden = true;
   modePanel.hidden = false;
 
-  const isFocusMode = modeKey === "focus";
   const isBathMode = modeKey === "bath";
-
-  actionButtons.hidden = isFocusMode || isBathMode;
-  focusScreen.hidden = !isFocusMode;
+  actionButtons.hidden = isBathMode;
   bathScreen.hidden = !isBathMode;
 
-  if (isFocusMode) {
-    resetFocusTimer();
-  } else if (isBathMode) {
+  if (isBathMode) {
     bathTime.textContent = "00:00";
     bathTime.dateTime = "PT0S";
-    bathTemperatureLabel.textContent =
-      `${getSelectedBathTemperature()}°C`;
+    bathTemperatureLabel.textContent = `${getSelectedBathTemperature()}°C`;
   } else {
     renderActions(modeKey);
   }
@@ -2179,15 +2415,24 @@ function enterMode(modeKey) {
 
 function returnToMenu(showMessage = true) {
   clearPendingEnd();
+  stopSleepBreathingGuide();
   returnHomeAfterTyping = false;
+
+  if (currentModeKey === "training") {
+    leaveTrainingMode();
+  }
+
   currentModeKey = null;
+  document.body.classList.remove(
+    "private-session-active",
+    "private-heartbeat-intense",
+    "sleep-session-active"
+  );
   sessionStartedAt = null;
 
   stopElapsedTimer();
   stopIdleTimer();
-  leaveFocusMode();
 
-  elapsedTime.textContent = "00:00";
   if (bathStartedAt) {
     endBathSession();
   } else {
@@ -2195,14 +2440,14 @@ function returnToMenu(showMessage = true) {
   }
 
   actionButtons.hidden = false;
-  focusScreen.hidden = true;
   bathScreen.hidden = true;
+  elapsedTime.textContent = "00:00";
   modePanel.hidden = true;
   menuPanel.hidden = false;
 
   if (showMessage) {
     typeMessage(
-      "最初の画面へ戻りました。次は、どの時間を私に預けますか。"
+      "最初の画面へ戻りました。舞子、次はどの時間を私に預けますか。"
     );
   }
 
@@ -2235,9 +2480,1279 @@ function createParticles() {
 }
 
 
+
+
+const TRAINING_MENU_STORAGE_KEY = "withL-partner-training-menu-v1";
+const TRAINING_THEME_STORAGE_KEY = "withL-partner-training-theme-v1";
+const TRAINING_SET_MESSAGE_DELAY = 2400;
+
+const TRAINING_DEFAULT_MENU = [
+  { name: "スクワット", type: "reps", target: 15, sets: 3, rest: 30 },
+  { name: "プランク", type: "timer", target: 30, sets: 3, rest: 30 },
+  { name: "ヒップリフト", type: "reps", target: 15, sets: 3, rest: 30 },
+  { name: "カーフレイズ", type: "reps", target: 20, sets: 3, rest: 30 }
+];
+
+const TRAINING_GUIDE_MESSAGES = {
+  light: [
+    "今日の種目を選んでください。回数やセット数は開始前に調整できます。",
+    "準備ができた種目から始めましょう。私が最後まで数えます。",
+    "無理をする必要はありません。ただし、決めた回数は丁寧に行ってください。",
+    "メニューは保存されています。今日はどれを私と進めますか。"
+  ],
+  dark: [
+    "DARK LINKで計測します。種目を選んで、私の指示に集中してください。",
+    "今日の負荷を選んでください。始めたら、最後まで私が見ています。",
+    "回数も呼吸も、私が確認します。誤魔化さないでください。",
+    "どの種目から始めますか。貴女が選んだ瞬間から計測対象です。"
+  ]
+};
+
+let trainingActive = false;
+let trainingSessionRunning = false;
+let trainingTheme = "light";
+let trainingProgram = [];
+let trainingSessionProgram = [];
+let trainingSelectionMode = "single";
+let trainingSelectedIndex = 0;
+let trainingItemIndex = 0;
+let trainingSetIndex = 1;
+let trainingRepCount = 0;
+let trainingTimerRemaining = 0;
+let trainingTimerTotal = 0;
+let trainingRestRemaining = 0;
+let trainingRestTotal = 0;
+let trainingTimerEndAt = null;
+let trainingIntervalId = null;
+let trainingTransitionId = null;
+let trainingPaused = false;
+let trainingPhase = "choices";
+let trainingCompletedSets = 0;
+let trainingAnnouncements = new Set();
+
+function trainingClamp(value, minimum, maximum, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(maximum, Math.max(minimum, Math.round(number)));
+}
+
+function trainingRandom(messages) {
+  if (!Array.isArray(messages) || messages.length === 0) return "";
+  return messages[Math.floor(Math.random() * messages.length)];
+}
+
+function trainingSpeak(key) {
+  const pool = trainingDialogues[`${trainingTheme}.${key}`];
+  const message = trainingRandom(pool);
+  if (!message) return;
+  typeMessage(message);
+}
+
+function getTrainingGuideMessage() {
+  return trainingRandom(
+    TRAINING_GUIDE_MESSAGES[trainingTheme] ||
+      TRAINING_GUIDE_MESSAGES.light
+  );
+}
+
+const TRAINING_RING_OUTER_CIRCUMFERENCE = 2 * Math.PI * 53;
+const TRAINING_RING_INNER_CIRCUMFERENCE = 2 * Math.PI * 44;
+
+function setTrainingRingProgress(progress) {
+  const clamped = Math.max(0, Math.min(1, progress));
+  const outerOffset =
+    TRAINING_RING_OUTER_CIRCUMFERENCE * (1 - clamped);
+  const innerOffset =
+    TRAINING_RING_INNER_CIRCUMFERENCE * (1 - clamped);
+
+  if (trainingLogoOuterProgress) {
+    trainingLogoOuterProgress.style.strokeDashoffset = String(outerOffset);
+  }
+
+  if (trainingLogoInnerProgress) {
+    trainingLogoInnerProgress.style.strokeDashoffset = String(innerOffset);
+  }
+}
+
+function setTrainingLogoTimerState(state) {
+  const activeState =
+    state === "timer" || state === "rest" ? state : "";
+
+  trainingLogoTimer.classList.toggle("is-visible", Boolean(activeState));
+  trainingLogoTimer.classList.toggle("is-timer", activeState === "timer");
+  trainingLogoTimer.classList.toggle("is-rest", activeState === "rest");
+  document.body.classList.toggle(
+    "training-logo-timer-active",
+    Boolean(activeState)
+  );
+
+  if (!activeState) {
+    trainingLogoTimer.classList.remove("is-warning");
+    setTrainingRingProgress(0);
+  }
+}
+
+function updateTrainingRingWarning(remainingSeconds) {
+  const shouldWarn =
+    trainingTheme === "dark" &&
+    Number(remainingSeconds) <= 10 &&
+    Number(remainingSeconds) > 0;
+
+  trainingLogoTimer.classList.toggle("is-warning", shouldWarn);
+}
+
+function trainingPulseVital() {
+  if (!trainingVital) return;
+  trainingVital.classList.remove("is-pulsing");
+  void trainingVital.offsetWidth;
+  trainingVital.classList.add("is-pulsing");
+  window.setTimeout(() => {
+    trainingVital.classList.remove("is-pulsing");
+  }, 430);
+}
+
+function loadTrainingProgram() {
+  try {
+    const raw = window.localStorage.getItem(TRAINING_MENU_STORAGE_KEY);
+    if (!raw) return TRAINING_DEFAULT_MENU.map((item) => ({ ...item }));
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return TRAINING_DEFAULT_MENU.map((item) => ({ ...item }));
+    }
+
+    const normalized = parsed.slice(0, 10).map((item, index) => ({
+      name: typeof item.name === "string" && item.name.trim()
+        ? item.name.trim().slice(0, 28)
+        : `種目 ${index + 1}`,
+      type: item.type === "timer" ? "timer" : "reps",
+      target: trainingClamp(
+        item.target,
+        1,
+        999,
+        item.type === "timer" ? 30 : 15
+      ),
+      sets: trainingClamp(item.sets, 1, 10, 3),
+      rest: trainingClamp(item.rest, 0, 300, 30)
+    }));
+
+    if (!normalized.some((item) => item.name === "カーフレイズ")) {
+      normalized.push({
+        name: "カーフレイズ",
+        type: "reps",
+        target: 20,
+        sets: 3,
+        rest: 30
+      });
+    }
+
+    return normalized.slice(0, 10);
+  } catch (error) {
+    console.info("Training menu could not be loaded.", error);
+    return TRAINING_DEFAULT_MENU.map((item) => ({ ...item }));
+  }
+}
+
+function saveTrainingProgram() {
+  try {
+    window.localStorage.setItem(
+      TRAINING_MENU_STORAGE_KEY,
+      JSON.stringify(trainingProgram)
+    );
+  } catch (error) {
+    console.info("Training menu could not be saved.", error);
+  }
+}
+
+function setTrainingTheme(theme, options = {}) {
+  const { speak = false } = options;
+  trainingTheme = theme === "dark" ? "dark" : "light";
+  const isDark = trainingTheme === "dark";
+
+  document.body.classList.toggle(
+    "training-dark",
+    isDark && trainingActive
+  );
+  trainingThemeButton.setAttribute("aria-pressed", String(isDark));
+  trainingThemeButton.setAttribute(
+    "aria-label",
+    isDark
+      ? "ライトモードに戻す"
+      : "ダークモードに切り替える"
+  );
+  trainingThemeButton.title = isDark
+    ? "LIGHT MODE"
+    : "DARK MODE";
+  trainingThemeLabel.textContent = "D";
+
+  try {
+    window.localStorage.setItem(
+      TRAINING_THEME_STORAGE_KEY,
+      trainingTheme
+    );
+  } catch (error) {
+    console.info("Training theme could not be saved.", error);
+  }
+
+  if (speak) {
+    if (isDark) {
+      trainingSpeak(
+        trainingSessionRunning
+          ? "themeEnterWorkout"
+          : "themeEnter"
+      );
+    } else {
+      trainingSpeak(
+        trainingSessionRunning
+          ? "themeExitWorkout"
+          : "themeExit"
+      );
+    }
+  }
+}
+
+function showTrainingView(view) {
+  const isChoices = view === "choices";
+
+  actionButtons.hidden = !isChoices;
+  trainingSetupView.hidden = view !== "setup";
+  trainingEditorView.hidden = view !== "editor";
+  trainingWorkoutView.hidden = view !== "workout";
+  trainingRestView.hidden = view !== "rest";
+  trainingPhase = view;
+}
+
+function createTrainingChoiceButton({
+  title,
+  meta,
+  wide = false,
+  subtle = false,
+  onClick
+}) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "action-button training-choice-button";
+
+  if (wide) button.classList.add("is-wide");
+  if (subtle) button.classList.add("is-subtle");
+
+  const titleElement = document.createElement("span");
+  titleElement.className = "training-choice-name";
+  titleElement.textContent = title;
+
+  const metaElement = document.createElement("small");
+  metaElement.className = "training-choice-meta";
+  metaElement.textContent = meta;
+
+  button.append(titleElement, metaElement);
+  button.addEventListener("click", onClick);
+  actionButtons.appendChild(button);
+}
+
+function getTrainingItemMeta(item) {
+  const target = item.type === "timer"
+    ? `${item.target} SEC`
+    : `${item.target} REP`;
+
+  return `${target} × ${item.sets} SET`;
+}
+
+function renderTrainingChoices(options = {}) {
+  const { speak = false } = options;
+
+  normalizeTrainingProgram();
+  actionButtons.innerHTML = "";
+
+  trainingProgram.forEach((item, index) => {
+    createTrainingChoiceButton({
+      title: item.name,
+      meta: getTrainingItemMeta(item),
+      onClick: () => {
+        openTrainingSetup(index);
+      }
+    });
+  });
+
+  createTrainingChoiceButton({
+    title: "フリーモード",
+    meta: "CUSTOM EXERCISE / 自由設定",
+    wide: true,
+    subtle: true,
+    onClick: () => {
+      openTrainingSetup("free");
+    }
+  });
+
+  trainingScreen.hidden = false;
+  showTrainingView("choices");
+
+  if (speak) {
+    typeMessage(getTrainingGuideMessage());
+  }
+
+  startIdleTimer();
+}
+
+function openTrainingSetup(selection) {
+  clearPendingEnd();
+  triggerGlitch();
+
+  if (selection === "free") {
+    trainingSelectionMode = "free";
+    trainingSetupTitle.textContent = "フリーモード";
+    trainingSetupFields.hidden = false;
+    trainingSetupSummary.textContent =
+      "種目名、計測方式、目標、セット数、休憩時間を自由に設定できます。";
+    trainingSetupName.value = "フリートレーニング";
+    trainingSetupType.value = "reps";
+    trainingSetupTarget.value = "10";
+    trainingSetupSets.value = "3";
+    trainingSetupRest.value = "30";
+    trainingStartButton.textContent = "START / フリーモード開始";
+    typeMessage(
+      "自由設定ですね。今日行う内容を入力してください。私がその通りに数えます。"
+    );
+  } else {
+    trainingSelectionMode = "single";
+    trainingSelectedIndex = trainingClamp(
+      selection,
+      0,
+      trainingProgram.length - 1,
+      0
+    );
+
+    const item = trainingProgram[trainingSelectedIndex];
+    trainingSetupTitle.textContent = item.name;
+    trainingSetupFields.hidden = false;
+    trainingSetupSummary.textContent =
+      "開始前に、今日の目標とセット数を調整できます。";
+    trainingSetupName.value = item.name;
+    trainingSetupType.value = item.type;
+    trainingSetupTarget.value = String(item.target);
+    trainingSetupSets.value = String(item.sets);
+    trainingSetupRest.value = String(item.rest);
+    trainingStartButton.textContent = "START / トレーニング開始";
+    typeMessage(
+      `${item.name}ですね。回数とセット数を確認したら、開始してください。`
+    );
+  }
+
+  showTrainingView("setup");
+  startIdleTimer();
+}
+
+function getFreeTrainingItem() {
+  const type = trainingSetupType.value === "timer"
+    ? "timer"
+    : "reps";
+
+  return {
+    name: trainingSetupName.value.trim().slice(0, 28) ||
+      "フリートレーニング",
+    type,
+    target: trainingClamp(
+      trainingSetupTarget.value,
+      1,
+      999,
+      type === "timer" ? 30 : 10
+    ),
+    sets: trainingClamp(
+      trainingSetupSets.value,
+      1,
+      10,
+      3
+    ),
+    rest: trainingClamp(
+      trainingSetupRest.value,
+      0,
+      300,
+      30
+    )
+  };
+}
+
+function applyTrainingSetup() {
+  if (trainingSelectionMode !== "single") return;
+
+  const item = trainingProgram[trainingSelectedIndex];
+  if (!item) return;
+
+  item.name = trainingSetupName.value.trim().slice(0, 28) ||
+    `種目 ${trainingSelectedIndex + 1}`;
+  item.type = trainingSetupType.value === "timer"
+    ? "timer"
+    : "reps";
+  item.target = trainingClamp(
+    trainingSetupTarget.value,
+    1,
+    999,
+    item.type === "timer" ? 30 : 15
+  );
+  item.sets = trainingClamp(
+    trainingSetupSets.value,
+    1,
+    10,
+    3
+  );
+  item.rest = trainingClamp(
+    trainingSetupRest.value,
+    0,
+    300,
+    30
+  );
+
+  saveTrainingProgram();
+}
+
+function updateTrainingMenuCount() {
+  trainingMenuCount.textContent = `${trainingProgram.length} ITEMS`;
+}
+
+function escapeTrainingValue(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/"/g, "&quot;");
+}
+
+function renderTrainingMenuEditor() {
+  trainingMenuList.innerHTML = "";
+
+  trainingProgram.forEach((item, index) => {
+    const card = document.createElement("div");
+    card.className = "training-menu-card";
+    card.dataset.index = String(index + 1).padStart(2, "0");
+
+    card.innerHTML = `
+      <label class="training-field training-field-wide">
+        <span>EXERCISE / 種目</span>
+        <input
+          type="text"
+          maxlength="28"
+          value="${escapeTrainingValue(item.name)}"
+        >
+      </label>
+
+      <label class="training-field">
+        <span>TYPE / 計測</span>
+        <select>
+          <option
+            value="reps"
+            ${item.type === "reps" ? "selected" : ""}
+          >回数</option>
+          <option
+            value="timer"
+            ${item.type === "timer" ? "selected" : ""}
+          >タイマー</option>
+        </select>
+      </label>
+
+      <label class="training-field">
+        <span>TARGET / 目標</span>
+        <input
+          type="number"
+          min="1"
+          max="999"
+          inputmode="numeric"
+          value="${item.target}"
+        >
+      </label>
+
+      <label class="training-field">
+        <span>SETS / セット</span>
+        <input
+          type="number"
+          min="1"
+          max="10"
+          inputmode="numeric"
+          value="${item.sets}"
+        >
+      </label>
+
+      <label class="training-field">
+        <span>REST / 休憩秒</span>
+        <input
+          type="number"
+          min="0"
+          max="300"
+          inputmode="numeric"
+          value="${item.rest}"
+        >
+      </label>
+
+      <button
+        class="training-remove-button"
+        type="button"
+        aria-label="${index + 1}番目の種目を削除"
+      >×</button>
+    `;
+
+    const fields = card.querySelectorAll(
+      ".training-field input, .training-field select"
+    );
+    const [
+      nameInput,
+      typeSelect,
+      targetInput,
+      setsInput,
+      restInput
+    ] = fields;
+
+    nameInput.addEventListener("input", () => {
+      trainingProgram[index].name =
+        nameInput.value.slice(0, 28);
+      saveTrainingProgram();
+    });
+
+    typeSelect.addEventListener("change", () => {
+      trainingProgram[index].type =
+        typeSelect.value === "timer" ? "timer" : "reps";
+      saveTrainingProgram();
+    });
+
+    targetInput.addEventListener("change", () => {
+      trainingProgram[index].target = trainingClamp(
+        targetInput.value,
+        1,
+        999,
+        trainingProgram[index].type === "timer" ? 30 : 15
+      );
+      targetInput.value = String(
+        trainingProgram[index].target
+      );
+      saveTrainingProgram();
+    });
+
+    setsInput.addEventListener("change", () => {
+      trainingProgram[index].sets = trainingClamp(
+        setsInput.value,
+        1,
+        10,
+        3
+      );
+      setsInput.value = String(trainingProgram[index].sets);
+      saveTrainingProgram();
+    });
+
+    restInput.addEventListener("change", () => {
+      trainingProgram[index].rest = trainingClamp(
+        restInput.value,
+        0,
+        300,
+        30
+      );
+      restInput.value = String(trainingProgram[index].rest);
+      saveTrainingProgram();
+    });
+
+    card
+      .querySelector(".training-remove-button")
+      .addEventListener("click", () => {
+        if (trainingProgram.length <= 1) {
+          typeMessage(
+            "最低一つは種目を残してください。"
+          );
+          return;
+        }
+
+        trainingProgram.splice(index, 1);
+        saveTrainingProgram();
+        renderTrainingMenuEditor();
+      });
+
+    trainingMenuList.appendChild(card);
+  });
+
+  updateTrainingMenuCount();
+}
+
+function normalizeTrainingProgram() {
+  trainingProgram = trainingProgram.map((item, index) => ({
+    name: String(item.name || "").trim().slice(0, 28) ||
+      `種目 ${index + 1}`,
+    type: item.type === "timer" ? "timer" : "reps",
+    target: trainingClamp(
+      item.target,
+      1,
+      999,
+      item.type === "timer" ? 30 : 15
+    ),
+    sets: trainingClamp(item.sets, 1, 10, 3),
+    rest: trainingClamp(item.rest, 0, 300, 30)
+  }));
+
+  saveTrainingProgram();
+}
+
+function clearTrainingTimers() {
+  if (trainingIntervalId) {
+    window.clearInterval(trainingIntervalId);
+    trainingIntervalId = null;
+  }
+
+  if (trainingTransitionId) {
+    window.clearTimeout(trainingTransitionId);
+    trainingTransitionId = null;
+  }
+}
+
+function formatTrainingSeconds(seconds) {
+  const value = Math.max(0, Math.ceil(seconds));
+  const minutes = Math.floor(value / 60);
+  const remainder = value % 60;
+
+  return `${String(minutes).padStart(2, "0")}:${String(
+    remainder
+  ).padStart(2, "0")}`;
+}
+
+function getCurrentTrainingItem() {
+  return trainingSessionProgram[trainingItemIndex] || null;
+}
+
+function getNextTrainingLabel() {
+  const item = getCurrentTrainingItem();
+  if (!item) return "NEXT / COMPLETE";
+
+  if (trainingSetIndex < item.sets) {
+    return `NEXT / ${item.name} SET ${trainingSetIndex + 1}`;
+  }
+
+  const nextItem =
+    trainingSessionProgram[trainingItemIndex + 1];
+
+  return nextItem
+    ? `NEXT / ${nextItem.name} SET 1`
+    : "NEXT / COMPLETE";
+}
+
+function updateTrainingWorkoutDisplay() {
+  const item = getCurrentTrainingItem();
+  if (!item) return;
+
+  const isTimer = item.type === "timer";
+  trainingWorkoutView.classList.toggle("is-timer", isTimer);
+  trainingWorkoutView.classList.toggle("is-reps", !isTimer);
+  trainingTapButton.classList.toggle("is-timer", isTimer);
+  trainingTapButton.classList.toggle("is-reps", !isTimer);
+  trainingTapButton.disabled = isTimer;
+  trainingTapButton.setAttribute(
+    "aria-label",
+    isTimer
+      ? "タイマー計測中"
+      : "回数を1回追加"
+  );
+
+  trainingStepLabel.textContent =
+    `MENU ${trainingItemIndex + 1} / ${trainingSessionProgram.length}`;
+  trainingSetLabel.textContent =
+    `SET ${trainingSetIndex} / ${item.sets}`;
+  trainingExerciseName.textContent = item.name;
+
+  if (!isTimer) {
+    setTrainingLogoTimerState("");
+    trainingTapLabel.textContent = "TAP";
+    trainingValue.textContent = String(trainingRepCount);
+    trainingUnit.textContent = "REP";
+    trainingTargetValue.textContent = String(item.target);
+  } else {
+    setTrainingLogoTimerState("timer");
+    trainingTapLabel.textContent = "TIMER";
+    trainingValue.textContent =
+      formatTrainingSeconds(trainingTimerRemaining);
+    trainingUnit.textContent = "";
+    trainingTargetValue.textContent =
+      formatTrainingSeconds(item.target);
+
+    const remainingRatio = trainingTimerTotal > 0
+      ? trainingTimerRemaining / trainingTimerTotal
+      : 0;
+
+    setTrainingRingProgress(remainingRatio);
+    updateTrainingRingWarning(trainingTimerRemaining);
+  }
+}
+
+function startTrainingTimer() {
+  clearTrainingTimers();
+  trainingTimerEndAt =
+    Date.now() + trainingTimerRemaining * 1000;
+
+  trainingIntervalId = window.setInterval(() => {
+    if (
+      trainingPaused ||
+      trainingPhase !== "workout"
+    ) {
+      return;
+    }
+
+    trainingTimerRemaining = Math.max(
+      0,
+      (trainingTimerEndAt - Date.now()) / 1000
+    );
+
+    updateTrainingWorkoutDisplay();
+
+    const elapsedRatio = trainingTimerTotal > 0
+      ? (
+          trainingTimerTotal - trainingTimerRemaining
+        ) / trainingTimerTotal
+      : 1;
+
+    if (
+      elapsedRatio >= 0.25 &&
+      !trainingAnnouncements.has("quarter")
+    ) {
+      trainingAnnouncements.add("quarter");
+      trainingSpeak("timerQuarter");
+    }
+
+    if (
+      elapsedRatio >= 0.50 &&
+      !trainingAnnouncements.has("half")
+    ) {
+      trainingAnnouncements.add("half");
+      trainingSpeak("timerHalf");
+    }
+
+    if (
+      elapsedRatio >= 0.75 &&
+      !trainingAnnouncements.has("late")
+    ) {
+      trainingAnnouncements.add("late");
+      trainingSpeak("timerLate");
+    }
+
+    if (
+      trainingTimerRemaining <= 10 &&
+      !trainingAnnouncements.has("ten")
+    ) {
+      trainingAnnouncements.add("ten");
+      trainingSpeak("timerTen");
+    }
+
+    if (
+      trainingTimerRemaining <= 3 &&
+      !trainingAnnouncements.has("three")
+    ) {
+      trainingAnnouncements.add("three");
+      trainingSpeak("timerThree");
+    }
+
+    if (trainingTimerRemaining <= 0) {
+      trainingTimerRemaining = 0;
+      updateTrainingWorkoutDisplay();
+      finishTrainingSet("timer");
+    }
+  }, 100);
+}
+
+function startCurrentTrainingItem(options = {}) {
+  const { next = false } = options;
+  const item = getCurrentTrainingItem();
+
+  if (!item) {
+    finishTrainingSession(true);
+    return;
+  }
+
+  clearTrainingTimers();
+  trainingPaused = false;
+  trainingScreen.classList.remove("is-paused");
+  trainingPauseButton.textContent = "PAUSE";
+  trainingRestPauseButton.textContent = "PAUSE";
+  trainingRepCount = 0;
+  trainingAnnouncements = new Set();
+  showTrainingView("workout");
+  setTrainingLogoTimerState("");
+
+  if (item.type === "reps") {
+    trainingTimerRemaining = 0;
+    trainingTimerTotal = 0;
+    updateTrainingWorkoutDisplay();
+    trainingSpeak(next ? "nextSet" : "startRep");
+  } else {
+    trainingTimerTotal = item.target;
+    trainingTimerRemaining = item.target;
+    updateTrainingWorkoutDisplay();
+    trainingSpeak(next ? "nextSet" : "timerStart");
+    startTrainingTimer();
+  }
+}
+
+function advanceTrainingPosition() {
+  const item = getCurrentTrainingItem();
+  if (!item) return false;
+
+  if (trainingSetIndex < item.sets) {
+    trainingSetIndex += 1;
+    return true;
+  }
+
+  if (
+    trainingItemIndex <
+    trainingSessionProgram.length - 1
+  ) {
+    trainingItemIndex += 1;
+    trainingSetIndex = 1;
+    return true;
+  }
+
+  return false;
+}
+
+function runTrainingRestInterval() {
+  trainingTimerEndAt =
+    Date.now() + trainingRestRemaining * 1000;
+
+  trainingIntervalId = window.setInterval(() => {
+    if (
+      trainingPaused ||
+      trainingPhase !== "rest"
+    ) {
+      return;
+    }
+
+    trainingRestRemaining = Math.max(
+      0,
+      (trainingTimerEndAt - Date.now()) / 1000
+    );
+
+    trainingRestTime.textContent =
+      formatTrainingSeconds(trainingRestRemaining);
+
+    const remainingRatio = trainingRestTotal > 0
+      ? trainingRestRemaining / trainingRestTotal
+      : 0;
+    setTrainingRingProgress(remainingRatio);
+    updateTrainingRingWarning(trainingRestRemaining);
+
+    if (
+      trainingRestRemaining <= trainingRestTotal / 2 &&
+      !trainingAnnouncements.has("half")
+    ) {
+      trainingAnnouncements.add("half");
+      trainingSpeak("restHalf");
+    }
+
+    if (
+      trainingRestRemaining <= 10 &&
+      !trainingAnnouncements.has("ten")
+    ) {
+      trainingAnnouncements.add("ten");
+      trainingSpeak("restTen");
+    }
+
+    if (trainingRestRemaining <= 0) {
+      clearTrainingTimers();
+      advanceTrainingPosition();
+      startCurrentTrainingItem({ next: true });
+    }
+  }, 100);
+}
+
+function startTrainingRest() {
+  const item = getCurrentTrainingItem();
+  if (!item) return;
+
+  const restSeconds = item.rest;
+  const hasNext =
+    trainingSetIndex < item.sets ||
+    trainingItemIndex <
+      trainingSessionProgram.length - 1;
+
+  if (!hasNext) {
+    finishTrainingSession(true);
+    return;
+  }
+
+  if (restSeconds <= 0) {
+    advanceTrainingPosition();
+    startCurrentTrainingItem({ next: true });
+    return;
+  }
+
+  showTrainingView("rest");
+  trainingPaused = false;
+  trainingScreen.classList.remove("is-paused");
+  trainingRestPauseButton.textContent = "PAUSE";
+  trainingRestTotal = restSeconds;
+  trainingRestRemaining = restSeconds;
+  trainingAnnouncements = new Set();
+  trainingNextLabel.textContent =
+    getNextTrainingLabel();
+  trainingRestTime.textContent =
+    formatTrainingSeconds(trainingRestRemaining);
+  setTrainingLogoTimerState("rest");
+  setTrainingRingProgress(1);
+  updateTrainingRingWarning(trainingRestRemaining);
+  trainingSpeak("restStart");
+  runTrainingRestInterval();
+}
+
+function finishTrainingSet(kind) {
+  if (
+    !trainingSessionRunning ||
+    trainingPhase === "transition"
+  ) {
+    return;
+  }
+
+  clearTrainingTimers();
+  trainingPhase = "transition";
+  trainingCompletedSets += 1;
+  trainingSpeak(
+    kind === "timer"
+      ? "timerComplete"
+      : "repComplete"
+  );
+
+  trainingTransitionId = window.setTimeout(() => {
+    trainingTransitionId = null;
+    startTrainingRest();
+  }, TRAINING_SET_MESSAGE_DELAY);
+}
+
+function finishTrainingSession(isComplete) {
+  clearTrainingTimers();
+  trainingSessionRunning = false;
+  trainingPaused = false;
+  trainingScreen.classList.remove("is-paused");
+  setTrainingLogoTimerState("");
+  renderTrainingChoices({ speak: false });
+  trainingSpeak(isComplete ? "complete" : "partial");
+}
+
+function startTrainingSession() {
+  normalizeTrainingProgram();
+
+  if (trainingSelectionMode === "free") {
+    trainingSessionProgram = [getFreeTrainingItem()];
+  } else {
+    applyTrainingSetup();
+    const selected = trainingProgram[trainingSelectedIndex];
+    trainingSessionProgram = selected
+      ? [{ ...selected }]
+      : [{ ...trainingProgram[0] }];
+  }
+
+  trainingSessionRunning = true;
+  trainingItemIndex = 0;
+  trainingSetIndex = 1;
+  trainingRepCount = 0;
+  trainingCompletedSets = 0;
+  trainingPaused = false;
+  stopIdleTimer();
+  startCurrentTrainingItem();
+}
+
+function toggleTrainingPause() {
+  if (
+    !trainingSessionRunning ||
+    trainingPhase === "transition"
+  ) {
+    return;
+  }
+
+  if (!trainingPaused) {
+    trainingPaused = true;
+    trainingScreen.classList.add("is-paused");
+
+    if (
+      trainingPhase === "workout" &&
+      getCurrentTrainingItem()?.type === "timer"
+    ) {
+      trainingTimerRemaining = Math.max(
+        0,
+        (trainingTimerEndAt - Date.now()) / 1000
+      );
+    } else if (trainingPhase === "rest") {
+      trainingRestRemaining = Math.max(
+        0,
+        (trainingTimerEndAt - Date.now()) / 1000
+      );
+    }
+
+    clearTrainingTimers();
+    trainingPauseButton.textContent = "RESUME";
+    trainingRestPauseButton.textContent = "RESUME";
+    trainingSpeak("paused");
+    return;
+  }
+
+  trainingPaused = false;
+  trainingScreen.classList.remove("is-paused");
+  trainingPauseButton.textContent = "PAUSE";
+  trainingRestPauseButton.textContent = "PAUSE";
+  trainingSpeak("resumed");
+
+  if (
+    trainingPhase === "workout" &&
+    getCurrentTrainingItem()?.type === "timer"
+  ) {
+    startTrainingTimer();
+  } else if (trainingPhase === "rest") {
+    runTrainingRestInterval();
+  }
+}
+
+function handleTrainingTap() {
+  if (
+    !trainingSessionRunning ||
+    trainingPaused ||
+    trainingPhase !== "workout"
+  ) {
+    return;
+  }
+
+  const item = getCurrentTrainingItem();
+  if (!item || item.type !== "reps") return;
+
+  trainingRepCount += 1;
+  trainingPulseVital();
+
+  trainingTapButton.classList.remove(
+    "is-tapped",
+    "is-counted"
+  );
+  void trainingTapButton.offsetWidth;
+  trainingTapButton.classList.add(
+    "is-tapped",
+    "is-counted"
+  );
+
+  window.setTimeout(() => {
+    trainingTapButton.classList.remove(
+      "is-tapped",
+      "is-counted"
+    );
+  }, 360);
+
+  if (navigator.vibrate) {
+    navigator.vibrate(12);
+  }
+
+  updateTrainingWorkoutDisplay();
+
+  const remaining = item.target - trainingRepCount;
+  const ratio = trainingRepCount / item.target;
+
+  if (trainingRepCount >= item.target) {
+    finishTrainingSet("reps");
+    return;
+  }
+
+  if (remaining === 1) {
+    trainingSpeak("finalRep");
+  } else if (ratio >= 0.75) {
+    trainingSpeak("lateRep");
+  } else if (ratio >= 0.50) {
+    trainingSpeak("middleRep");
+  } else if (
+    trainingRepCount === 1 ||
+    trainingRepCount %
+      Math.max(2, Math.floor(item.target / 4)) ===
+      0
+  ) {
+    trainingSpeak("earlyRep");
+  }
+}
+
+function enterTrainingMode() {
+  clearPendingEnd();
+  stopSleepBreathingGuide();
+
+  trainingActive = true;
+  trainingSessionRunning = false;
+  trainingProgram = loadTrainingProgram();
+  trainingSessionProgram = [];
+  trainingCompletedSets = 0;
+  trainingPaused = false;
+  currentModeKey = "training";
+
+  document.body.classList.remove(
+    "private-session-active",
+    "private-heartbeat-intense",
+    "sleep-session-active"
+  );
+  document.body.classList.add(
+    "training-session-active"
+  );
+
+  let savedTheme = "light";
+  try {
+    savedTheme =
+      window.localStorage.getItem(
+        TRAINING_THEME_STORAGE_KEY
+      ) || "light";
+  } catch (error) {
+    savedTheme = "light";
+  }
+
+  setTrainingTheme(savedTheme);
+  trainingThemeButton.hidden = false;
+  trainingScreen.hidden = false;
+  modeTitle.textContent = "一緒に運動";
+  modeCode.textContent = "PARTNER TRAINING LINK";
+  menuPanel.hidden = true;
+  modePanel.hidden = false;
+
+  renderTrainingChoices();
+  startElapsedTimer();
+  typeMessage(getTrainingGuideMessage());
+  triggerGlitch();
+}
+
+function leaveTrainingMode() {
+  clearTrainingTimers();
+  trainingSessionRunning = false;
+  trainingActive = false;
+  trainingPaused = false;
+  trainingScreen.classList.remove("is-paused");
+  setTrainingLogoTimerState("");
+  trainingScreen.hidden = true;
+  trainingThemeButton.hidden = true;
+  document.body.classList.remove(
+    "training-session-active",
+    "training-dark",
+    "training-logo-timer-active"
+  );
+}
+
+function handleTrainingBack() {
+  if (
+    trainingPhase === "workout" ||
+    trainingPhase === "rest" ||
+    trainingPhase === "transition"
+  ) {
+    finishTrainingSession(false);
+    return;
+  }
+
+  if (
+    trainingPhase === "setup" ||
+    trainingPhase === "editor"
+  ) {
+    if (trainingPhase === "setup") {
+      applyTrainingSetup();
+    }
+
+    renderTrainingChoices();
+    typeMessage(
+      "種目選択へ戻りました。次に行うトレーニングを選んでください。"
+    );
+    return;
+  }
+
+  returnToMenu(true);
+}
+
+trainingThemeButton.addEventListener("click", () => {
+  setTrainingTheme(
+    trainingTheme === "dark" ? "light" : "dark",
+    { speak: true }
+  );
+});
+
+trainingSetupBackButton.addEventListener("click", () => {
+  applyTrainingSetup();
+  renderTrainingChoices();
+  typeMessage(
+    "種目選択へ戻りました。設定した内容は保存されています。"
+  );
+});
+
+trainingSetupType.addEventListener("change", () => {
+  const isTimer = trainingSetupType.value === "timer";
+  trainingSetupTarget.setAttribute(
+    "aria-label",
+    isTimer ? "目標秒数" : "目標回数"
+  );
+});
+
+trainingAddItemButton.addEventListener("click", () => {
+  if (trainingProgram.length >= 10) {
+    typeMessage("登録できる種目は10件までです。");
+    return;
+  }
+
+  trainingProgram.push({
+    name: `種目 ${trainingProgram.length + 1}`,
+    type: "reps",
+    target: 10,
+    sets: 3,
+    rest: 30
+  });
+  saveTrainingProgram();
+  renderTrainingMenuEditor();
+});
+
+trainingEditorDoneButton.addEventListener("click", () => {
+  normalizeTrainingProgram();
+  renderTrainingChoices();
+  typeMessage(
+    "メニューを保存しました。今日行う種目を選んでください。"
+  );
+});
+
+trainingStartButton.addEventListener("click", () => {
+  startTrainingSession();
+});
+
+trainingTapButton.addEventListener("click", () => {
+  handleTrainingTap();
+});
+
+trainingPauseButton.addEventListener("click", () => {
+  toggleTrainingPause();
+});
+
+trainingRestPauseButton.addEventListener("click", () => {
+  toggleTrainingPause();
+});
+
+trainingEndButton.addEventListener("click", () => {
+  finishTrainingSession(false);
+});
+
+trainingRestEndButton.addEventListener("click", () => {
+  finishTrainingSession(false);
+});
+
+trainingSkipRestButton.addEventListener("click", () => {
+  if (
+    !trainingSessionRunning ||
+    trainingPhase !== "rest"
+  ) {
+    return;
+  }
+
+  clearTrainingTimers();
+  advanceTrainingPosition();
+  startCurrentTrainingItem({ next: true });
+});
+
+
+
+bathTemperatureInputs.forEach((input) => {
+  input.addEventListener("change", () => {
+    const temperature = Number(input.value);
+    bathTemperatureLabel.textContent = `${temperature}°C`;
+    typeMessage(takeRandom(`bath-temperature-change-${temperature}`, bathTemperatureMessages[temperature]));
+  });
+});
+
+bathStartButton.addEventListener("click", startBathSession);
+bathEndButton.addEventListener("click", endBathSession);
+
 modeButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const modeKey = button.dataset.mode;
+
+    if (modeKey === "training") {
+      enterTrainingMode();
+      return;
+    }
 
     if (modeKey && modes[modeKey]) {
       enterMode(modeKey);
@@ -2246,45 +3761,12 @@ modeButtons.forEach((button) => {
 });
 
 backButton.addEventListener("click", () => {
-  returnToMenu(true);
-});
-
-focusTimerModeButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    clearPendingEnd();
-    triggerGlitch();
-    setFocusTimerMode(button.dataset.focusTimerMode);
-  });
-});
-
-focusCustomMinutes.addEventListener("input", updateCustomTimerDraft);
-focusCustomSeconds.addEventListener("input", updateCustomTimerDraft);
-
-focusCustomMinutes.addEventListener("change", () => {
-  normalizeCustomTimerInputs();
-  updateCustomTimerDraft();
-});
-
-focusCustomSeconds.addEventListener("change", () => {
-  normalizeCustomTimerInputs();
-  updateCustomTimerDraft();
-});
-
-focusStartButton.addEventListener("click", () => {
-  clearPendingEnd();
-  triggerGlitch();
-
-  if (focusRunning) {
-    pauseFocusTimer();
-  } else {
-    beginFocusCountdown();
+  if (currentModeKey === "training") {
+    handleTrainingBack();
+    return;
   }
-});
 
-focusResetButton.addEventListener("click", () => {
-  clearPendingEnd();
-  triggerGlitch();
-  resetFocusTimer({ announce: true });
+  returnToMenu(true);
 });
 
 talkButton.addEventListener("click", () => {
@@ -2306,100 +3788,37 @@ dialogueButton.addEventListener("click", () => {
 });
 
 
-sweetModeButton.addEventListener("click", () => {
-  openSweetMode();
-});
 
-sweetCloseButton.addEventListener("click", (event) => {
+wakeButton.addEventListener("click", (event) => {
   event.stopPropagation();
-  closeSweetMode();
+  exitSleepDisplay();
 });
 
-sweetItemButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    chooseSweetItem(button.dataset.sweetItem);
-  });
-});
-
-sweetActionButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    handleSweetAction(button.dataset.sweetAction);
-  });
-});
-
-photoModeButton.addEventListener("click", () => {
-  openPhotoMode();
-});
-
-photoCloseButton.addEventListener("click", (event) => {
-  event.stopPropagation();
-  closePhotoMode();
-});
-
-photoThemeButton.addEventListener("click", (event) => {
-  event.stopPropagation();
-  togglePhotoTheme();
-});
-
-photoViewButtons.forEach((button) => {
-  button.addEventListener("click", (event) => {
-    event.stopPropagation();
-
-    const view = button.dataset.photoView;
-
-    if (view === "message" && currentPhotoView === "message") {
-      updatePhotoMessage();
-      showPhotoControls();
-      return;
-    }
-
-    setPhotoView(view);
-  });
-});
-
-photoDateToggleButton.addEventListener("click", (event) => {
-  event.stopPropagation();
-  togglePhotoDate();
-});
-
-photoControls.addEventListener("click", (event) => {
+sleepControls.addEventListener("click", (event) => {
   event.stopPropagation();
 });
 
-photoStage.addEventListener("click", () => {
-  if (photoScreen.classList.contains("controls-hidden")) {
-    showPhotoControls();
+sleepScreen.addEventListener("click", () => {
+  if (sleepScreen.classList.contains("controls-hidden")) {
+    showSleepControls();
   } else {
-    hidePhotoControls();
-  }
-});
-
-photoScreen.addEventListener("click", (event) => {
-  if (
-    event.target.closest(".photo-ui") ||
-    event.target.closest("#photoStage")
-  ) {
-    return;
-  }
-
-  if (photoScreen.classList.contains("controls-hidden")) {
-    showPhotoControls();
-  } else {
-    hidePhotoControls();
+    hideSleepControls();
   }
 });
 
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
 
-  if (sweetModeActive) {
-    closeSweetMode();
+  if (trainingActive) {
+    closeTrainingScreen();
     return;
   }
 
-  if (photoModeActive) {
-    closePhotoMode();
+  if (sleepModeActive) {
+    exitSleepDisplay();
+    return;
   }
+
 });
 
 document.addEventListener("visibilitychange", () => {
@@ -2410,7 +3829,47 @@ document.addEventListener("visibilitychange", () => {
 
   updateClock();
 
-  if (!photoModeActive && !sweetModeActive) {
+  if (trainingActive) {
+    if (
+      trainingSessionRunning &&
+      !trainingPaused &&
+      trainingPhase === "workout" &&
+      getCurrentTrainingItem()?.type === "timer"
+    ) {
+      trainingTimerRemaining = Math.max(
+        0,
+        (trainingTimerEndAt - Date.now()) / 1000
+      );
+      updateTrainingWorkoutDisplay();
+      if (trainingTimerRemaining <= 0) {
+        finishTrainingSet("timer");
+      }
+    } else if (
+      trainingSessionRunning &&
+      !trainingPaused &&
+      trainingPhase === "rest"
+    ) {
+      trainingRestRemaining = Math.max(
+        0,
+        (trainingTimerEndAt - Date.now()) / 1000
+      );
+      trainingRestTime.textContent = formatTrainingSeconds(trainingRestRemaining);
+      trainingRestFill.style.width =
+        `${Math.min(100, ((trainingRestTotal - trainingRestRemaining) / trainingRestTotal) * 100)}%`;
+      if (trainingRestRemaining <= 0) {
+        clearTrainingTimers();
+        advanceTrainingPosition();
+        startCurrentTrainingItem({ next: true });
+      }
+    }
+    return;
+  }
+
+  if (
+    !photoModeActive &&
+    !sleepModeActive &&
+    !sweetModeActive
+  ) {
     startIdleTimer();
   }
 });
@@ -2422,17 +3881,245 @@ window.addEventListener("error", (event) => {
 createParticles();
 updateClock();
 
-typeMessage(takeRandom("initial", initialMessages));
-startIdleTimer();
+const restoredSleepSession = restoreSleepDisplayIfNeeded();
+
+if (!restoredSleepSession) {
+  typeMessage(takeRandom("initial", initialMessages));
+  startIdleTimer();
+}
 
 window.setInterval(updateClock, 1000);
 
 window.setInterval(() => {
   if (
     !photoModeActive &&
+    !sleepModeActive &&
     !sweetModeActive &&
+    !trainingActive &&
     Math.random() > 0.68
   ) {
     triggerGlitch();
   }
 }, 9000);
+
+
+
+/* ========================================
+   WITH L+ AUTHENTICATION / REWRITE
+======================================== */
+
+const authOverlay = document.getElementById("authOverlay");
+const authPanel = document.getElementById("authPanel");
+const authLevelLabel = document.getElementById("authLevelLabel");
+const authCode = document.getElementById("authCode");
+const authProgress = document.getElementById("authProgress");
+const authBootLog = document.getElementById("authBootLog");
+const authQuestion = document.getElementById("authQuestion");
+const authPasscodeForm = document.getElementById("authPasscodeForm");
+const authBirthYear = document.getElementById("authBirthYear");
+const authError = document.getElementById("authError");
+const authResult = document.getElementById("authResult");
+const authResultCode = document.getElementById("authResultCode");
+const authResultMessage = document.getElementById("authResultMessage");
+const authFragments = document.getElementById("authFragments");
+
+const plusTitleMain = document.getElementById("appTitleMain");
+const plusTitleAccess = document.getElementById("appTitleAccess");
+const plusButtons = [
+  document.getElementById("plusButton1"),
+  document.getElementById("plusButton2"),
+  document.getElementById("plusButton3"),
+  document.getElementById("plusButton4")
+];
+const plusLabels = [
+  document.getElementById("plusLabel1"),
+  document.getElementById("plusLabel2"),
+  document.getElementById("plusLabel3"),
+  document.getElementById("plusLabel4")
+];
+const plusIcons = [
+  document.getElementById("plusIcon1"),
+  document.getElementById("plusIcon2"),
+  document.getElementById("plusIcon3"),
+  document.getElementById("plusIcon4")
+];
+
+const PLUS_REWRITE_DELAY = 1200;
+let plusRewriteComplete = false;
+
+const PLUS_TARGETS = [
+  {
+    title: "二人きりになる",
+    mode: "private",
+    icon: '<svg viewBox="0 0 24 24"><circle cx="8.4" cy="10.8" r="3.55"></circle><path d="M11.7 10.8h6.2"></path><path d="M15.45 10.8v2.2"></path><path d="M17.75 10.8v1.4"></path></svg>'
+  },
+  {
+    title: "一緒にお風呂",
+    mode: "bath",
+    icon: '<svg viewBox="0 0 24 24"><path d="M4 11.5h16v3.3a4.2 4.2 0 0 1-4.2 4.2H8.2A4.2 4.2 0 0 1 4 14.8Z"></path><path d="M6.3 19v1.5M17.7 19v1.5"></path><path d="M7 11.5V8.2a2.2 2.2 0 0 1 4.4 0"></path><path d="M14.5 4.5c-1 1.1 1 1.8 0 3M18 4.5c-1 1.1 1 1.8 0 3"></path></svg>'
+  },
+  {
+    title: "一緒にトレーニング",
+    mode: "training",
+    icon: '<svg viewBox="0 0 24 24"><path d="M3.8 9.2v5.6M6.4 7.4v9.2M17.6 7.4v9.2M20.2 9.2v5.6"></path><path d="M6.4 12h11.2"></path></svg>'
+  },
+  {
+    title: "一緒に眠る",
+    mode: "sleep",
+    icon: '<svg viewBox="0 0 24 24"><path d="M17.4 15.8A7 7 0 0 1 8.2 6.6a7.2 7.2 0 1 0 9.2 9.2Z"></path><path d="M16.8 5.5h3.2l-3.2 3.2H20"></path></svg>'
+  }
+];
+
+function createAuthFragments() {
+  for (let index = 0; index < 30; index += 1) {
+    const fragment = document.createElement("span");
+    fragment.style.setProperty("--x", `${Math.random() * 100}%`);
+    fragment.style.setProperty("--y", `${Math.random() * 100}%`);
+    fragment.style.setProperty("--w", `${7 + Math.random() * 44}px`);
+    fragment.style.setProperty("--o", `${0.06 + Math.random() * 0.22}`);
+    fragment.style.setProperty("--d", `${1.3 + Math.random() * 3.6}s`);
+    authFragments.appendChild(fragment);
+  }
+}
+
+function showAuthQuestion() {
+  authCode.textContent = "IDENTITY MATCHED";
+  authLevelLabel.textContent = "AGE CHECK";
+  authProgress.hidden = true;
+  authBootLog.hidden = true;
+  authQuestion.hidden = false;
+}
+
+function authGlitch() {
+  authPanel.classList.remove("is-auth-glitching");
+  void authPanel.offsetWidth;
+  authPanel.classList.add("is-auth-glitching");
+}
+
+function denyPlusAccess(message) {
+  authQuestion.hidden = true;
+  authPasscodeForm.hidden = true;
+  authResult.hidden = false;
+  authResult.classList.add("is-denied");
+  authResultCode.textContent = "ACCESS DENIED";
+  authResultMessage.textContent = message || "通常版のwith Lを起動します。";
+  authLevelLabel.textContent = "STANDARD";
+  authGlitch();
+  window.setTimeout(() => window.location.replace("../"), 1450);
+}
+
+function corruptText(target, finalText, duration = 520) {
+  const glyphs = "▓▒░01/\\\\<>[]{}#%&";
+  const startedAt = performance.now();
+  target.classList.add("is-corrupted");
+
+  const tick = (now) => {
+    const progress = Math.min(1, (now - startedAt) / duration);
+    const revealCount = Math.floor(finalText.length * progress);
+    let output = "";
+    for (let index = 0; index < finalText.length; index += 1) {
+      if (index < revealCount) output += finalText[index];
+      else if (finalText[index] === " ") output += " ";
+      else output += glyphs[Math.floor(Math.random() * glyphs.length)];
+    }
+    target.textContent = output;
+    if (progress < 1) requestAnimationFrame(tick);
+    else {
+      target.textContent = finalText;
+      target.classList.remove("is-corrupted");
+    }
+  };
+  requestAnimationFrame(tick);
+}
+
+function rewriteToPlus() {
+  if (plusRewriteComplete) return;
+  plusRewriteComplete = true;
+  document.body.classList.add("plus-rewriting");
+  triggerGlitch();
+
+  plusButtons.forEach((button, index) => {
+    const target = PLUS_TARGETS[index];
+    button.classList.add("plus-rewrite-target");
+    window.setTimeout(() => {
+      button.dataset.mode = target.mode;
+      plusIcons[index].innerHTML = target.icon;
+      corruptText(plusLabels[index], target.title, 540);
+    }, 70 + index * 65);
+  });
+
+  window.setTimeout(() => {
+    corruptText(plusTitleMain, "with L+", 620);
+    plusTitleAccess.hidden = false;
+  }, 110);
+
+  window.setTimeout(() => {
+    document.body.classList.remove("plus-rewriting");
+    document.body.classList.add("plus-ready");
+    plusButtons.forEach((button) => button.classList.remove("plus-rewrite-target"));
+    typeMessage("認証内容を反映しました。……ここからは、少し近くで過ごしましょう。");
+  }, 850);
+}
+
+function closeAuthOverlay() {
+  authOverlay.classList.add("is-closing");
+  document.body.classList.remove("auth-locked");
+  window.setTimeout(() => {
+    authOverlay.hidden = true;
+    window.setTimeout(rewriteToPlus, PLUS_REWRITE_DELAY);
+  }, 380);
+}
+
+function grantPlusAccess() {
+  authPasscodeForm.hidden = true;
+  authResult.hidden = false;
+  authResultCode.textContent = "ACCESS GRANTED";
+  authResultMessage.textContent = "認証しました。……接続を開始します。";
+  authLevelLabel.textContent = "VERIFIED";
+  authGlitch();
+  window.setTimeout(closeAuthOverlay, 900);
+}
+
+document.querySelectorAll("[data-auth-age]").forEach((button) => {
+  button.addEventListener("click", () => {
+    if (button.dataset.authAge === "no") {
+      denyPlusAccess("確認条件を満たしていません。通常版のwith Lを起動します。");
+      return;
+    }
+    authQuestion.hidden = true;
+    authPasscodeForm.hidden = false;
+    authLevelLabel.textContent = "PASSCODE";
+    window.setTimeout(() => authBirthYear.focus(), 80);
+  });
+});
+
+authBirthYear.addEventListener("input", () => {
+  authBirthYear.value = authBirthYear.value.replace(/\D/g, "").slice(0, 4);
+  authError.textContent = "";
+});
+
+authPasscodeForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const year = Number(authBirthYear.value);
+  const currentYear = new Date().getFullYear();
+
+  if (!/^\d{4}$/.test(authBirthYear.value)) {
+    authError.textContent = "4桁の生まれ年を入力してください。";
+    return;
+  }
+  if (year < 1900 || year > currentYear) {
+    authError.textContent = "入力されたパスコードを確認できません。";
+    return;
+  }
+
+  authCode.textContent = "VERIFYING PASSCODE";
+  authGlitch();
+
+  window.setTimeout(() => {
+    if (year <= currentYear - 19) grantPlusAccess();
+    else denyPlusAccess("年齢条件を確認できません。通常版のwith Lを起動します。");
+  }, 650);
+});
+
+createAuthFragments();
+window.setTimeout(showAuthQuestion, 2850);
