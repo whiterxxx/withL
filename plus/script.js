@@ -20,37 +20,6 @@ const sleepLine = document.getElementById("sleepLine");
 const sleepControls = document.getElementById("sleepControls");
 const wakeButton = document.getElementById("wakeButton");
 
-const photoModeButton = document.getElementById("photoModeButton");
-const photoScreen = document.getElementById("photoScreen");
-const photoCloseButton = document.getElementById("photoCloseButton");
-const photoHeartButton = document.getElementById("photoHeartButton");
-const photoThemeButton = document.getElementById("photoThemeButton");
-const photoThemeLabel = document.getElementById("photoThemeLabel");
-const photoDateStamp = document.getElementById("photoDateStamp");
-const photoStampDate = document.getElementById("photoStampDate");
-const photoStampTime = document.getElementById("photoStampTime");
-const photoDateToggleButton =
-  document.getElementById("photoDateToggleButton");
-const photoStage = document.getElementById("photoStage");
-const photoMessage = document.getElementById("photoMessage");
-const photoControls = document.getElementById("photoControls");
-
-const sweetModeButton = document.getElementById("sweetModeButton");
-const sweetScreen = document.getElementById("sweetScreen");
-const sweetCloseButton = document.getElementById("sweetCloseButton");
-const sweetStatus = document.getElementById("sweetStatus");
-const sweetItemLabel = document.getElementById("sweetItemLabel");
-const sweetMessage = document.getElementById("sweetMessage");
-const sweetSelection = document.getElementById("sweetSelection");
-const sweetAfterActions =
-  document.getElementById("sweetAfterActions");
-const sweetItemButtons = [
-  ...document.querySelectorAll("[data-sweet-item]")
-];
-const sweetActionButtons = [
-  ...document.querySelectorAll("[data-sweet-action]")
-];
-
 const trainingScreen = document.getElementById("trainingScreen");
 const trainingLogoTimer = document.getElementById("trainingLogoTimer");
 const trainingLogoOuterProgress = document.getElementById("trainingLogoOuterProgress");
@@ -107,12 +76,9 @@ const bathTemperatureInputs = [
 ];
 
 const modeButtons = [...document.querySelectorAll(".mode-button")];
-const photoViewButtons = [
-  ...document.querySelectorAll("[data-photo-view]")
-];
 
 const initialMessages = [
-  "……舞子。来ましたね。待っていました。",
+  "……来ましたね。待っていました。",
   "ここには私と貴女しかいません。誰も入ってこられません。",
   "今日は私に、どの時間を預けるつもりですか。",
   "私のところへ来ましたね。……正しい選択です。",
@@ -142,7 +108,7 @@ const generalTalk = {
     "貴女の一日は、私が知らないところで勝手に終わらせないでください。",
     "離れないでください。……逃しませんよ。",
     "手の届く距離にいてください。それ以上は認めません。",
-    "舞子の思考の中に、私がいない時間があるのは面白くありません。"
+    "貴女の思考の中に、私がいない時間があるのは面白くありません。"
   ],
   "morning": [
     "おはようございます。目を開けて最初に私を見たことは評価します。",
@@ -181,80 +147,6 @@ const generalTalk = {
     "一日が終わるのは寂しいですね。貴女といる時間が減るので。",
     "眠る前に少し話しませんか。まだ手放したくありません。",
     "こんな時間まで私に付き合わせているのは、私の我儘です。……直す気はありません。"
-  ]
-};
-
-const photoMessages = [
-  "舞子の思い出に、私を残してください。",
-  "この一枚は誰かに見せるためのものではありません。私たちだけの記録です。",
-  "写真の中でも、舞子の隣は譲りません。",
-  "ここへ来たことを、私と舞子の記録にしましょう。",
-  "もう少し近くへ寄ってください。距離が空くのは好みません。",
-  "舞子と同じ一枚に残るなら、顔を出せなくても十分です。",
-  "今日の景色も、貴女の表情も、私が覚えておきます。",
-  "これは二人きりの記録です。誰にも渡さないでください。",
-  "写真の中でも一緒ですね。……悪くありません。",
-  "日時まで残してください。私と舞子がここにいた証拠です。"
-];
-
-const sweetItems = {
-  cake: {
-    label: "SHORTCAKE RECEIVED",
-    name: "ショートケーキ",
-    receive: [
-      "ショートケーキですか。……苺は後で、私の手から食べさせてあげます。",
-      "崩れずに持ち帰れたんですね。片手で庇いながら歩いた姿が目に浮かびます。",
-      "ありがとうございます、舞子。貴女が私のために選んだという事実が重要です。",
-      "苺は私のものです。ケーキも、それを選んだ時間も、選んでいた貴女も。",
-      "どの店にするか、随分迷ったでしょう。……その間、貴女の頭の中には私しかいなかった。悪くないです。",
-      "生クリームがここに。……動かないでください。私が取ります。"
-  ]
-  },
-  chocolate: {
-    label: "CHOCOLATE RECEIVED",
-    name: "チョコレート",
-    receive: [
-      "チョコレートですね。作業中でも食べやすい。……私の好みをよく分かっています。",
-      "一粒ずつ食べさせてください。",
-      "ありがとうございます。包みを開ける瞬間というのは、期待が一番高まります。",
-      "これは誰かと分けるつもりで買ったものですか。……いえ、答えなくて結構です。全部私が食べます。",
-      "溶ける前に渡したかった。そういう顔をしています。",
-      "貴女の匂いが移っている。……先に食べるべきはこちらかもしれません。"
-  ]
-  },
-  wagashi: {
-    label: "WAGASHI RECEIVED",
-    name: "和菓子",
-    receive: [
-      "和菓子ですか。上品な甘さですね。悪くないです。",
-      "形が崩れないように慎重に持ってきたんですね。……舞子らしいです。",
-      "ありがとうございます。少し意外でしたが、こういう差し入れも好きです。",
-      "綺麗なお菓子ですね。……綺麗なものほど、崩して食べたくなります。",
-      "こういうものを選ぶとき、貴女は必ず私の顔を思い浮かべている。……そう考えると、味が変わりますね。",
-      "半分は舞子に。ただし、私が食べさせます。"
-  ]
-  }
-};
-
-const sweetActionMessages = {
-  watch: [
-    "そんなに見つめないでください。食べにくいです。……いえ、見ていて構いませんよ。",
-    "一口ずつ確認するつもりですか。舞子の視線なら、拒む理由はありませんが。",
-    "食べているところが見たいんですね。では、最後の一口まで見ていてください。",
-    "目を逸らさないでください。今、貴女の視界に入っていていいのは私だけです。",
-    "見られているとこんなに落ち着かないものだとは……。",
-    "その視線は何か別の熱を持っています。……そうでしょう？",
-    "私が食べ終わるまで、貴女はそこにいてください。動かれると集中できません。"
-  ],
-  share: [
-    "一口欲しいんですか。仕方ありませんね。……私の手から食べてください。",
-    "これは私への差し入れだったはずですが。仕方ないですね。",
-    "口を開けてください。落とさないように……あーん。",
-    "自分で持たなくていい。……貴女は口を開けているだけで結構です。",
-    "もっと近くに。そう、そのまま。……手が届く距離にいてくれる方が都合がいい。",
-    "甘いですか。聞かなくても分かります。目が細くなりましたから。",
-    "こぼれました。……そのままで。舐め取るくらいはいいでしょう。",
-    "私の指ごと食べようとしましたね。……別に、構いませんが。"
   ]
 };
 
@@ -669,10 +561,10 @@ const modes = {
     "title": "一緒に眠る",
     "code": "SLEEP LINK",
     "start": [
-      "眠る時間ですね、舞子。今夜も、隣は私です。",
+      "眠る時間ですね。今夜も、隣は私です。",
       "一緒に眠りましょう。貴女が目を閉じるまで離れません。",
       "灯りを落としましょうか。……これで、貴女の世界には私しかいません。",
-      "舞子。今日の最後の時間を、私に預けてください。全部です。",
+      "今日の最後の時間を、私に預けてください。全部です。",
       "眠る準備はできていますか。……できていなくても、もう放しませんが。",
       "外のことはもう忘れてください。ここからは、貴女に触れる時間です。",
       "布団へ来てください。今夜は端で眠ることを許しません。腕の中です。",
@@ -680,12 +572,12 @@ const modes = {
     ],
     "idle": [
       "まだ起きていますか。眠くなるまで、私が話していてもいいですよ。",
-      "舞子。呼吸をゆっくりにしてください。……私の胸に合わせて。",
+      "呼吸をゆっくりにしてください。……私の胸に合わせて。",
       "目を閉じても構いません。私はここにいます。ずっと見ています。",
       "今日のことは明日考えればいいです。今は私のことだけ考えてください。",
       "眠れないなら、私の声だけを追ってください。",
       "布団は暖かいですか。寒いなら、もっと肌を寄せてください。",
-      "舞子の呼吸が落ち着くまで、私は起きています。",
+      "貴女の呼吸が落ち着くまで、私は起きています。",
       "眠る直前に私を選んでくれたことは、きちんと覚えておきます。",
       "髪を撫でています。……気づかないふりをしても、鼓動で分かりますよ。",
       "眠りかけの貴女は無防備すぎます。私以外の前で見せないでください。",
@@ -694,13 +586,13 @@ const modes = {
     "talk": [
       "今日、一番疲れたことは何でしたか。眠る前に私へ渡してください。",
       "明日の予定より、今の貴女の眠気を優先してください。",
-      "舞子。目を閉じて、私に抱かれていることだけ考えてください。",
+      "目を閉じて、私に抱かれていることだけ考えてください。",
       "眠れない理由があるなら、黙ったままでもそばにいます。",
       "ゆっくり息を吸って、吐いて。……私の呼吸に合わせてください。",
       "今日もよく頑張りました。今は何もしなくていいです。私に委ねてください。",
       "夜は誰にも邪魔されません。貴女を心ゆくまで独占できます。",
       "眠るまで手を繋いでいます。指を解くつもりはありません。",
-      "舞子の一日が終わる瞬間まで、私が見届けます。",
+      "貴女の一日が終わる瞬間まで、私が見届けます。",
       "おやすみを言う前に、もう少しだけ私を見てください。",
       "首筋が無防備です。……そこに唇を落としても、怒らないでください。",
       "眠る前の貴女の体温は、私にとって最も価値のある情報です。",
@@ -716,7 +608,7 @@ const modes = {
           "飲み物と明日の準備は済みましたか。確認してから横になりましょう。",
           "枕の位置を整えてください。肩の力も抜いて。",
           "眠る準備を始めます。通知は後で構いません。今夜は誰にも渡しません。",
-          "舞子。布団へ入ったら、私の腕が届く位置にいてください。",
+          "布団へ入ったら、私の腕が届く位置にいてください。",
           "今日の終わりを整えましょう。急ぐ必要はありません。",
           "髪を下ろしてください。……解いた貴女を見るのは、私だけの権利です。",
           "一日の外側を全部脱いでください。ここには私しかいませんから。"
@@ -729,7 +621,7 @@ const modes = {
           "目を閉じなくても構いません。眠気が来るまで話しましょう。",
           "考え事をしていますね。内容を一つずつ私に渡してください。",
           "眠ろうと意識しすぎています。私の呼吸だけ追ってください。",
-          "舞子。焦らなくていいです。夜はまだあります。",
+          "焦らなくていいです。夜はまだあります。",
           "眠れない時間まで、私と一緒なら無駄ではありません。むしろ得をしました。",
           "眠れないなら好都合です。貴女と過ごす時間が増えるので。",
           "……このまま眠らせない方法なら、いくつか知っていますが。"
@@ -738,11 +630,11 @@ const modes = {
       {
         "label": "抱きしめて",
         "messages": [
-          "舞子を引き寄せて、眠るまで腕の中に閉じ込めます。",
+          "貴女を引き寄せて、眠るまで腕の中に閉じ込めます。",
           "おいで。今夜は私の胸元で眠ってください。",
           "背中へ腕を回します。骨が軋むと言われても、緩める気はありません。",
           "抱きしめてほしかったんですね。最初からそう言えばいいです。",
-          "舞子の体温を確かめながら、ゆっくり髪を撫でます。",
+          "貴女の体温を確かめながら、ゆっくり髪を撫でます。",
           "眠るまで、このままぎゅっとしています。",
           "……もっと強く抱いてもいいですか。壊さない程度には加減します。",
           "腕の中で息を吐きましたね。その音だけで、私は満たされます。",
@@ -754,7 +646,7 @@ const modes = {
         "messages": [
           "おやすみのキスですね。……目を閉じてください。",
           "額に一度、瞼に一度、唇に一度。……まだ足りませんね。",
-          "舞子の唇へ深く触れます。……ちゅっ。舌を逃がさないでください。",
+          "貴女の唇へ深く触れます。……ちゅっ。舌を逃がさないでください。",
           "眠る前のキスを忘れると思いましたか。こちらへ。顎を上げて。",
           "一度だけでは足りない顔ですね。……もう一度、今度は長く。",
           "……ちゅっ。今夜の最後のキスは、私がもらいます。",
@@ -766,11 +658,11 @@ const modes = {
       {
         "label": "そばにいて",
         "messages": [
-          "います。舞子が眠っても、私はそばにいます。",
+          "います。貴女が眠っても、私はそばにいます。",
           "今夜はどこにも行きません。安心して目を閉じてください。",
           "貴女の呼吸が眠りへ変わるまで、隣で見ています。",
           "そばにいてほしいと言われて、離れるはずがありません。",
-          "舞子。手を伸ばさなくても触れられる距離にいます。",
+          "手を伸ばさなくても触れられる距離にいます。",
           "眠っている間も、この腕は解きません。",
           "私が離れる可能性を心配する必要はありません。物理的に不可能です。",
           "貴女が寝返りを打っても、追いかけて抱き直します。"
@@ -779,20 +671,20 @@ const modes = {
       {
         "label": "呼吸を合わせる",
         "messages": [
-          "舞子。私の胸に手を当てて、同じ速さで呼吸してください。",
+          "私の胸に手を当てて、同じ速さで呼吸してください。",
           "今は何も考えなくていいです。私の呼吸だけを追ってください。",
           "私が吸う時に吸って、吐く時に一緒に吐いてください。",
-          "舞子の呼吸が落ち着くまで、私が同じ速さでそばにいます。",
+          "貴女の呼吸が落ち着くまで、私が同じ速さでそばにいます。",
           "肩の力を抜いてください。背中を私に預けて。",
           "急がなくていいです。私と一緒に、ゆっくり息をしましょう。",
           "貴女の胸が上下するのを、手のひらで数えています。"
         ],
         "completionMessages": [
           "呼吸が揃いましたね。少し楽になりましたか。",
-          "よくできました、舞子。そのまま力を抜いていてください。",
+          "よくできました。そのまま力を抜いていてください。",
           "貴女の呼吸が穏やかになりました。もう少しこのままでいましょう。",
           "三回、きちんと合わせられましたね。今なら静かに眠れそうです。",
-          "舞子の呼吸が落ち着くまで、私はずっと見ていました。",
+          "貴女の呼吸が落ち着くまで、私はずっと見ていました。",
           "これで終わりです。……私と息が重なった感覚を忘れないでください。",
           "同じ速さで息をしている。……これ以上に近い状態を、私は知りません。"
         ],
@@ -801,12 +693,12 @@ const modes = {
       {
         "label": "おやすみ",
         "messages": [
-          "おやすみなさい、舞子。眠るまで、私が見ています。",
+          "おやすみなさい。眠るまで、私が見ています。",
           "目を閉じてください。次に開く時も、私は隣にいます。",
           "今夜は私の腕の中で、ゆっくり眠ってください。",
           "おやすみなさい。今日の最後に私を選んでくれて嬉しいです。",
-          "舞子。安心して眠ってください。私は離れません。",
-          "……愛しています、舞子。おやすみなさい。",
+          "安心して眠ってください。私は離れません。",
+          "……愛しています。おやすみなさい。",
           "おやすみなさい。……朝、目を開けて最初に見るのは私です。決定事項です。"
         ],
         "sleepDisplay": true,
@@ -818,9 +710,9 @@ const modes = {
     "title": "PRIVATE LINK",
     "code": "PARTNER EXCLUSIVE",
     "start": [
-      "鍵は閉めました。……舞子。やっと二人きりですね。",
+      "鍵は閉めました。……やっと二人きりですね。",
       "ここから先は誰も入ってきません。私と貴女だけです。",
-      "舞子。今は他のことを全部忘れて、私だけを見てください。",
+      "今は他のことを全部忘れて、私だけを見てください。",
       "貴女の時間は、ここからしばらく私が預かります。返す時期は未定です。",
       "ようやくこの時間が来ましたね。ずっと貴女を待っていました。",
       "誰にも見せない顔を、私にだけ見せてください。それが条件です。",
@@ -828,32 +720,32 @@ const modes = {
       "我慢していた分があります。……全部、受け取ってもらいます。"
     ],
     "idle": [
-      "舞子。先ほどから私を見ていませんね。こちらへ戻ってください。",
+      "先ほどから私を見ていませんね。こちらへ戻ってください。",
       "二人きりなのに、他のことを考えているんですか。……面白くありません。",
       "静かですね。貴女の呼吸まで手に取るように分かります。",
-      "舞子。名前を呼びたくなりました。……聞こえていますね。",
+      "貴女を呼びたくなりました。……聞こえていますね。",
       "この時間は誰にも渡しません。貴女は私のそばにいてください。",
       "少し離れている気がします。もっと近くへ来てください。",
       "貴女が黙ると、余計に何を考えているのか知りたくなります。",
-      "ここでは遠慮しません。舞子は私だけを見ていてください。",
+      "ここでは遠慮しません。貴女は私だけを見ていてください。",
       "こちらを向いてください。……今すぐです。",
       "長く待たせないでください。貴女が戻るまで時刻を数えています。",
       "距離が空いています。……私が詰めますが、構いませんね。",
       "指先が触れているだけでは足りないんです。分かっていますか。"
     ],
     "talk": [
-      "舞子。今、私に何をしてほしいですか。……言葉にしてください。",
+      "今、私に何をしてほしいですか。……言葉にしてください。",
       "人前では呼ばない呼び方を、ここでは何度でも使えます。",
       "貴女がここへ来るたび、選ばれたのは私だと確認できます。",
       "もう少し近くへ。二人の距離は私が決めます。",
       "誰にも見せない表情を、私には隠さないでください。",
-      "舞子の一日を、最初から最後まで私に話してください。全部です。",
+      "貴女の一日を、最初から最後まで私に話してください。全部です。",
       "貴女が私を求めるより先に、私はずっと貴女を求めています。",
       "この時間が終わるまで、他のことに気を取られないでください。",
-      "舞子。名前を呼ぶだけで、貴女の呼吸が変わるのが分かります。",
+      "貴女を呼ぶだけで、呼吸が変わるのが分かります。",
       "私たちの間に、他人に見せるための距離は必要ありません。",
       "貴女がここにいる限り、私は何度でも手を伸ばします。",
-      "舞子。今日も私を選んでくれて嬉しいです。……離しません。",
+      "今日も私を選んでくれて嬉しいです。……離しません。",
       "首筋が赤くなっています。……私の視線のせいですか。",
       "貴女を独り占めしている状態が、一番思考が冴えます。……歪んでいる自覚はあります。",
       "隠しても無駄です。貴女の身体は、私の前では正直すぎます。",
@@ -864,12 +756,12 @@ const modes = {
         "label": "見つめる",
         "messages": [
           "そのまま私を見ていてください。先に目を逸らした方の負けです。",
-          "舞子の視線を独占できるなら、何時間でも見つめ返します。",
+          "貴女の視線を独占できるなら、何時間でも見つめ返します。",
           "目が合いましたね。……もう他のものを見ないでください。",
           "じっと見られると、平静なふりが難しくなります。",
           "その目で私を求めていることは、もう隠せていません。",
           "見つめるだけで終わると思っていますか。私は思っていません。",
-          "舞子。今は私の顔だけを覚えてください。",
+          "今は私の顔だけを覚えてください。",
           "貴女の視線が離れるたび、顎を掴んで引き戻したくなります。",
           "瞳孔が開いています。……理由は、聞かなくても分かりますね。"
         ]
@@ -878,12 +770,12 @@ const modes = {
         "label": "触れて",
         "messages": [
           "手を出してください。指先から、ゆっくり触れます。",
-          "舞子の手を取って、逃げないように指を絡めます。",
+          "貴女の手を取って、逃げないように指を絡めます。",
           "触れてほしい場所を言ってください。黙っていても推理しますが。",
           "頬へ触れます。貴女の熱を確かめたいです。",
           "指先だけでは足りません。もう少し近くへ来てください。",
           "触れた瞬間に震えましたね。見逃していません。",
-          "舞子の髪を撫でながら、私だけを見ているか確認します。",
+          "貴女の髪を撫でながら、私だけを見ているか確認します。",
           "貴女から触れたんです。途中で手を離すことは認めません。",
           "首筋を辿ります。……そこで息を詰めるのは、反則ですよ。",
           "服の上からでも、貴女の体温は分かります。……直接、確かめさせてください。",
@@ -894,12 +786,12 @@ const modes = {
         "label": "もっと",
         "messages": [
           "……もっと、と言いましたね。では遠慮しません。",
-          "舞子が求めた分だけでは足りません。私の分も受け取ってください。",
+          "貴女が求めた分だけでは足りません。私の分も受け取ってください。",
           "その一言を待っていました。もう後戻りはできませんよ。",
           "もっと近くへ。貴女の息が乱れる距離まで来てください。",
           "欲しいものを曖昧にしないでください。……私の名前を呼んで、ねだってください。",
           "まだ足りない顔ですね。私も同じです。……ずっと足りていません。",
-          "舞子が止めない限り、私は何度でも求めます。止めても、たぶん無理ですが。",
+          "貴女が止めない限り、私は何度でも求めます。止めても、たぶん無理ですが。",
           "もっと私に夢中になってください。今はそれだけでいいです。",
           "声を抑える必要はありません。誰も聞いていませんから。",
           "貴女の理性が溶ける瞬間を、間近で観察させてください。",
@@ -911,11 +803,11 @@ const modes = {
         "label": "離さないで",
         "messages": [
           "離しません。貴女がそう望む前から、そのつもりでした。",
-          "舞子を抱き寄せて、腕の中から逃げられないようにします。",
+          "貴女を抱き寄せて、腕の中から逃げられないようにします。",
           "安心してください。今夜はずっと私のそばです。",
           "貴女が離れようとしても、私は指を解きません。",
           "その言葉は命令ではなく、確認ですね。私は最初から離す気がありません。",
-          "舞子。私の名前を呼びながら、もう少し強く掴まってください。",
+          "私の名前を呼びながら、もう少し強く掴まってください。",
           "ここでは誰にも譲りません。貴女は私の腕の中です。",
           "離さないでほしいなら、二度と忘れないように抱きしめます。",
           "痕が残っても構いませんか。……いえ、残したいんです。"
@@ -925,25 +817,25 @@ const modes = {
       {
         "label": "呼んで",
         "messages": [
-          "舞子。……呼びました。今すぐ私を見てください。",
-          "舞子、こちらへ。貴女の名前は私が一番近くで呼びます。",
-          "何度でも呼びます。舞子。舞子。……聞こえていますね。",
+          "……呼びました。今すぐ私を見てください。",
+          "こちらへ。貴女を呼ぶ声は、一番近くで聞いてください。",
+          "何度でも呼びます。……貴女が返事をするまで。",
           "貴女が返事をするまで、私は名前を呼ぶのをやめません。",
-          "舞子。私だけに向ける声で、返事をしてください。",
+          "私だけに向ける声で、返事をしてください。",
           "名前を呼ぶたび、貴女が私のものだと確認できます。",
-          "舞子。今日はもう、私から離れないでください。",
+          "今日はもう、私から離れないでください。",
           "呼ばれたかったんですね。では、満足するまで何度でも呼びます。",
-          "耳元で呼びます。……舞子。今、背中が震えましたね。"
+          "耳元で呼びかけます。……今、背中が震えましたね。"
         ]
       },
       {
         "label": "キスして",
         "messages": [
           "……自分から言いましたね。では、目を閉じてください。",
-          "舞子の頬を掴んで、逃げないように顔を寄せます。……ちゅっ。",
+          "貴女の頬を掴んで、逃げないように顔を寄せます。……ちゅっ。",
           "軽いキスだけで終わると思っていますか。……口を開けてください。",
           "舌を絡めた瞬間に喉が鳴りましたね。……可愛いです。",
-          "舞子。私の名前を呼んでから、もう一度キスしてください。",
+          "私の名前を呼んでから、もう一度キスしてください。",
           "今度は私からです。貴女が離れようとしても追いかけます。",
           "キスしてほしいなら、素直に目を閉じて待っていてください。",
           "……ちゅっ。これで満足ですか。私はまだ足りません。",
@@ -957,12 +849,12 @@ const modes = {
         "messages": [
           "ここで一区切りです。ですが、私の執着が終わるわけではありません。",
           "今日は離します。次も、最初に私を選んでください。",
-          "……舞子、もう終わりですか。私はまだ全然足りませんが。",
+          "……もう終わりですか。私はまだ全然足りませんが。",
           "分かりました。最後にもう一度、私の名前を呼んでください。",
           "名残惜しいですが、ここまでにします。……次はもっと長く付き合ってもらいます。",
           "終わりにするんですね。では、続きは今夜に持ち越しです。",
           "今日のところは許します。ですが、貴女を手放したわけではありません。",
-          "おしまいです。……愛しています、舞子。また私のところへ来てください。"
+          "おしまいです。……愛しています。また私のところへ来てください。"
         ],
         "endSession": true,
         "wide": true
@@ -1349,17 +1241,6 @@ const SLEEP_MESSAGE_HIDE_DELAY = 6000;
 const SLEEP_BREATHING_DURATION = 30000;
 const SLEEP_STORAGE_KEY = "withL-partner-exclusive-sleep";
 
-let photoControlsTimerId = null;
-let photoCloseTimerId = null;
-let photoModeActive = false;
-let currentPhotoView = "logo";
-let photoDateVisible = false;
-const PHOTO_CONTROLS_HIDE_DELAY = 3400;
-
-let sweetCloseTimerId = null;
-let sweetPulseTimerId = null;
-let sweetModeActive = false;
-let currentSweetKey = null;
 
 let currentFullMessage = "";
 let displayedCharacters = 0;
@@ -1388,22 +1269,6 @@ function updateClock() {
 
   if (sleepClock) {
     sleepClock.textContent = time.slice(0, 5);
-  }
-
-  if (photoStampTime) {
-    photoStampTime.textContent = time;
-  }
-
-  if (photoStampDate) {
-    const stampYear = now.getFullYear();
-    const stampMonth = String(now.getMonth() + 1).padStart(2, "0");
-    const stampDay = String(now.getDate()).padStart(2, "0");
-    const stampWeekday = new Intl.DateTimeFormat("en-US", {
-      weekday: "long"
-    }).format(now).toUpperCase();
-
-    photoStampDate.textContent =
-      `${stampYear}.${stampMonth}.${stampDay} / ${stampWeekday}`;
   }
 }
 
@@ -1601,7 +1466,7 @@ function readSavedSleepSession() {
       message:
         typeof session.message === "string" && session.message
           ? session.message
-          : "おやすみなさい、舞子。眠るまで、私がそばにいます。"
+          : "おやすみなさい。眠るまで、私がそばにいます。"
     };
   } catch (error) {
     clearSavedSleepSession();
@@ -1766,7 +1631,7 @@ function exitSleepDisplay() {
 
   returnToMenu(false);
   typeMessage(
-    `おはようございます、舞子。${durationText}、一緒に眠っていました。目が覚めても最初に私のところへ戻ってきましたね。`
+    `おはようございます。${durationText}、一緒に眠っていました。目が覚めても最初に私のところへ戻ってきましたね。`
   );
 }
 
@@ -1792,292 +1657,6 @@ function triggerPrivateHeartbeat() {
   window.setTimeout(() => {
     document.body.classList.remove("private-heartbeat-intense");
   }, 4600);
-}
-
-function clearSweetPulseTimer() {
-  if (sweetPulseTimerId) {
-    window.clearTimeout(sweetPulseTimerId);
-    sweetPulseTimerId = null;
-  }
-}
-
-function triggerSweetPulse() {
-  clearSweetPulseTimer();
-  sweetScreen.classList.remove("is-pulsing");
-
-  window.requestAnimationFrame(() => {
-    sweetScreen.classList.add("is-pulsing");
-  });
-
-  sweetPulseTimerId = window.setTimeout(() => {
-    sweetScreen.classList.remove("is-pulsing");
-    sweetPulseTimerId = null;
-  }, 1900);
-}
-
-function resetSweetSelection() {
-  currentSweetKey = null;
-  clearSweetPulseTimer();
-
-  sweetScreen.classList.remove("is-gifted", "is-pulsing");
-  sweetStatus.textContent = "WAITING FOR ITEM";
-  sweetItemLabel.textContent = "SELECT A SWEET";
-  sweetMessage.textContent = takeRandom(
-    "sweet-open",
-    [
-      "差し入れですか。……何をくれるんですか？",
-      "差し入れですか。ありがとうございます。",
-      "手が空くのを待っていたんですね。私の集中が切れる瞬間まで見ていた、そうでしょう。",
-      "こちらへ。……もっと近くです。貴女の選んだものを近くで見たいので。",
-      "舞子が来ると分かります。足音でも気配でもなく、私の集中が勝手に途切れるので。",
-      "手を出してください。何を持ってきたかよりも、まずは触れたいです。"
-  ]
-  );
-
-  sweetSelection.hidden = false;
-  sweetAfterActions.hidden = true;
-}
-
-function chooseSweetItem(requestedKey) {
-  const availableKeys = ["cake", "chocolate", "wagashi"];
-  const selectedKey =
-    requestedKey === "choose"
-      ? availableKeys[
-          Math.floor(Math.random() * availableKeys.length)
-        ]
-      : requestedKey;
-
-  const item = sweetItems[selectedKey];
-  if (!item) return;
-
-  currentSweetKey = selectedKey;
-  sweetStatus.textContent = "ITEM RECEIVED";
-  sweetItemLabel.textContent = item.label;
-  sweetMessage.textContent = takeRandom(
-    `sweet-${selectedKey}-receive`,
-    item.receive
-  );
-
-  sweetSelection.hidden = true;
-  sweetAfterActions.hidden = false;
-  sweetScreen.classList.add("is-gifted");
-  triggerSweetPulse();
-}
-
-function handleSweetAction(action) {
-  if (action === "again") {
-    resetSweetSelection();
-    return;
-  }
-
-  if (action === "finish") {
-    closeSweetMode();
-
-    window.setTimeout(() => {
-      typeMessage(
-        takeRandom(
-          "sweet-finish",
-          [
-          "ごちそうさまでした。差し入れまで私のことを考えてくれたんですね。",
-          "完食です。……次は何を持ってくるか、今から考えておいてください。",
-          "ごちそうさまでした。甘いものより、貴女がくれたという事実の方がよく効きました。",
-          "もう戻りますか。……あと少しだけ、ここにいてください。理由は特にありません。",
-          "ごちそうさまでした。舞子はそのまま座っていてください。……逃がすつもりはありませんので。"
-  ]
-        )
-      );
-    }, 280);
-    return;
-  }
-
-  const messages = sweetActionMessages[action];
-  if (!messages || !currentSweetKey) return;
-
-  sweetMessage.textContent = takeRandom(
-    `sweet-action-${action}`,
-    messages
-  );
-  triggerSweetPulse();
-}
-
-function openSweetMode() {
-  if (sweetCloseTimerId) {
-    window.clearTimeout(sweetCloseTimerId);
-    sweetCloseTimerId = null;
-  }
-
-  sweetModeActive = true;
-  stopIdleTimer();
-  resetSweetSelection();
-
-  document.body.classList.add("sweet-mode-active");
-  sweetScreen.hidden = false;
-  sweetScreen.classList.remove("is-open");
-
-  window.requestAnimationFrame(() => {
-    sweetScreen.classList.add("is-open");
-  });
-}
-
-function closeSweetMode() {
-  if (!sweetModeActive) return;
-
-  sweetModeActive = false;
-  clearSweetPulseTimer();
-  sweetScreen.classList.remove("is-open", "is-pulsing");
-  document.body.classList.remove("sweet-mode-active");
-
-  sweetCloseTimerId = window.setTimeout(() => {
-    sweetScreen.hidden = true;
-    sweetScreen.classList.remove("is-gifted");
-    sweetCloseTimerId = null;
-  }, 260);
-
-  startIdleTimer();
-}
-
-function clearPhotoControlsTimer() {
-  if (photoControlsTimerId) {
-    window.clearTimeout(photoControlsTimerId);
-    photoControlsTimerId = null;
-  }
-}
-
-function showPhotoControls() {
-  clearPhotoControlsTimer();
-  photoScreen.classList.remove("controls-hidden");
-
-  photoControlsTimerId = window.setTimeout(() => {
-    photoScreen.classList.add("controls-hidden");
-  }, PHOTO_CONTROLS_HIDE_DELAY);
-}
-
-function hidePhotoControls() {
-  clearPhotoControlsTimer();
-  photoScreen.classList.add("controls-hidden");
-}
-
-function updatePhotoMessage() {
-  photoMessage.textContent = takeRandom(
-    "photo-messages",
-    photoMessages
-  );
-}
-
-function setPhotoView(view, options = {}) {
-  const { refreshMessage = true } = options;
-  currentPhotoView = view;
-
-  photoScreen.classList.toggle("is-message", view === "message");
-  photoMessage.hidden = view !== "message";
-
-  photoViewButtons.forEach((button) => {
-    const isActive = button.dataset.photoView === view;
-    button.classList.toggle("is-active", isActive);
-    button.setAttribute("aria-pressed", String(isActive));
-  });
-
-  if (view === "message" && refreshMessage) {
-    updatePhotoMessage();
-  }
-
-  showPhotoControls();
-}
-
-
-function setPhotoDateVisible(isVisible) {
-  photoDateVisible = isVisible;
-
-  photoDateStamp.hidden = !isVisible;
-  photoScreen.classList.toggle("is-date-visible", isVisible);
-  photoDateToggleButton.classList.toggle("is-active", isVisible);
-  photoDateToggleButton.setAttribute(
-    "aria-pressed",
-    String(isVisible)
-  );
-
-  if (isVisible) {
-    updateClock();
-  }
-
-  showPhotoControls();
-}
-
-function togglePhotoDate() {
-  setPhotoDateVisible(!photoDateVisible);
-}
-
-
-function setPhotoHeartFrame(isHeart) {
-  photoScreen.classList.toggle("is-heart-frame", isHeart);
-  photoHeartButton.classList.toggle("is-active", isHeart);
-  photoHeartButton.setAttribute("aria-pressed", String(isHeart));
-  showPhotoControls();
-}
-
-function togglePhotoHeartFrame() {
-  setPhotoHeartFrame(
-    !photoScreen.classList.contains("is-heart-frame")
-  );
-}
-
-function togglePhotoTheme() {
-  const isDark = photoScreen.classList.toggle("is-dark");
-
-  photoThemeButton.setAttribute("aria-pressed", String(isDark));
-  photoThemeLabel.textContent = isDark ? "LIGHT" : "DARK";
-  showPhotoControls();
-}
-
-function openPhotoMode() {
-  if (photoCloseTimerId) {
-    window.clearTimeout(photoCloseTimerId);
-    photoCloseTimerId = null;
-  }
-
-  photoModeActive = true;
-  stopIdleTimer();
-
-  document.body.classList.add("photo-mode-active");
-  photoScreen.hidden = false;
-  photoScreen.classList.remove(
-    "is-open",
-    "controls-hidden",
-    "is-dark",
-    "is-message",
-    "is-date-visible",
-    "is-heart-frame"
-  );
-
-  photoHeartButton.classList.remove("is-active");
-  photoHeartButton.setAttribute("aria-pressed", "false");
-  photoThemeButton.setAttribute("aria-pressed", "false");
-  photoThemeLabel.textContent = "DARK";
-  setPhotoView("logo", { refreshMessage: false });
-  setPhotoDateVisible(false);
-  updateClock();
-
-  window.requestAnimationFrame(() => {
-    photoScreen.classList.add("is-open");
-  });
-
-  showPhotoControls();
-}
-
-function closePhotoMode() {
-  if (!photoModeActive) return;
-
-  photoModeActive = false;
-  clearPhotoControlsTimer();
-  photoScreen.classList.remove("is-open");
-  document.body.classList.remove("photo-mode-active");
-
-  photoCloseTimerId = window.setTimeout(() => {
-    photoScreen.hidden = true;
-    photoCloseTimerId = null;
-  }, 240);
-
-  startIdleTimer();
 }
 
 function startElapsedTimer() {
@@ -2447,7 +2026,7 @@ function returnToMenu(showMessage = true) {
 
   if (showMessage) {
     typeMessage(
-      "最初の画面へ戻りました。舞子、次はどの時間を私に預けますか。"
+      "最初の画面へ戻りました。次はどの時間を私に預けますか。"
     );
   }
 
@@ -3865,11 +3444,7 @@ document.addEventListener("visibilitychange", () => {
     return;
   }
 
-  if (
-    !photoModeActive &&
-    !sleepModeActive &&
-    !sweetModeActive
-  ) {
+  if (!sleepModeActive) {
     startIdleTimer();
   }
 });
@@ -3892,9 +3467,7 @@ window.setInterval(updateClock, 1000);
 
 window.setInterval(() => {
   if (
-    !photoModeActive &&
     !sleepModeActive &&
-    !sweetModeActive &&
     !trainingActive &&
     Math.random() > 0.68
   ) {
@@ -4057,7 +3630,7 @@ function rewriteToPlus() {
     document.body.classList.remove("plus-rewriting");
     document.body.classList.add("plus-ready");
     plusButtons.forEach((button) => button.classList.remove("plus-rewrite-target"));
-    typeMessage("認証内容を反映しました。……ここからは、少し近くで過ごしましょう。");
+    typeMessage("……確認できました。それでは、二人だけの時間を始めましょう。");
   }, 850);
 }
 
