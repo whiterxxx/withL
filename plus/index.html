@@ -56,16 +56,49 @@
         <p><span>03</span> ACCESS PROFILE</p>
       </div>
 
+      <div id="authIntro" class="auth-step" hidden>
+        <p class="auth-message">
+          貴女のことを確認させてもらいます。<br>
+          嘘偽りなく答えてください。
+        </p>
+        <button id="authIntroContinue" class="auth-button auth-button-wide" type="button">
+          CONTINUE
+        </button>
+      </div>
+
+      <form id="authAgeForm" class="auth-step" hidden novalidate>
+        <label for="authAge" class="auth-message">今、何歳ですか？</label>
+        <p class="auth-input-note">ENTER YOUR AGE</p>
+        <div class="auth-age-field">
+          <input
+            id="authAge"
+            class="auth-passcode auth-age-input"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            maxlength="3"
+            pattern="[0-9]{1,3}"
+            placeholder="--"
+            aria-label="現在の年齢"
+          >
+          <span>AGE</span>
+        </div>
+        <button class="auth-button auth-button-wide" type="submit">SUBMIT</button>
+        <p id="authAgeError" class="auth-error" role="alert"></p>
+      </form>
+
       <div id="authQuestion" class="auth-step" hidden>
-        <p class="auth-message">貴女のことを確認させてください。<br>……18歳以上ですか？</p>
+        <p class="auth-message">
+          18歳以上ですか？
+        </p>
         <div class="auth-choice-grid">
-          <button class="auth-button" type="button" data-auth-age="yes">YES</button>
-          <button class="auth-button auth-button-muted" type="button" data-auth-age="no">NO</button>
+          <button class="auth-button" type="button" data-auth-age-confirm="yes">YES</button>
+          <button class="auth-button auth-button-muted" type="button" data-auth-age-confirm="no">NO</button>
         </div>
       </div>
 
       <form id="authPasscodeForm" class="auth-step" hidden novalidate>
-        <label for="authBirthYear" class="auth-message">パスコードは貴女の生まれ年です。</label>
+        <label for="authBirthYear" class="auth-message">最後にパスコードを入力してください。<br>パスコードは貴女の生まれ年です。</label>
         <p class="auth-input-note">ENTER 4 DIGITS</p>
         <input id="authBirthYear" class="auth-passcode" type="text" inputmode="numeric" autocomplete="off" maxlength="4" pattern="[0-9]{4}" placeholder="••••" aria-label="生まれ年4桁">
         <button class="auth-button auth-button-wide" type="submit">VERIFY</button>
@@ -502,8 +535,8 @@
     </section>
 
     <footer class="footer-note">
-      <span>WITH L+ / AGE VERIFIED EDITION</span>
-      <span id="syncText">SYNC COMPLETE</span>
+      <span>with L+ / UNOFFICIAL FAN-MADE PROJECT</span>
+      <span>made by @uni_ikr</span>
     </footer>
   </main>
 <section
@@ -544,7 +577,7 @@
     </div>
 
     <p id="sleepLine" class="sleep-line">
-      おやすみなさい、舞子。眠るまで、私がそばにいます。
+      おやすみなさい。眠るまで、私がそばにいます。
     </p>
 
     <div id="sleepControls" class="sleep-controls">
