@@ -3733,3 +3733,26 @@ body:not(.plus-ready) .plus-mode-button::before,
 body:not(.plus-ready) .plus-mode-button::after {
   border-color: var(--accent);
 }
+
+
+/* 年齢入力 */
+.auth-age-field {
+  position: relative;
+}
+
+.auth-age-field .auth-age-input {
+  padding-right: 70px;
+  letter-spacing: 0.18em;
+}
+
+.auth-age-field > span {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
