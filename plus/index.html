@@ -56,6 +56,38 @@
         <p><span>03</span> ACCESS PROFILE</p>
       </div>
 
+      <form id="authAccessForm" class="auth-step auth-access-step" hidden novalidate>
+        <p class="auth-access-kicker">LIMITED ACCESS</p>
+        <label for="authAccessCode" class="auth-message">
+          この端末は限定公開されています。<br>
+          アクセスコードを入力してください。
+        </label>
+        <p class="auth-input-note">A–Z / CASE SENSITIVE</p>
+        <div class="auth-access-field">
+          <span class="auth-access-prefix" aria-hidden="true">&gt;</span>
+          <input
+            id="authAccessCode"
+            class="auth-passcode auth-access-input"
+            type="password"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            maxlength="32"
+            placeholder="ACCESS CODE"
+            aria-label="限定アクセスコード"
+          >
+          <button
+            id="authAccessReveal"
+            class="auth-access-reveal"
+            type="button"
+            aria-label="アクセスコードを表示"
+            aria-pressed="false"
+          >VIEW</button>
+        </div>
+        <button class="auth-button auth-button-wide" type="submit">AUTHORIZE</button>
+        <p id="authAccessError" class="auth-error" role="alert"></p>
+      </form>
+
       <div id="authIntro" class="auth-step" hidden>
         <p class="auth-message">
           貴女のことを確認させてもらいます。<br>
