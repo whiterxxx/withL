@@ -3756,3 +3756,136 @@ body:not(.plus-ready) .plus-mode-button::after {
   transform: translateY(-50%);
   pointer-events: none;
 }
+
+
+/* =========================================================
+   LIMITED ACCESS CODE
+   ========================================================= */
+.auth-access-step {
+  position: relative;
+}
+
+.auth-access-step::before {
+  content: "SECURE GATE / 00";
+  display: block;
+  margin-bottom: 16px;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.49rem;
+  letter-spacing: 0.18em;
+}
+
+.auth-access-kicker {
+  margin: 0 0 12px;
+  color: var(--accent-dark);
+  font-family: var(--font-display);
+  font-size: clamp(0.70rem, 2.5vw, 0.86rem);
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+}
+
+.auth-access-field {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 58px;
+  align-items: center;
+  min-height: 62px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(90deg, rgba(73, 115, 136, 0.055) 1px, transparent 1px),
+    rgba(255, 255, 255, 0.72);
+  background-size: 13px 100%;
+  box-shadow:
+    0 7px 18px rgba(47, 75, 89, 0.09),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.58);
+  overflow: hidden;
+}
+
+.auth-access-field::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  opacity: 0.46;
+  background: linear-gradient(to right, transparent, var(--accent-dark), transparent);
+  animation: accessLinePulse 1.8s ease-in-out infinite;
+}
+
+.auth-access-prefix {
+  color: var(--accent-dark);
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  text-align: center;
+  animation: cursorBlink 0.82s steps(1) infinite;
+}
+
+.auth-access-input {
+  height: 60px;
+  padding: 0 6px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--font-ui);
+  font-size: clamp(0.94rem, 4vw, 1.12rem);
+  letter-spacing: 0.18em;
+  text-align: left;
+}
+
+.auth-access-input:focus {
+  border: 0;
+  box-shadow: none;
+}
+
+.auth-access-input::placeholder {
+  color: rgba(83, 109, 123, 0.48);
+  letter-spacing: 0.14em;
+}
+
+.auth-access-reveal {
+  position: relative;
+  z-index: 2;
+  height: 30px;
+  margin-right: 8px;
+  padding: 0;
+  color: var(--muted);
+  border: 1px solid var(--line-soft);
+  background: rgba(255, 255, 255, 0.60);
+  font-family: var(--font-display);
+  font-size: 0.48rem;
+  letter-spacing: 0.10em;
+  cursor: pointer;
+}
+
+.auth-access-reveal[aria-pressed="true"] {
+  color: var(--accent-dark);
+  border-color: var(--line);
+  background: rgba(226, 239, 245, 0.90);
+}
+
+.auth-access-step.is-rejected .auth-access-field {
+  border-color: rgba(142, 64, 81, 0.58);
+  animation: accessReject 340ms steps(2);
+}
+
+.auth-access-step.is-authorized .auth-access-field {
+  border-color: var(--accent-dark);
+  box-shadow:
+    0 0 0 1px rgba(49, 91, 112, 0.18),
+    0 0 22px rgba(100, 135, 154, 0.18),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.64);
+}
+
+@keyframes accessLinePulse {
+  0%, 100% { opacity: 0.18; transform: scaleX(0.45); }
+  50% { opacity: 0.72; transform: scaleX(1); }
+}
+
+@keyframes accessReject {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
