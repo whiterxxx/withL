@@ -3487,6 +3487,10 @@ const authLevelLabel = document.getElementById("authLevelLabel");
 const authCode = document.getElementById("authCode");
 const authProgress = document.getElementById("authProgress");
 const authBootLog = document.getElementById("authBootLog");
+const authAccessForm = document.getElementById("authAccessForm");
+const authAccessCode = document.getElementById("authAccessCode");
+const authAccessError = document.getElementById("authAccessError");
+const authAccessReveal = document.getElementById("authAccessReveal");
 const authIntro = document.getElementById("authIntro");
 const authIntroContinue = document.getElementById("authIntroContinue");
 const authAgeForm = document.getElementById("authAgeForm");
@@ -3526,6 +3530,17 @@ const PLUS_REWRITE_DELAY = 1200;
 let plusRewriteComplete = false;
 let declaredAge = null;
 
+/*
+  限定アクセスコードの平文は保存しません。
+  入力値をSHA-256で変換し、この照合値と比較します。
+*/
+const LIMITED_ACCESS_DIGEST = [
+  "4d59c8ff2db705d6",
+  "b5ee93860ad84829",
+  "5a22cfa107df643a",
+  "bfa764f12920b701"
+].join("");
+
 const PLUS_TARGETS = [
   {
     title: "二人きりになる",
@@ -3561,12 +3576,13 @@ function createAuthFragments() {
   }
 }
 
-function showAuthIntro() {
-  authCode.textContent = "IDENTITY MATCHED";
-  authLevelLabel.textContent = "AGE CHECK";
+function showAccessGate() {
+  authCode.textContent = "RESTRICTED DEVICE";
+  authLevelLabel.textContent = "CODE REQUIRED";
   authProgress.hidden = true;
   authBootLog.hidden = true;
-  authIntro.hidden = false;
+  authAccessForm.hidden = false;
+  window.setTimeout(() => authAccessCode.focus(), 80);
 }
 
 function authGlitch() {
@@ -3576,6 +3592,7 @@ function authGlitch() {
 }
 
 function denyPlusAccess(message) {
+  authAccessForm.hidden = true;
   authIntro.hidden = true;
   authAgeForm.hidden = true;
   authQuestion.hidden = true;
@@ -3652,6 +3669,7 @@ function closeAuthOverlay() {
 }
 
 function grantPlusAccess() {
+  authAccessForm.hidden = true;
   authIntro.hidden = true;
   authAgeForm.hidden = true;
   authQuestion.hidden = true;
@@ -3666,6 +3684,77 @@ function grantPlusAccess() {
   authGlitch();
   window.setTimeout(closeAuthOverlay, 900);
 }
+
+async function sha256Hex(value) {
+  const bytes = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+authAccessCode.addEventListener("input", () => {
+  authAccessError.textContent = "";
+  authAccessForm.classList.remove("is-rejected");
+});
+
+authAccessReveal.addEventListener("click", () => {
+  const willReveal = authAccessCode.type === "password";
+  authAccessCode.type = willReveal ? "text" : "password";
+  authAccessReveal.textContent = willReveal ? "HIDE" : "VIEW";
+  authAccessReveal.setAttribute("aria-pressed", String(willReveal));
+  authAccessReveal.setAttribute(
+    "aria-label",
+    willReveal ? "アクセスコードを隠す" : "アクセスコードを表示"
+  );
+  authAccessCode.focus();
+});
+
+authAccessForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const accessCode = authAccessCode.value.trim();
+
+  if (!accessCode) {
+    authAccessError.textContent = "アクセスコードを入力してください。";
+    return;
+  }
+
+  authCode.textContent = "VERIFYING ACCESS CODE";
+  authLevelLabel.textContent = "VERIFYING";
+  authAccessError.textContent = "";
+  authGlitch();
+
+  try {
+    const digest = await sha256Hex(accessCode);
+
+    if (digest !== LIMITED_ACCESS_DIGEST) {
+      authAccessForm.classList.remove("is-rejected");
+      void authAccessForm.offsetWidth;
+      authAccessForm.classList.add("is-rejected");
+      authAccessError.textContent = "アクセスコードを確認できません。";
+      authCode.textContent = "ACCESS CODE REJECTED";
+      authLevelLabel.textContent = "RETRY";
+      authAccessCode.select();
+      return;
+    }
+
+    authAccessForm.classList.add("is-authorized");
+    authCode.textContent = "ACCESS CODE ACCEPTED";
+    authLevelLabel.textContent = "LIMITED ACCESS";
+
+    window.setTimeout(() => {
+      authAccessForm.hidden = true;
+      authIntro.hidden = false;
+      authCode.textContent = "IDENTITY CONFIRMATION";
+      authLevelLabel.textContent = "AGE CHECK";
+    }, 520);
+  } catch (error) {
+    authAccessError.textContent = "照合処理を開始できませんでした。";
+    authCode.textContent = "AUTHENTICATION ERROR";
+    authLevelLabel.textContent = "ERROR";
+  }
+});
 
 authIntroContinue.addEventListener("click", () => {
   authIntro.hidden = true;
@@ -3783,4 +3872,4 @@ authPasscodeForm.addEventListener("submit", (event) => {
 });
 
 createAuthFragments();
-window.setTimeout(showAuthIntro, 2850);
+window.setTimeout(showAccessGate, 2850);
