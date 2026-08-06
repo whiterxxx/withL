@@ -68,12 +68,14 @@ const trainingRestEndButton = document.getElementById("trainingRestEndButton");
 
 const bathScreen = document.getElementById("bathScreen");
 const bathTime = document.getElementById("bathTime");
-const bathTemperatureLabel = document.getElementById("bathTemperatureLabel");
-const bathStartButton = document.getElementById("bathStartButton");
-const bathEndButton = document.getElementById("bathEndButton");
-const bathTemperatureInputs = [
-  ...document.querySelectorAll('input[name="bathTemperature"]')
-];
+const bathStatusLabel = document.getElementById("bathStatusLabel");
+const bathStateLabel = document.getElementById("bathStateLabel");
+const bathTimeCaption = document.getElementById("bathTimeCaption");
+const bathSoakButton = document.getElementById("bathSoakButton");
+const bathHairButton = document.getElementById("bathHairButton");
+const bathHydrationButton = document.getElementById("bathHydrationButton");
+const bathSkincareButton = document.getElementById("bathSkincareButton");
+const bathFinishButton = document.getElementById("bathFinishButton");
 
 const modeButtons = [...document.querySelectorAll(".mode-button")];
 
@@ -545,9 +547,9 @@ const modes = {
     "title": "一緒にお風呂",
     "code": "BATH SESSION",
     "start": [
-      "一緒に入りましょう。湯温を選んでください。",
-      "入浴の準備はできていますか。温度と時間は私が見ています。",
-      "こちらへ。今日は私とゆっくり温まりましょう。"
+      "一緒に入りましょう。今日はどこから始めますか。",
+      "入浴の準備はできていますか。時間は私が見ています。",
+      "こちらへ。湯船でも、湯上がりでも、最後まで一緒です。"
     ],
     "idle": [],
     "talk": [
@@ -1890,26 +1892,89 @@ function renderActions(modeKey) {
 let bathStartedAt = null;
 let bathTimerId = null;
 let bathNoticeIndex = 0;
+let bathHairStep = 0;
+let bathHydrationStep = 0;
+let bathSkincareStep = 0;
 
-const bathTemperatureMessages = {
-  38: ["38℃ですね。ゆっくり温まるには良い温度です。","ぬるめですね。長く浸かるなら途中で水分も取ってください。"],
-  39: ["39℃。身体へ負担をかけすぎず、落ち着いて温まれそうです。","ちょうどいいですね。肩まで浸かっていますか。"],
-  40: ["40℃ですね。身体がほぐれてきたら、ゆっくり息を吐いてください。","私もこのくらいが落ち着きます。隣へ寄ってください。"],
-  41: ["41℃。少し熱めですね。無理をしていないか顔を見せてください。","頬が赤くなってきたら、すぐに教えてください。"],
-  42: ["42℃ですか。熱いですね。長く浸かりすぎないでください。","我慢比べではありません。十分温まったら上がりましょう。"]
+const bathSoakMessages = {
+  start: [
+    "では、湯船に浸かりましょう。時間は私が見ています。",
+    "肩までゆっくり浸かってください。私がそばにいます。",
+    "入浴を始めます。呼吸を止めず、身体の力を抜いてください。"
+  ],
+  alreadyRunning: [
+    "入浴時間は既に計測しています。焦らず、そのまま温まってください。",
+    "タイマーは動いています。今はゆっくり浸かっていてください。",
+    "まだ湯船の時間です。もう少しだけ、私と一緒に温まりましょう。"
+  ]
 };
 
 const bathTimedMessages = [
-  { seconds: 180, messages: ["三分経ちました。身体の力を抜いてください。","少し温まってきましたね。呼吸を止めずに。"] },
-  { seconds: 300, messages: ["五分です。肩まで浸かっていますか。","湯船の中では、ゆっくり息を吐く方が落ち着きます。"] },
-  { seconds: 600, messages: ["十分経ちました。水分が足りているか確認してください。","身体は十分温まってきた頃です。のぼせる前に教えてください。"] },
-  { seconds: 900, messages: ["十五分です。そろそろ上がる時間も考えましょう。","名残惜しいですが、長湯は勧めません。"] },
-  { seconds: 1200, messages: ["二十分です。今日はもう上がりましょう。","十分温まりました。立ち上がる時はゆっくりお願いします。"] }
+  {
+    seconds: 180,
+    messages: [
+      "三分経ちました。身体の力を抜いてください。",
+      "少し温まってきましたね。呼吸を止めずに。"
+    ]
+  },
+  {
+    seconds: 300,
+    messages: [
+      "五分です。肩まで浸かっていますか。",
+      "湯船の中では、ゆっくり息を吐く方が落ち着きます。"
+    ]
+  },
+  {
+    seconds: 600,
+    messages: [
+      "十分経ちました。水分が足りているか確認してください。",
+      "身体は十分温まってきた頃です。のぼせる前に教えてください。"
+    ]
+  },
+  {
+    seconds: 900,
+    messages: [
+      "十五分です。そろそろ上がる時間も考えましょう。",
+      "少し長く入りましたね。のぼせる前に上がりましょう。"
+    ]
+  },
+  {
+    seconds: 1200,
+    messages: [
+      "二十分です。今日はここまでです。湯船から出てください。",
+      "十分温まりました。立ち上がる時はゆっくりお願いします。"
+    ]
+  }
 ];
 
-function getSelectedBathTemperature() {
-  const selected = bathTemperatureInputs.find((input) => input.checked);
-  return selected ? Number(selected.value) : 40;
+const bathHairMessages = [
+  "まずはタオルで、髪の水分をしっかり取ってください。",
+  "次は根元から乾かしましょう。毛先は最後で構いません。",
+  "後ろがまだ少し湿っています。もう少しだけ風を当ててください。",
+  "……はい、十分です。綺麗に乾きました。"
+];
+
+const bathHydrationMessages = [
+  "お風呂の後です。コップ一杯は飲みましょう。",
+  "急がなくて構いません。少しずつ飲んでください。",
+  "ちゃんと飲みましたね。これで安心しました。"
+];
+
+const bathSkincareMessages = [
+  "化粧水からですね。手のひらで優しく馴染ませてください。",
+  "次は乳液です。乾燥しやすいところまで忘れずに。",
+  "これで十分です。肌も落ち着いてきましたね。"
+];
+
+const bathFinishMessages = [
+  "お疲れさまでした。今日はゆっくり休んでください。",
+  "これでお風呂の時間は終わりです。また一緒に入りましょう。",
+  "湯上がりの準備も終わりましたね。……よくできました。"
+];
+
+function setBathStatus(status, state = "") {
+  bathStatusLabel.textContent = status;
+  bathStateLabel.textContent = state;
 }
 
 function stopBathTimer() {
@@ -1921,6 +1986,7 @@ function stopBathTimer() {
 
 function updateBathDisplay() {
   if (!bathStartedAt) return;
+
   const elapsedMilliseconds = Date.now() - bathStartedAt;
   const elapsedSeconds = Math.floor(elapsedMilliseconds / 1000);
   bathTime.textContent = formatElapsed(elapsedMilliseconds);
@@ -1928,30 +1994,99 @@ function updateBathDisplay() {
 
   const notice = bathTimedMessages[bathNoticeIndex];
   if (notice && elapsedSeconds >= notice.seconds) {
-    typeMessage(takeRandom(`bath-time-${notice.seconds}`, notice.messages));
+    typeMessage(
+      takeRandom(`bath-time-${notice.seconds}`, notice.messages)
+    );
     bathNoticeIndex += 1;
   }
 }
 
 function startBathSession() {
-  if (bathStartedAt) return;
+  setBathStatus("BATH SESSION", "ACTIVE");
+  bathTimeCaption.textContent = "ELAPSED BATH TIME";
+
+  if (bathStartedAt) {
+    typeMessage(
+      takeRandom("bath-soak-running", bathSoakMessages.alreadyRunning)
+    );
+    return;
+  }
+
   bathStartedAt = Date.now();
   bathNoticeIndex = 0;
-  bathStartButton.disabled = true;
-  bathEndButton.disabled = false;
+  bathSoakButton.classList.add("is-active");
   bathTimerId = window.setInterval(updateBathDisplay, 1000);
-  const temperature = getSelectedBathTemperature();
-  typeMessage(`入浴を始めます。${takeRandom(`bath-temp-${temperature}`, bathTemperatureMessages[temperature])}`);
+
+  typeMessage(
+    takeRandom("bath-soak-start", bathSoakMessages.start)
+  );
 }
 
-function endBathSession() {
-  if (!bathStartedAt) return;
-  const elapsed = formatElapsed(Date.now() - bathStartedAt);
+function endBathTimerSilently() {
   stopBathTimer();
   bathStartedAt = null;
-  bathStartButton.disabled = false;
-  bathEndButton.disabled = true;
-  typeMessage(`入浴時間は${elapsed}でした。水分を取って、髪もきちんと乾かしてください。`);
+  bathSoakButton.classList.remove("is-active");
+}
+
+function advanceBathCare({
+  status,
+  state,
+  messages,
+  stepName
+}) {
+  setBathStatus(status, state);
+  bathTimeCaption.textContent = "AFTER BATH CARE";
+
+  let step = 0;
+
+  if (stepName === "hair") {
+    step = bathHairStep;
+    bathHairStep = (bathHairStep + 1) % messages.length;
+  } else if (stepName === "hydration") {
+    step = bathHydrationStep;
+    bathHydrationStep =
+      (bathHydrationStep + 1) % messages.length;
+  } else {
+    step = bathSkincareStep;
+    bathSkincareStep =
+      (bathSkincareStep + 1) % messages.length;
+  }
+
+  typeMessage(messages[step]);
+}
+
+function finishBathMode() {
+  const hadBathTimer = Boolean(bathStartedAt);
+  const elapsed = hadBathTimer
+    ? formatElapsed(Date.now() - bathStartedAt)
+    : null;
+
+  endBathTimerSilently();
+  setBathStatus("SESSION COMPLETE", "COMPLETE");
+  bathTimeCaption.textContent = "BATH CARE COMPLETE";
+
+  const closing = takeRandom(
+    "bath-finish",
+    bathFinishMessages
+  );
+
+  const message = elapsed
+    ? `入浴時間は${elapsed}でした。${closing}`
+    : closing;
+
+  typeMessage(message, { returnHomeAfter: true });
+}
+
+function resetBathMode() {
+  endBathTimerSilently();
+  bathNoticeIndex = 0;
+  bathHairStep = 0;
+  bathHydrationStep = 0;
+  bathSkincareStep = 0;
+  bathTime.textContent = "00:00";
+  bathTime.dateTime = "PT0S";
+  bathTimeCaption.textContent = "ELAPSED BATH TIME";
+  setBathStatus("BATH SESSION", "READY");
 }
 
 function enterMode(modeKey) {
@@ -1979,9 +2114,7 @@ function enterMode(modeKey) {
   bathScreen.hidden = !isBathMode;
 
   if (isBathMode) {
-    bathTime.textContent = "00:00";
-    bathTime.dateTime = "PT0S";
-    bathTemperatureLabel.textContent = `${getSelectedBathTemperature()}°C`;
+    resetBathMode();
   } else {
     renderActions(modeKey);
   }
@@ -2012,11 +2145,7 @@ function returnToMenu(showMessage = true) {
   stopElapsedTimer();
   stopIdleTimer();
 
-  if (bathStartedAt) {
-    endBathSession();
-  } else {
-    stopBathTimer();
-  }
+  resetBathMode();
 
   actionButtons.hidden = false;
   bathScreen.hidden = true;
@@ -3313,16 +3442,36 @@ trainingSkipRestButton.addEventListener("click", () => {
 
 
 
-bathTemperatureInputs.forEach((input) => {
-  input.addEventListener("change", () => {
-    const temperature = Number(input.value);
-    bathTemperatureLabel.textContent = `${temperature}°C`;
-    typeMessage(takeRandom(`bath-temperature-change-${temperature}`, bathTemperatureMessages[temperature]));
+bathSoakButton.addEventListener("click", startBathSession);
+
+bathHairButton.addEventListener("click", () => {
+  advanceBathCare({
+    status: "HAIR CARE",
+    state: `STEP ${bathHairStep + 1}`,
+    messages: bathHairMessages,
+    stepName: "hair"
   });
 });
 
-bathStartButton.addEventListener("click", startBathSession);
-bathEndButton.addEventListener("click", endBathSession);
+bathHydrationButton.addEventListener("click", () => {
+  advanceBathCare({
+    status: "HYDRATION",
+    state: `STEP ${bathHydrationStep + 1}`,
+    messages: bathHydrationMessages,
+    stepName: "hydration"
+  });
+});
+
+bathSkincareButton.addEventListener("click", () => {
+  advanceBathCare({
+    status: "SKIN CARE",
+    state: `STEP ${bathSkincareStep + 1}`,
+    messages: bathSkincareMessages,
+    stepName: "skincare"
+  });
+});
+
+bathFinishButton.addEventListener("click", finishBathMode);
 
 modeButtons.forEach((button) => {
   button.addEventListener("click", () => {
