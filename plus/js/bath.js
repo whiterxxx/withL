@@ -37,19 +37,17 @@ function updateBathDisplay() {
 }
 
 function startBathSession() {
-  setBathStatus("BATH SESSION", "ACTIVE");
-  bathTimeCaption.textContent = "ELAPSED BATH TIME";
-
   if (bathStartedAt) {
-    typeMessage(
-      takeRandom("bath-soak-running", bathSoakMessages.alreadyRunning)
-    );
+    exitBathSession();
     return;
   }
 
+  setBathStatus("BATH SESSION", "ACTIVE");
+  bathTimeCaption.textContent = "ELAPSED BATH TIME";
+
   bathStartedAt = Date.now();
   bathNoticeIndex = 0;
-  bathSoakButton.classList.add("is-active");
+  bathSoakButtonLabel.textContent = "湯船から出る";
   bathTimerId = window.setInterval(updateBathDisplay, 1000);
 
   typeMessage(
@@ -57,10 +55,25 @@ function startBathSession() {
   );
 }
 
+function exitBathSession() {
+  if (!bathStartedAt) return;
+
+  const elapsed = formatElapsed(Date.now() - bathStartedAt);
+
+  stopBathTimer();
+  bathStartedAt = null;
+  bathSoakButtonLabel.textContent = "湯船に浸かる";
+  setBathStatus("BATH SESSION", "COMPLETE");
+  bathTimeCaption.textContent = "BATH TIME RECORDED";
+
+  const line = takeRandom("bath-soak-exit", bathSoakMessages.exit);
+  typeMessage(`入浴時間は${elapsed}でした。${line}`);
+}
+
 function endBathTimerSilently() {
   stopBathTimer();
   bathStartedAt = null;
-  bathSoakButton.classList.remove("is-active");
+  bathSoakButtonLabel.textContent = "湯船に浸かる";
 }
 
 function advanceBathCare({
@@ -120,6 +133,7 @@ function resetBathMode() {
   bathSkincareStep = 0;
   bathTime.textContent = "00:00";
   bathTime.dateTime = "PT0S";
+  bathSoakButtonLabel.textContent = "湯船に浸かる";
   bathTimeCaption.textContent = "ELAPSED BATH TIME";
   setBathStatus("BATH SESSION", "READY");
 }
