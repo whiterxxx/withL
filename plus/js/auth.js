@@ -201,7 +201,7 @@ function grantPlusAccess() {
   authResultCode.textContent = "ACCESS GRANTED";
   if (!authResultMessage.textContent) {
     authResultMessage.textContent =
-      "申告内容を照合しました。……アクセスを許可します。";
+      "申告内容を照合しました。入室を許可します。";
   }
   authLevelLabel.textContent = "VERIFIED";
   authGlitch();
