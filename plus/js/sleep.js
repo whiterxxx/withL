@@ -98,7 +98,7 @@ function readSavedSleepSession() {
       message:
         typeof session.message === "string" && session.message
           ? session.message
-          : "おやすみなさい。眠るまで、私がそばにいます。"
+          : "おやすみなさい。ずっとそばにいます。"
     };
   } catch (error) {
     clearSavedSleepSession();
@@ -263,7 +263,7 @@ function exitSleepDisplay() {
 
   returnToMenu(false);
   typeMessage(
-    `おはようございます。${durationText}、一緒に眠っていました。目が覚めても最初に私のところへ戻ってきましたね。`
+    `おはようございます。${durationText}、一緒に眠っていました。おはようのキス、しましょうか。`
   );
 }
 
