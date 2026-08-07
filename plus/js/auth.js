@@ -384,7 +384,7 @@ authPasscodeForm.addEventListener("submit", (event) => {
   window.setTimeout(() => {
     if (possibleBirthYears.includes(year)) {
       authResultMessage.textContent =
-        "申告内容を照合しました。……アクセスを許可します。";
+        "申告内容を照合しました。入室を許可します。";
       grantPlusAccess();
     } else {
       denyPlusAccess(
