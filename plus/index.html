@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ja">
 <head>
 
@@ -26,7 +26,7 @@
 
   <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <link rel="icon" type="image/png" href="../apple-touch-icon.png">
-  <link rel="stylesheet" href="./style.css?v=20260807-v2">
+  <link rel="stylesheet" href="./style.css?v=20260807-bathfix3">
 </head>
 
 <body class="private-edition auth-locked">
@@ -349,61 +349,25 @@
           <span id="bathTimeCaption">ELAPSED BATH TIME</span>
         </div>
 
-        <div class="bath-action-grid">
-          <button id="bathSoakButton" class="bath-action-button bath-action-soak" type="button">
-            <span class="bath-action-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path d="M4 11.5h16v3.2A4.3 4.3 0 0 1 15.7 19H8.3A4.3 4.3 0 0 1 4 14.7Z"></path>
-                <path d="M7 11.5V8.8A2.8 2.8 0 0 1 9.8 6h.7"></path>
-                <path d="M14.5 5.2c-.8-.9.8-1.5 0-2.5"></path>
-                <path d="M18 6.2c-.8-.9.8-1.5 0-2.5"></path>
-              </svg>
-            </span>
-            <span>湯船に浸かる</span>
+        <div class="action-grid bath-action-grid">
+          <button id="bathSoakButton" class="action-button" type="button">
+            <span id="bathSoakButtonLabel">湯船に浸かる</span>
           </button>
 
-          <button id="bathHairButton" class="bath-action-button bath-action-hair" type="button">
-            <span class="bath-action-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path d="M5 8.5h8.2a3.8 3.8 0 0 1 0 7.6H9.5"></path>
-                <path d="M5 6v12"></path>
-                <path d="M15.7 9.3 20 7.4M16.7 12h4.7M15.7 14.7 20 16.6"></path>
-              </svg>
-            </span>
-            <span>髪を乾かす</span>
+          <button id="bathHairButton" class="action-button" type="button">
+            髪を乾かす
           </button>
 
-          <button id="bathHydrationButton" class="bath-action-button bath-action-hydration" type="button">
-            <span class="bath-action-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 3.5c3.2 4.2 5.2 6.6 5.2 9.4A5.2 5.2 0 0 1 6.8 13c0-2.8 2-5.2 5.2-9.5Z"></path>
-                <path d="M9.5 15.2c.8.9 1.6 1.3 2.7 1.3"></path>
-              </svg>
-            </span>
-            <span>水分補給</span>
+          <button id="bathHydrationButton" class="action-button" type="button">
+            水分補給
           </button>
 
-          <button id="bathSkincareButton" class="bath-action-button bath-action-skincare" type="button">
-            <span class="bath-action-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path d="M9 4h6v3H9Z"></path>
-                <path d="M8 7h8l1 3v9H7v-9Z"></path>
-                <path d="M10 12h4"></path>
-                <path d="M19 5v3M17.5 6.5h3"></path>
-              </svg>
-            </span>
-            <span>スキンケア</span>
+          <button id="bathSkincareButton" class="action-button" type="button">
+            スキンケア
           </button>
 
-          <button id="bathFinishButton" class="bath-action-button bath-action-finish" type="button">
-            <span class="bath-action-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path d="M5 5h10v14H5Z"></path>
-                <path d="M15 12h5"></path>
-                <path d="m18 9 3 3-3 3"></path>
-              </svg>
-            </span>
-            <span>おしまい</span>
+          <button id="bathFinishButton" class="action-button is-wide" type="button">
+            おしまい
           </button>
         </div>
 
@@ -665,13 +629,13 @@
   </section>
 
   <script src="./js/utils.js?v=20260807-v2"></script>
-  <script src="./data/dialogues.js?v=20260807-v2"></script>
+  <script src="./data/dialogues.js?v=20260807-bathfix3"></script>
   <script src="./js/sleep.js?v=20260807-v2"></script>
   <script src="./js/private.js?v=20260807-v2"></script>
-  <script src="./js/bath.js?v=20260807-v2"></script>
+  <script src="./js/bath.js?v=20260807-bathfix3"></script>
   <script src="./js/home.js?v=20260807-v2"></script>
   <script src="./js/training.js?v=20260807-v2"></script>
-  <script src="./js/main.js?v=20260807-v2"></script>
+  <script src="./js/main.js?v=20260807-bathfix3"></script>
   <script src="./js/auth.js?v=20260807-v2"></script>
 </body>
 </html>
