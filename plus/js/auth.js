@@ -178,7 +178,7 @@ function rewriteToPlus() {
     document.body.classList.remove("plus-rewriting");
     document.body.classList.add("plus-ready");
     plusButtons.forEach((button) => button.classList.remove("plus-rewrite-target"));
-    typeMessage("……確認できました。それでは、二人だけの時間を始めましょう。");
+    typeMessage("……認証完了しました。それでは、二人だけの時間を始めましょう。");
   }, 850);
 }
 
@@ -327,7 +327,7 @@ document.querySelectorAll("[data-auth-age-confirm]").forEach((button) => {
   button.addEventListener("click", () => {
     if (button.dataset.authAgeConfirm === "no") {
       denyPlusAccess(
-        "申告内容を確認できません。通常版のwith Lを起動します。"
+        "認証条件を満たしていません。通常版のwith Lを起動します。"
       );
       return;
     }
@@ -363,7 +363,7 @@ authPasscodeForm.addEventListener("submit", (event) => {
 
   if (!Number.isInteger(declaredAge) || declaredAge < 18) {
     denyPlusAccess(
-      "申告内容を確認できません。通常版のwith Lを起動します。"
+      "認証条件を満たしていません。通常版のwith Lを起動します。"
     );
     return;
   }
