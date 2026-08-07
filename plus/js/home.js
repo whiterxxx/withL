@@ -65,7 +65,7 @@ function returnToMenu(showMessage = true) {
 
   if (showMessage) {
     typeMessage(
-      "最初の画面へ戻りました。次はどの時間を私に預けますか。"
+      "最初の画面へ戻りました。次はどの時間を共有しますか。"
     );
   }
 
