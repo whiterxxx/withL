@@ -73,6 +73,7 @@ const bathStatusLabel = document.getElementById("bathStatusLabel");
 const bathStateLabel = document.getElementById("bathStateLabel");
 const bathTimeCaption = document.getElementById("bathTimeCaption");
 const bathSoakButton = document.getElementById("bathSoakButton");
+const bathSoakButtonLabel = document.getElementById("bathSoakButtonLabel");
 const bathHairButton = document.getElementById("bathHairButton");
 const bathHydrationButton = document.getElementById("bathHydrationButton");
 const bathSkincareButton = document.getElementById("bathSkincareButton");
