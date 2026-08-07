@@ -3881,15 +3881,15 @@ body:not(.plus-ready) .plus-mode-button::after {
 .bath-time-block {
   display: grid;
   place-items: center;
-  min-height: 98px;
-  padding: 9px 0 10px;
+  min-height: 72px;
+  padding: 6px 0 7px;
   text-align: center;
 }
 
 .bath-time-block time {
   color: var(--accent-dark);
   font-family: var(--font-ui);
-  font-size: clamp(2.9rem, 13vw, 4.35rem);
+  font-size: clamp(2.15rem, 9.5vw, 3.2rem);
   font-weight: 300;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
@@ -3897,11 +3897,11 @@ body:not(.plus-ready) .plus-mode-button::after {
 }
 
 .bath-time-block span {
-  margin-top: 8px;
+  margin-top: 5px;
   color: var(--muted);
   font-family: var(--font-display);
-  font-size: 0.48rem;
-  letter-spacing: 0.17em;
+  font-size: 0.45rem;
+  letter-spacing: 0.15em;
 }
 
 .bath-action-grid {
