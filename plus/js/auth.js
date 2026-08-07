@@ -178,7 +178,7 @@ function rewriteToPlus() {
     document.body.classList.remove("plus-rewriting");
     document.body.classList.add("plus-ready");
     plusButtons.forEach((button) => button.classList.remove("plus-rewrite-target"));
-    typeMessage("……認証完了しました。二人だけの時間を始めましょう。");
+    typeMessage("……認証完了しました。それでは、二人だけの時間を始めましょう。");
   }, 850);
 }
 
