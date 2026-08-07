@@ -3861,15 +3861,8 @@ body:not(.plus-ready) .plus-mode-button::after {
 .bath-screen {
   padding: 10px;
   border: 1px solid var(--line-soft);
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.78),
-      rgba(230, 241, 246, 0.66)
-    );
-  box-shadow:
-    0 4px 14px rgba(72, 99, 114, 0.07),
-    inset 0 0 0 3px rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.56);
+  box-shadow: 0 4px 14px rgba(72, 99, 114, 0.07);
   animation: trainingViewIn 220ms ease both;
 }
 
@@ -3912,136 +3905,8 @@ body:not(.plus-ready) .plus-mode-button::after {
 }
 
 .bath-action-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 7px;
+  margin-top: 2px;
 }
-
-.bath-action-button {
-  position: relative;
-  display: grid;
-  grid-template-columns: 29px minmax(0, 1fr);
-  align-items: center;
-  min-height: 52px;
-  padding: 7px 10px;
-  color: var(--ink);
-  border: 1px solid var(--line-soft);
-  background: rgba(255, 255, 255, 0.74);
-  box-shadow: 0 4px 12px rgba(72, 99, 114, 0.07);
-  font-size: clamp(0.82rem, 3.1vw, 0.96rem);
-  letter-spacing: 0.025em;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    border-color 160ms ease,
-    background 160ms ease,
-    transform 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.bath-action-button::before,
-.bath-action-button::after {
-  content: "";
-  position: absolute;
-  width: 11px;
-  height: 11px;
-  pointer-events: none;
-}
-
-.bath-action-button::before {
-  top: 4px;
-  left: 4px;
-  border-top: 1px solid currentColor;
-  border-left: 1px solid currentColor;
-  opacity: 0.42;
-}
-
-.bath-action-button::after {
-  right: 4px;
-  bottom: 4px;
-  border-right: 1px solid currentColor;
-  border-bottom: 1px solid currentColor;
-  opacity: 0.42;
-}
-
-.bath-action-button:hover,
-.bath-action-button:active {
-  transform: translateY(-1px);
-  box-shadow: 0 7px 18px rgba(72, 99, 114, 0.12);
-}
-
-.bath-action-button.is-active {
-  border-color: #4d7d94;
-  background: rgba(222, 239, 247, 0.92);
-  box-shadow:
-    0 0 0 2px rgba(79, 128, 151, 0.07),
-    0 6px 18px rgba(72, 111, 132, 0.12);
-}
-
-.bath-action-icon {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-}
-
-.bath-action-icon svg {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.35;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.bath-action-soak {
-  color: #4d7d94;
-  border-color: rgba(77, 125, 148, 0.34);
-  background: rgba(230, 242, 247, 0.76);
-}
-
-.bath-action-hair {
-  color: #86677b;
-  border-color: rgba(134, 103, 123, 0.30);
-  background: rgba(244, 235, 240, 0.72);
-}
-
-.bath-action-hydration {
-  color: #527f91;
-  border-color: rgba(82, 127, 145, 0.30);
-  background: rgba(232, 243, 247, 0.72);
-}
-
-.bath-action-skincare {
-  color: #9a7081;
-  border-color: rgba(154, 112, 129, 0.28);
-  background: rgba(248, 238, 242, 0.72);
-}
-
-.bath-action-finish {
-  grid-column: 1 / -1;
-  justify-content: center;
-  color: var(--muted);
-  border-color: var(--line);
-  background: rgba(255, 255, 255, 0.56);
-  text-align: center;
-}
-
-.bath-action-finish .bath-action-icon {
-  justify-self: end;
-}
-
-@media (max-width: 380px) {
-  .bath-action-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .bath-action-finish {
-    grid-column: auto;
-  }
-}
-
 
 /* =========================================================
    FINAL ALIGNMENT FIX / AGE INPUT
